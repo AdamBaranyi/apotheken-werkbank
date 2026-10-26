@@ -1,0 +1,17 @@
+# Vercel lädt ohne diese Datei alles hoch, auch was .gitignore ausschliesst
+# (.lokal/ mit lokalen Schlüsseln, web/.env.local). Darum eine Freigabeliste:
+# nur, was die Web-App zum Installieren und Bauen braucht.
+/*
+!package.json
+!bun.lock
+!bunfig.toml
+!web
+!grosshandel-attrappe
+grosshandel-attrappe/*
+!grosshandel-attrappe/package.json
+web/.env*
+web/e2e/.auth
+web/test-results
+web/playwright-report
+web/node_modules
+web/.next

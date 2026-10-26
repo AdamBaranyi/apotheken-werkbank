@@ -1,0 +1,10 @@
+{
+  "//": "Wie tsconfig.json, aber mit Tests und Browser-Tests. Die Tests importieren die Grosshandel-Attrappe mit .ts-Endungen.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "incremental": false
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", ".next"]
+}
