@@ -101,3 +101,36 @@ _26.10.2026._ Die Attrappe hält Lager und Bestellungen im Speicher; ein Neustar
 zurück. Für eine Übungsattrappe reicht das, und die Demo beginnt so immer mit demselben
 Bestand. Ein echter virtueller Grosshandel bräuchte eine Datenbank, damit der Bestellstatus
 sieben Tage lang abrufbar bleibt (Pflichtenheft Kap. 6.3); das steht als Grenze in der Fallstudie.
+
+## E15 — Gestaltung «Tourenband»
+
+_26.10.2026._ Eine Werkzeug-Oberfläche, kein Schaufenster. Die wichtigste Frage am
+Bestell-Bildschirm lautet «Schaffe ich die nächste Tour?», darum stehen die Bestellfenster des
+Tages als Band ganz oben, mit der aktuellen Uhrzeit darauf. Eine Schriftfamilie (Atkinson
+Hyperlegible Next, lokal ausgeliefert), weil sie 0 und O, 1 und l unterscheidet – wichtig, wo
+Menschen PZN lesen und abtippen. Status nie nur über Farbe: Jeder Anteil hat Wort, Muster und
+Farbe. Schrift ab 16 px, hell als Vorgabe, 320 px ohne Querscrollen.
+
+## E16 — Anmeldung ohne Registrierung
+
+_26.10.2026._ Nur E-Mail und Passwort; Konten legt die Einrichtung an, niemand registriert sich
+selbst. Gemessen: `[auth.email] enable_signup = false` schaltet bei Supabase den ganzen
+E-Mail-Anbieter ab, auch die Anmeldung. Neue Konten verhindert `[auth] enable_signup = false`.
+Dieselbe Meldung für unbekannte Adresse und falsches Passwort, damit die Anmeldung keine Konten
+verrät.
+
+## E17 — Der Browser spricht nur mit der App
+
+_26.10.2026._ Der Browser ruft weder Supabase noch den Grosshändler direkt auf. Seiten und
+Server-Aktionen fragen Supabase mit der Sitzung der angemeldeten Person; welche Zeilen sie sieht,
+entscheidet die Datenbank (RLS). Die App hat keinen Geheimschlüssel von Supabase. Grosshändler
+ruft nur der Server auf, und nur Adressen aus `GROSSHANDEL_ERLAUBT`: Die Adresse eines Zugangs
+steht in der Datenbank, ohne Freigabeliste liesse sich die App auf interne Adressen lenken (SSRF).
+Die Passwörter der Zugänge liegen mit AES-256-GCM verschlüsselt in der Datenbank, der Schlüssel
+nur in der Umgebung des Servers.
+
+## E18 — Browser-Tests gegen den Produktionsbuild
+
+_26.10.2026._ In der CI laufen die Playwright-Tests gegen `next start`, nicht gegen den
+Entwicklungsserver: Nur so stimmen CSP, Kopfzeilen und Verhalten mit dem Deploy überein. Drei
+Breiten (320, 768, 1440 px), auf jedem Bildschirm axe, Schriftgrösse und Querscrollen.

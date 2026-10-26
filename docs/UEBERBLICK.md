@@ -136,3 +136,16 @@ Wird an jedem Bauabend ergänzt.
   durch die Liefervorgabe der Apotheke. Ein virtueller Grosshandel optimiert genau hier.
 - Die WSDL der Norm ist nicht öffentlich; die Namen der Attrappe sind eine Näherung. Ein echter
   Grosshändler-Client liefe nicht ohne Anpassung.
+
+### Abend 1, Web-App
+
+- Die Bestellfenster gehören zum Vertrag mit dem Grosshändler und gelten bis zum Ende plus 59
+  Sekunden. Für die Apotheke zählt nicht die Liste, sondern ob die nächste Tour noch erreichbar
+  ist; danach richtet sich die Oberfläche.
+- Weil der Server die Adresse des Grosshändlers aus der Datenbank nimmt, ist das Bestell-Tool
+  ein SSRF-Ziel: Wer einen Zugang anlegen darf, könnte sonst interne Adressen abfragen lassen.
+- Vercel-Funktionen erreichen keinen Dienst auf dem eigenen Rechner. Die Attrappe braucht für
+  den Deploy eine öffentliche Adresse – wie ein echter Grosshändler.
+- Zwei Messungen widersprachen der Erwartung: Supabase schaltet mit `[auth.email]
+enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
+  `authTagLength` einen auf 4 Byte gekürzten Prüfwert an.
