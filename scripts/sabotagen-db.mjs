@@ -61,4 +61,13 @@ grant select on public.apotheken to anon;`,
     konfig: KONFIG,
     tests: TESTS,
   },
+  {
+    name: 'Hilfsfunktion bleibt über die REST-Schnittstelle erreichbar',
+    datei: 'supabase/migrations/20261026190000_hilfsfunktionen_privat.sql',
+    suche: 'alter function public.ist_inhaber(uuid) set schema privat;',
+    ersatz: '',
+    vorbereiten: RESET,
+    konfig: KONFIG,
+    tests: ['supabase/tests/schnittstelle.test.ts'],
+  },
 ];
