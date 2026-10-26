@@ -8,11 +8,12 @@
  * Läuft nur gegen eine lokale Supabase (127.0.0.1 oder localhost).
  * Aufruf: node scripts/lokal-einrichten.ts
  */
-import { createCipheriv, randomBytes } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import pg from 'pg';
 import { passwortHashen } from '../grosshandel-attrappe/src/anmeldung.ts';
+import { verschluesseln } from '../web/lib/verschluesselung.ts';
 
 const ORDNER = '.lokal';
 const ATTRAPPE = 'http://127.0.0.1:3501/msv3';
@@ -46,18 +47,6 @@ function schluessel(): string {
   const neu = randomBytes(32).toString('base64');
   writeFileSync(datei, neu, { mode: 0o600 });
   return neu;
-}
-
-function verschluesseln(klartext: string, schluesselB64: string): string {
-  const iv = randomBytes(12);
-  const c = createCipheriv('aes-256-gcm', Buffer.from(schluesselB64, 'base64'), iv);
-  const text = Buffer.concat([c.update(klartext, 'utf8'), c.final()]);
-  return [
-    'v1',
-    iv.toString('base64'),
-    c.getAuthTag().toString('base64'),
-    text.toString('base64'),
-  ].join(':');
 }
 
 async function kontoAnlegen(s: Status, email: string, passwort: string): Promise<string> {
@@ -132,7 +121,7 @@ async function main() {
         'Grosshandel-Attrappe',
         ATTRAPPE,
         a.kennung,
-        verschluesseln(ghPasswort, zugangSchluessel),
+        verschluesseln(ghPasswort, Buffer.from(zugangSchluessel, 'base64')),
       ],
     );
   }

@@ -1,4 +1,3 @@
-import 'server-only';
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
 /**
@@ -7,6 +6,8 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
  * die Datenbank hat, hat kein Passwort, wer nur den Schlüssel hat, auch nicht.
  * Der Prüfwert ist immer 16 Byte: Ohne authTagLength nimmt Node auch einen
  * gekürzten an (gemessen mit Node 24), und kurze Prüfwerte lassen sich erraten.
+ * Ohne «server-only», damit die Einrichtungsskripte dieselbe Funktion nutzen;
+ * in den Browser gelangt sie nicht (node:crypto lässt sich dort nicht bündeln).
  */
 const GCM = { authTagLength: 16 } as const;
 
