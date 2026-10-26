@@ -13,13 +13,18 @@
     "check:file-length": "node scripts/check-file-length.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p grosshandel-attrappe/tsconfig.json",
     "test": "vitest run",
+    "test:db": "vitest run -c vitest.db.config.ts",
     "sabotage": "node scripts/sabotage.mjs",
+    "sabotage:db": "node scripts/sabotage.mjs db",
     "audit": "bash scripts/audit.sh high",
     "grosshandel": "bun run --cwd grosshandel-attrappe dev"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "pg": "8.23.1",
     "prettier": "3.9.10",
+    "supabase": "2.121.0",
     "typescript": "6.0.3",
     "vitest": "5.0.5"
   },
