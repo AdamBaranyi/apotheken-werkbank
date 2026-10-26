@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MSV3-Attrappe, Version 1.0. NÄHERUNG: Funktionsnamen und Begriffe aus dem
+  Pflichtenheft MSV3 1.0h (13.05.2014); Element- und Typnamen sind daraus
+  abgeleitet, nicht die Norm-WSDL der DATEG. Siehe docs/MSV3.md.
+  Je Funktion ein eigener Dienst mit eigener Adresse (Kap. 2.3.1).
+  Anmeldung über HTTP Basic (Kap. 2.3.3), nicht im SOAP-Körper.
+-->
+<wsdl:definitions name="Msv3Attrappe"
+  targetNamespace="http://werkbank.example/msv3/v1.0"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:m="http://werkbank.example/msv3/v1.0">
+
+  <wsdl:types>
+    <xs:schema targetNamespace="http://werkbank.example/msv3/v1.0" elementFormDefault="qualified">
+      <xs:simpleType name="Pzn"><xs:restriction base="xs:string"><xs:pattern value="[0-9]{8}"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Menge"><xs:restriction base="xs:int"><xs:minInclusive value="1"/><xs:maxInclusive value="9999"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Guid"><xs:restriction base="xs:string"><xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Kurzkennung"><xs:restriction base="xs:string"><xs:pattern value="[A-Z0-9+_\-]{1,20}"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Liefervorgabe">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Normal"/><xs:enumeration value="MaxVerbund"/>
+          <xs:enumeration value="MaxNachlieferung"/><xs:enumeration value="MaxDispo"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="AnteilTyp">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Normal"/><xs:enumeration value="Verbund"/>
+          <xs:enumeration value="Nachlieferung"/><xs:enumeration value="Dispo"/>
+          <xs:enumeration value="NichtLieferbar"/>
+          <xs:enumeration value="KeineLieferungAberNormalMoeglich"/>
+          <xs:enumeration value="KeineLieferungAberVerbundMoeglich"/>
+          <xs:enumeration value="KeineLieferungAberNachlieferungMoeglich"/>
+          <xs:enumeration value="KeineLieferungAberDispoMoeglich"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="Defektgrund">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="FehltZurzeit"/><xs:enumeration value="NichtLieferbar"/>
+          <xs:enumeration value="NurDirekt"/><xs:enumeration value="NichtGefuehrt"/>
+          <xs:enumeration value="ArtikelNrUnbekannt"/><xs:enumeration value="AusserHandel"/>
+          <xs:enumeration value="KeinBezug"/><xs:enumeration value="Transportausschluss"/>
+          <xs:enumeration value="TeilDefekt"/><xs:enumeration value="KeineAngabe"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="Auftragsart">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="NORMAL"/><xs:enumeration value="STAPEL"/>
+          <xs:enumeration value="SONDER"/><xs:enumeration value="VERSAND"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="Bestellstatus">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="KennungUnbekannt"/>
+          <xs:enumeration value="BestellantwortNichtVerfuegbar"/>
+          <xs:enumeration value="BestellantwortVerfuegbar"/>
+        </xs:restriction>
+      </xs:simpleType>
+
+      <xs:complexType name="Anteil">
+        <xs:sequence>
+          <xs:element name="typ" type="m:AnteilTyp"/>
+          <xs:element name="menge" type="xs:int" minOccurs="0"/>
+          <xs:element name="lieferzeitpunkt" type="xs:dateTime" minOccurs="0"/>
+          <xs:element name="tour" type="xs:string" minOccurs="0"/>
+          <xs:element name="tourId" type="m:Kurzkennung" minOccurs="0"/>
+          <xs:element name="defektgrund" type="m:Defektgrund" minOccurs="0"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="AnfrageArtikel">
+        <xs:sequence>
+          <xs:element name="pzn" type="m:Pzn"/>
+          <xs:element name="menge" type="m:Menge"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="AntwortArtikel">
+        <xs:sequence>
+          <xs:element name="pzn" type="m:Pzn"/>
+          <xs:element name="menge" type="m:Menge"/>
+          <xs:element name="anteil" type="m:Anteil" maxOccurs="9"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Position">
+        <xs:sequence>
+          <xs:element name="pzn" type="m:Pzn"/>
+          <xs:element name="menge" type="m:Menge"/>
+          <xs:element name="liefervorgabe" type="m:Liefervorgabe"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="AntwortPosition">
+        <xs:sequence>
+          <xs:element name="pzn" type="m:Pzn"/>
+          <xs:element name="menge" type="m:Menge"/>
+          <xs:element name="liefervorgabe" type="m:Liefervorgabe"/>
+          <xs:element name="anteil" type="m:Anteil" maxOccurs="9"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Auftrag">
+        <xs:sequence>
+          <xs:element name="id" type="m:Guid"/>
+          <xs:element name="auftragsart" type="m:Auftragsart"/>
+          <xs:element name="auftragskennung" type="m:Kurzkennung"/>
+          <xs:element name="auftragsSupportId" type="xs:int"/>
+          <xs:element name="gebindeId" type="m:Kurzkennung" minOccurs="0"/>
+          <xs:element name="position" type="m:Position" maxOccurs="1000"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Auftragsfehler">
+        <xs:sequence>
+          <xs:element name="errorCode" type="xs:string"/>
+          <xs:element name="endanwenderText" type="xs:string"/>
+          <xs:element name="technischerText" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="AntwortAuftrag">
+        <xs:sequence>
+          <xs:element name="id" type="m:Guid"/>
+          <xs:element name="auftragsart" type="m:Auftragsart"/>
+          <xs:element name="auftragskennung" type="m:Kurzkennung"/>
+          <xs:element name="auftragsfehler" type="m:Auftragsfehler" minOccurs="0"/>
+          <xs:element name="position" type="m:AntwortPosition" minOccurs="0" maxOccurs="1000"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Bestellung">
+        <xs:sequence>
+          <xs:element name="id" type="m:Guid"/>
+          <xs:element name="bestellSupportId" type="xs:int"/>
+          <xs:element name="auftrag" type="m:Auftrag" maxOccurs="1000"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="AntwortBestellung">
+        <xs:sequence>
+          <xs:element name="id" type="m:Guid"/>
+          <xs:element name="nachtbetrieb" type="xs:boolean"/>
+          <xs:element name="auftrag" type="m:AntwortAuftrag" maxOccurs="1000"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Bestellfenster">
+        <xs:sequence>
+          <xs:element name="wochentag" type="xs:string"/>
+          <xs:element name="ende" type="xs:string"/>
+          <xs:element name="tour" type="xs:string"/>
+          <xs:element name="hauptbestellzeitpunkt" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Vertragsdaten">
+        <xs:sequence>
+          <xs:element name="gueltigAb" type="xs:date"/>
+          <xs:element name="kundenkennung" type="xs:string"/>
+          <xs:element name="bestellfenster" type="m:Bestellfenster" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="erlaubteAuftragsart" type="m:Auftragsart" maxOccurs="4"/>
+          <xs:element name="substitutionsvereinbarung" type="xs:boolean"/>
+          <xs:element name="verfuegbarkeitEinzelnSpezifisch" type="xs:boolean"/>
+          <xs:element name="verfuegbarkeitBulk" type="xs:boolean"/>
+          <xs:element name="ruecknahmeangebot" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Anfrage">
+        <xs:sequence><xs:element name="clientSoftwareKennung" type="xs:string"/></xs:sequence>
+      </xs:complexType>
+
+      <xs:element name="verbindungTesten" type="m:Anfrage"/>
+      <xs:element name="verbindungTestenAntwort"><xs:complexType><xs:sequence/></xs:complexType></xs:element>
+      <xs:element name="vertragsdatenAbfragen" type="m:Anfrage"/>
+      <xs:element name="vertragsdatenAbfragenAntwort">
+        <xs:complexType><xs:sequence><xs:element name="vertragsdaten" type="m:Vertragsdaten"/></xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="verfuegbarkeitAnfragen">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="clientSoftwareKennung" type="xs:string"/>
+            <xs:element name="defektoptimierung" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="artikel" type="m:AnfrageArtikel" maxOccurs="50"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="verfuegbarkeitAnfragenAntwort">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="rTyp" type="xs:string"/>
+            <xs:element name="artikel" type="m:AntwortArtikel" minOccurs="0" maxOccurs="50"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="bestellen">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="clientSoftwareKennung" type="xs:string"/>
+            <xs:element name="bestellung" type="m:Bestellung"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="bestellenAntwort">
+        <xs:complexType><xs:sequence><xs:element name="bestellung" type="m:AntwortBestellung"/></xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="bestellstatusAbfragen">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="clientSoftwareKennung" type="xs:string"/>
+            <xs:element name="bestellId" type="m:Guid"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="bestellstatusAbfragenAntwort">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="status" type="m:Bestellstatus"/>
+            <xs:element name="bestellung" type="m:AntwortBestellung" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="msv3Fehler">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="exceptiontyp" type="xs:string"/>
+            <xs:element name="errorCode" type="xs:string"/>
+            <xs:element name="technischerText" type="xs:string"/>
+            <xs:element name="endanwenderText" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+
+  <wsdl:message name="Msv3Fehler"><wsdl:part name="fehler" element="m:msv3Fehler"/></wsdl:message>
+  <wsdl:message name="VerbindungTestenAnfrage"><wsdl:part name="parameters" element="m:verbindungTesten"/></wsdl:message>
+  <wsdl:message name="VerbindungTestenAntwort"><wsdl:part name="parameters" element="m:verbindungTestenAntwort"/></wsdl:message>
+  <wsdl:message name="VertragsdatenAbfragenAnfrage"><wsdl:part name="parameters" element="m:vertragsdatenAbfragen"/></wsdl:message>
+  <wsdl:message name="VertragsdatenAbfragenAntwort"><wsdl:part name="parameters" element="m:vertragsdatenAbfragenAntwort"/></wsdl:message>
+  <wsdl:message name="VerfuegbarkeitAnfragenAnfrage"><wsdl:part name="parameters" element="m:verfuegbarkeitAnfragen"/></wsdl:message>
+  <wsdl:message name="VerfuegbarkeitAnfragenAntwort"><wsdl:part name="parameters" element="m:verfuegbarkeitAnfragenAntwort"/></wsdl:message>
+  <wsdl:message name="BestellenAnfrage"><wsdl:part name="parameters" element="m:bestellen"/></wsdl:message>
+  <wsdl:message name="BestellenAntwort"><wsdl:part name="parameters" element="m:bestellenAntwort"/></wsdl:message>
+  <wsdl:message name="BestellstatusAbfragenAnfrage"><wsdl:part name="parameters" element="m:bestellstatusAbfragen"/></wsdl:message>
+  <wsdl:message name="BestellstatusAbfragenAntwort"><wsdl:part name="parameters" element="m:bestellstatusAbfragenAntwort"/></wsdl:message>
+
+  <wsdl:portType name="VerbindungTestenPortType">
+    <wsdl:operation name="verbindungTesten">
+      <wsdl:input message="m:VerbindungTestenAnfrage"/><wsdl:output message="m:VerbindungTestenAntwort"/><wsdl:fault name="msv3Fehler" message="m:Msv3Fehler"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="VertragsdatenAbfragenPortType">
+    <wsdl:operation name="vertragsdatenAbfragen">
+      <wsdl:input message="m:VertragsdatenAbfragenAnfrage"/><wsdl:output message="m:VertragsdatenAbfragenAntwort"/><wsdl:fault name="msv3Fehler" message="m:Msv3Fehler"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="VerfuegbarkeitAnfragenPortType">
+    <wsdl:operation name="verfuegbarkeitAnfragen">
+      <wsdl:input message="m:VerfuegbarkeitAnfragenAnfrage"/><wsdl:output message="m:VerfuegbarkeitAnfragenAntwort"/><wsdl:fault name="msv3Fehler" message="m:Msv3Fehler"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="BestellenPortType">
+    <wsdl:operation name="bestellen">
+      <wsdl:input message="m:BestellenAnfrage"/><wsdl:output message="m:BestellenAntwort"/><wsdl:fault name="msv3Fehler" message="m:Msv3Fehler"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="BestellstatusAbfragenPortType">
+    <wsdl:operation name="bestellstatusAbfragen">
+      <wsdl:input message="m:BestellstatusAbfragenAnfrage"/><wsdl:output message="m:BestellstatusAbfragenAntwort"/><wsdl:fault name="msv3Fehler" message="m:Msv3Fehler"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="VerbindungTestenBinding" type="m:VerbindungTestenPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="verbindungTesten"><soap:operation soapAction=""/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="msv3Fehler"><soap:fault name="msv3Fehler" use="literal"/></wsdl:fault></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="VertragsdatenAbfragenBinding" type="m:VertragsdatenAbfragenPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="vertragsdatenAbfragen"><soap:operation soapAction=""/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="msv3Fehler"><soap:fault name="msv3Fehler" use="literal"/></wsdl:fault></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="VerfuegbarkeitAnfragenBinding" type="m:VerfuegbarkeitAnfragenPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="verfuegbarkeitAnfragen"><soap:operation soapAction=""/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="msv3Fehler"><soap:fault name="msv3Fehler" use="literal"/></wsdl:fault></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="BestellenBinding" type="m:BestellenPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="bestellen"><soap:operation soapAction=""/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="msv3Fehler"><soap:fault name="msv3Fehler" use="literal"/></wsdl:fault></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="BestellstatusAbfragenBinding" type="m:BestellstatusAbfragenPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="bestellstatusAbfragen"><soap:operation soapAction=""/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="msv3Fehler"><soap:fault name="msv3Fehler" use="literal"/></wsdl:fault></wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="VerbindungTestenService"><wsdl:port name="VerbindungTestenPort" binding="m:VerbindungTestenBinding"><soap:address location="http://localhost:3501/msv3/v1.0/verbindungTesten"/></wsdl:port></wsdl:service>
+  <wsdl:service name="VertragsdatenAbfragenService"><wsdl:port name="VertragsdatenAbfragenPort" binding="m:VertragsdatenAbfragenBinding"><soap:address location="http://localhost:3501/msv3/v1.0/vertragsdatenAbfragen"/></wsdl:port></wsdl:service>
+  <wsdl:service name="VerfuegbarkeitAnfragenService"><wsdl:port name="VerfuegbarkeitAnfragenPort" binding="m:VerfuegbarkeitAnfragenBinding"><soap:address location="http://localhost:3501/msv3/v1.0/verfuegbarkeitAnfragen"/></wsdl:port></wsdl:service>
+  <wsdl:service name="BestellenService"><wsdl:port name="BestellenPort" binding="m:BestellenBinding"><soap:address location="http://localhost:3501/msv3/v1.0/bestellen"/></wsdl:port></wsdl:service>
+  <wsdl:service name="BestellstatusAbfragenService"><wsdl:port name="BestellstatusAbfragenPort" binding="m:BestellstatusAbfragenBinding"><soap:address location="http://localhost:3501/msv3/v1.0/bestellstatusAbfragen"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

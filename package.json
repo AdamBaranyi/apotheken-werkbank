@@ -11,13 +11,19 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:file-length": "node scripts/check-file-length.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p grosshandel-attrappe/tsconfig.json",
     "test": "vitest run",
-    "audit": "bash scripts/audit.sh high"
+    "sabotage": "node scripts/sabotage.mjs",
+    "audit": "bash scripts/audit.sh high",
+    "grosshandel": "bun run --cwd grosshandel-attrappe dev"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
     "prettier": "3.9.10",
     "typescript": "6.0.3",
     "vitest": "5.0.5"
-  }
+  },
+  "workspaces": [
+    "grosshandel-attrappe"
+  ]
 }
