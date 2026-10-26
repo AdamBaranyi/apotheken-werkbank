@@ -44,10 +44,10 @@ export async function pruefen(_vorher: PruefStand, form: FormData): Promise<Prue
   if (!geprueft.success) {
     return { mengen, fehler: geprueft.error.issues[0]?.message ?? 'Eingabe ungültig.' };
   }
-  const zugang = await zugangLaden(geprueft.data.zugangId);
-  if (!zugang)
-    return { mengen, fehler: 'Diesen Grosshändler-Zugang gibt es für Ihre Apotheke nicht.' };
   try {
+    const zugang = await zugangLaden(geprueft.data.zugangId);
+    if (!zugang)
+      return { mengen, fehler: 'Diesen Grosshändler-Zugang gibt es für Ihre Apotheke nicht.' };
     const antwort = await verfuegbarkeitAnfragen(zugang, geprueft.data.positionen);
     const ergebnisse = Object.fromEntries(antwort.artikel.map((a) => [a.pzn, a.anteil]));
     return { mengen, ergebnisse, spezifisch: antwort.rTyp === 'Spezifisch' };

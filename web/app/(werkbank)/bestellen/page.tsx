@@ -12,9 +12,9 @@ import styles from './bestellen.module.css';
 export const metadata: Metadata = { title: 'Bestellen' };
 
 async function vertragLaden(zugangId: string): Promise<Vertragsdaten | string> {
-  const zugang = await zugangLaden(zugangId);
-  if (!zugang) return 'Der Zugang zum Grosshändler fehlt.';
   try {
+    const zugang = await zugangLaden(zugangId);
+    if (!zugang) return 'Der Zugang zum Grosshändler fehlt.';
     return await vertragsdatenAbfragen(zugang);
   } catch (fehler) {
     if (fehler instanceof Msv3Fehler) return fehler.endanwenderText;

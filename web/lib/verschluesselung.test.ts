@@ -34,4 +34,15 @@ describe('Verschlüsselung der Grosshändler-Passwörter', () => {
       entschluesseln([v, iv, tag, gekippt.toString('base64')].join(':'), schluessel),
     ).toThrow();
   });
+
+  it('lehnt einen gekürzten Prüfwert ab (immer 16 Byte)', () => {
+    const [v, iv, tag, text] = verschluesseln('geheim', schluessel).split(':') as [
+      string,
+      string,
+      string,
+      string,
+    ];
+    const kurz = Buffer.from(tag, 'base64').subarray(0, 4).toString('base64');
+    expect(() => entschluesseln([v, iv, kurz, text].join(':'), schluessel)).toThrow();
+  });
 });

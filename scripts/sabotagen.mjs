@@ -77,6 +77,27 @@ export const SABOTAGEN = [
     tests: ['web/lib/msv3/client.test.ts'],
   },
   {
+    name: 'GCM nimmt gekürzte Prüfwerte an',
+    datei: 'web/lib/verschluesselung.ts',
+    suche: 'const GCM = { authTagLength: 16 } as const;',
+    ersatz: 'const GCM = {} as const;',
+    tests: ['web/lib/verschluesselung.test.ts'],
+  },
+  {
+    name: 'Falscher Schlüssel bringt die Seite zum Absturz',
+    datei: 'web/lib/zugang.ts',
+    suche: '  } catch {\n    throw new Msv3Fehler(',
+    ersatz: '  } catch (roh) {\n    if (roh) throw roh;\n    throw new Msv3Fehler(',
+    tests: ['web/lib/zugang.test.ts'],
+  },
+  {
+    name: 'Abmelden nimmt fremde Herkunft an',
+    datei: 'web/lib/herkunft.ts',
+    suche: 'return new URL(origin).host === host;',
+    ersatz: 'return true;',
+    tests: ['web/lib/herkunft.test.ts'],
+  },
+  {
     name: 'Audit schluckt den Exit-Code',
     datei: 'scripts/audit.sh',
     suche: 'bun audit --audit-level="$stufe" ${ausnahmen[@]+"${ausnahmen[@]}"}',

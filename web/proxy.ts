@@ -15,6 +15,8 @@ function csp(nonce: string): string {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${entwicklung ? " 'unsafe-eval'" : ''}`,
     `style-src 'self' 'nonce-${nonce}'`,
+    // Nur style-Attribute (Breite der Anteile im Balken), keine style-Elemente
+    // und kein Skript: Damit lässt sich Aussehen ändern, aber nichts ausführen.
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
