@@ -19,7 +19,8 @@
     "sabotage:db": "node scripts/sabotage.mjs db",
     "audit": "bash scripts/audit.sh high",
     "einrichten": "node scripts/lokal-einrichten.ts",
-    "grosshandel": "bun run --cwd grosshandel-attrappe dev"
+    "grosshandel": "bun run --cwd grosshandel-attrappe dev",
+    "bilder": "cd web && ./node_modules/.bin/next build && ./node_modules/.bin/playwright test -c playwright.bilder.config.ts"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

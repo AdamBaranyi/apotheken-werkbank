@@ -22,7 +22,7 @@ function Eintrag({ f, minuten }: { f: Fenster; minuten: number }) {
   return (
     <li className={styles.fenster} data-stand={f.stand} style={{ flexGrow: breite }}>
       <span className={styles.tour}>{f.tour}</span>
-      <span className={styles.ende}>bis {f.ende}</span>
+      <span className={styles.ende}>bis&nbsp;{f.ende}</span>
       <span className={styles.zustand}>{zustand(f, minuten)}</span>
       {f.hauptbestellzeitpunkt ? (
         <span className={styles.haupt}>Hauptbestellung {f.hauptbestellzeitpunkt}</span>
@@ -47,7 +47,7 @@ export function Tourenband({ vertrag, zeitpunkt }: { vertrag: Vertragsdaten; zei
     <section className={styles.band} aria-labelledby="touren-titel">
       <div className={styles.kopf}>
         <h2 id="touren-titel">Bestellfenster heute</h2>
-        <p className={styles.stand}>Stand {jetzt.text} Uhr</p>
+        <p className={styles.stand}>Stand {jetzt.text}&nbsp;Uhr</p>
       </div>
       {fenster.length > 0 ? (
         <ol className={styles.liste}>
@@ -58,8 +58,8 @@ export function Tourenband({ vertrag, zeitpunkt }: { vertrag: Vertragsdaten; zei
       ) : null}
       {naechstes ? (
         <p className={styles.naechstes}>
-          Heute geht keine Tour mehr. Nächstes Fenster: {naechstes.wochentag}, Tour {naechstes.tour}{' '}
-          bis {naechstes.ende} Uhr.
+          Heute geht keine Tour mehr. Nächstes Fenster: {naechstes.wochentag}, Tour&nbsp;
+          {naechstes.tour} bis {naechstes.ende}&nbsp;Uhr.
         </p>
       ) : null}
     </section>

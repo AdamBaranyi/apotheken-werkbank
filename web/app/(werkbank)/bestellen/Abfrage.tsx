@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { Anteile } from '@/components/anteile/Anteile';
+import { zusammenhalten } from '@/lib/satz';
 import { pruefen, type PruefStand } from './aktion';
 import styles from './bestellen.module.css';
 
@@ -43,8 +44,16 @@ export function Abfrage({ artikel, zugangId }: { artikel: KatalogArtikel[]; zuga
                   {a.pzn}
                 </td>
                 <td data-titel="Artikel">
-                  {a.name}, {a.packung}
-                  {a.rezeptpflichtig ? <span className={styles.rx}>Rx</span> : null}
+                  {/* Ein Kind für das Raster der schmalen Ansicht: Name und Rx bleiben zusammen. */}
+                  <span>
+                    {zusammenhalten(`${a.name}, ${a.packung}`)}
+                    {a.rezeptpflichtig ? (
+                      <span className={styles.rx}>
+                        <span aria-hidden="true">Rx</span>
+                        <span className="unsichtbar">rezeptpflichtig</span>
+                      </span>
+                    ) : null}
+                  </span>
                 </td>
                 <td data-titel="Menge">
                   <input

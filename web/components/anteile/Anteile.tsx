@@ -7,9 +7,10 @@ import styles from './anteile.module.css';
  * (Breite = Menge, aus denselben Zahlen wie der Text) und darunter jede
  * Lieferart in Worten. Farbe nie allein – jede Art hat ein eigenes Muster.
  */
+/** Mit geschütztem Leerzeichen: «Tour T1» bricht nicht zwischen Wort und Kennung. */
 function zeile(a: Anteil, jetzt: Date): string {
   const wann = lieferung(a.lieferzeitpunkt, jetzt);
-  const tour = a.tour ? `${ART[a.typ]} ${a.tour}${wann ? `, ${wann}` : ''}` : ART[a.typ];
+  const tour = a.tour ? `${ART[a.typ]}\u00a0${a.tour}${wann ? `, ${wann}` : ''}` : ART[a.typ];
   const grund = a.defektgrund ? GRUND[a.defektgrund] : undefined;
   return grund ? `${tour}, ${grund}` : tour;
 }

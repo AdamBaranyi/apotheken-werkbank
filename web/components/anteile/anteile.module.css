@@ -85,8 +85,12 @@
   outline: 1px solid var(--daten-nachlieferung);
 }
 
+/* Raster wie im Balken: Ein leeres Quadrat sähe aus wie ein Kontrollkästchen. */
 .liste li[data-gruppe='dispo'] .zeichen {
-  outline: 2px solid var(--daten-dispo);
+  background:
+    linear-gradient(90deg, var(--daten-dispo) 1px, transparent 1px) 0 0 / 4px 4px,
+    linear-gradient(var(--daten-dispo) 1px, var(--papier) 1px) 0 0 / 4px 4px;
+  outline: 1px solid var(--daten-dispo);
 }
 
 .liste li[data-gruppe='defekt'] {

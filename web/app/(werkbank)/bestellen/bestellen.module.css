@@ -116,4 +116,9 @@
     content: attr(data-titel);
     font-weight: 650;
   }
+
+  /* Noch keine Antwort: keine Zeile, die nur aus der Beschriftung besteht. */
+  .tabelle td:empty {
+    display: none;
+  }
 }
