@@ -26,3 +26,8 @@ engine/laeufe/
 # Lokale Mandanten und Schlüssel für die Entwicklung, nie ins Repo
 .lokal/
 .DS_Store
+
+# Playwright: gespeicherte Sitzungen und Berichte
+web/e2e/.auth/
+web/test-results/
+web/playwright-report/

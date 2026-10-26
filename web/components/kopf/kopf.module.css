@@ -1,0 +1,88 @@
+.kopf {
+  border-bottom: 1px solid var(--linie);
+  background: var(--papier);
+}
+
+.sprung {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  padding: 0.5rem 1rem;
+  background: var(--tinte);
+  color: var(--papier);
+  border-radius: var(--radius);
+}
+
+.sprung:focus {
+  top: 0.5rem;
+}
+
+.zeile {
+  max-width: var(--breite);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 2rem;
+}
+
+.marke {
+  font-size: 1.25rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.bereiche {
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bereiche a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+
+.konto {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1rem;
+}
+
+.apotheke {
+  font-weight: 650;
+}
+
+.email {
+  color: var(--tinte-leise);
+}
+
+.abmelden {
+  min-height: 2.75rem;
+  padding: 0.25rem 1rem;
+  border: 1px solid var(--linie-feld);
+  border-radius: var(--radius);
+  background: var(--papier);
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.abmelden:hover {
+  background: var(--flaeche);
+}
+
+@media (max-width: 40rem) {
+  .konto {
+    margin-left: 0;
+  }
+
+  .email {
+    flex-basis: 100%;
+  }
+}

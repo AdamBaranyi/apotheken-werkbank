@@ -11,12 +11,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:file-length": "node scripts/check-file-length.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p grosshandel-attrappe/tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p grosshandel-attrappe/tsconfig.json && cd web && ./node_modules/.bin/next typegen >/dev/null && ../node_modules/.bin/tsc --noEmit",
     "test": "vitest run",
     "test:db": "vitest run -c vitest.db.config.ts",
+    "test:e2e": "cd web && ./node_modules/.bin/next build && ./node_modules/.bin/playwright test",
     "sabotage": "node scripts/sabotage.mjs",
     "sabotage:db": "node scripts/sabotage.mjs db",
     "audit": "bash scripts/audit.sh high",
+    "einrichten": "node scripts/lokal-einrichten.ts",
     "grosshandel": "bun run --cwd grosshandel-attrappe dev"
   },
   "devDependencies": {
@@ -29,6 +31,7 @@
     "vitest": "5.0.5"
   },
   "workspaces": [
-    "grosshandel-attrappe"
+    "grosshandel-attrappe",
+    "web"
   ]
 }

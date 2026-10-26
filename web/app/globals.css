@@ -1,0 +1,118 @@
+/*
+ * Gestaltung «Tourenband»: ein ruhiges Werkzeug für die Apotheke. Farben nur
+ * als Datenfarben (Lieferart) und nie allein – jede Lieferart hat auch Wort
+ * und Muster. Schrift nie unter 16 px. Hell ist die Vorgabe.
+ */
+:root {
+  --papier: #ffffff;
+  --flaeche: #f1f4f5;
+  --linie: #c7d0d5;
+  --linie-feld: #6f7f89;
+  --tinte: #14212b;
+  --tinte-leise: #4a5964;
+  --daten-normal: #1d6b48;
+  --daten-verbund: #2554a0;
+  --daten-nachlieferung: #835600;
+  --daten-dispo: #56636f;
+  --daten-defekt: #b42318;
+  --fokus-innen: #ffffff;
+  --radius: 4px;
+  --breite: 72rem;
+  color-scheme: light;
+  accent-color: var(--tinte);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--tinte);
+  font-family: var(--schrift), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+  hyphens: auto;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 650;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+p {
+  margin: 0 0 1em;
+  max-width: 65ch;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--tinte);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--fokus-innen);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.unsichtbar {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ziffern {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}

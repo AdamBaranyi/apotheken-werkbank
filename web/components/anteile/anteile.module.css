@@ -1,0 +1,99 @@
+.anteile {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.balken {
+  display: flex;
+  height: 1rem;
+  border: 1px solid var(--tinte);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.segment {
+  flex-basis: 0;
+  border-left: 2px solid var(--papier);
+}
+
+.segment:first-child {
+  border-left: 0;
+}
+
+/* Muster je Art: voll, Streifen, Punkte, Raster, leer mit Kreuz. */
+.segment[data-gruppe='normal'] {
+  background: var(--daten-normal);
+}
+
+.segment[data-gruppe='verbund'] {
+  background: repeating-linear-gradient(135deg, var(--daten-verbund) 0 4px, var(--papier) 4px 7px);
+}
+
+.segment[data-gruppe='nachlieferung'] {
+  background: radial-gradient(var(--daten-nachlieferung) 1.5px, var(--papier) 1.6px) 0 0 / 6px 6px;
+}
+
+.segment[data-gruppe='dispo'] {
+  background:
+    linear-gradient(90deg, var(--daten-dispo) 1.5px, transparent 1.5px) 0 0 / 6px 6px,
+    linear-gradient(var(--daten-dispo) 1.5px, var(--papier) 1.5px) 0 0 / 6px 6px;
+}
+
+.segment[data-gruppe='defekt'] {
+  background:
+    repeating-linear-gradient(45deg, transparent 0 6px, var(--daten-defekt) 6px 7px),
+    repeating-linear-gradient(-45deg, transparent 0 6px, var(--daten-defekt) 6px 7px);
+}
+
+.liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.liste li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.zahl {
+  white-space: nowrap;
+}
+
+.zeichen {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 2px;
+  transform: translateY(0.1em);
+}
+
+.liste li[data-gruppe='normal'] .zeichen {
+  background: var(--daten-normal);
+}
+
+.liste li[data-gruppe='verbund'] .zeichen {
+  background: repeating-linear-gradient(135deg, var(--daten-verbund) 0 3px, var(--papier) 3px 5px);
+  outline: 1px solid var(--daten-verbund);
+}
+
+.liste li[data-gruppe='nachlieferung'] .zeichen {
+  background: radial-gradient(var(--daten-nachlieferung) 1.2px, var(--papier) 1.3px) 0 0 / 4px 4px;
+  outline: 1px solid var(--daten-nachlieferung);
+}
+
+.liste li[data-gruppe='dispo'] .zeichen {
+  outline: 2px solid var(--daten-dispo);
+}
+
+.liste li[data-gruppe='defekt'] {
+  color: var(--daten-defekt);
+}
+
+.liste li[data-gruppe='defekt'] .zeichen {
+  outline: 2px solid var(--daten-defekt);
+  background: linear-gradient(45deg, transparent 45%, var(--daten-defekt) 45% 55%, transparent 55%);
+}

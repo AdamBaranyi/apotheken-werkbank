@@ -63,6 +63,20 @@ export const SABOTAGEN = [
     tests: [`${A}/test/pzn.test.ts`],
   },
   {
+    name: 'Web-App ruft jede Grosshändler-Adresse auf (SSRF)',
+    datei: 'web/lib/msv3/client.ts',
+    suche: 'if (!umgebung().grosshandelErlaubt.includes(basisUrl)) {',
+    ersatz: 'if (false) {',
+    tests: ['web/lib/msv3/client.test.ts'],
+  },
+  {
+    name: 'SOAP-Fault wird nicht übersetzt',
+    datei: 'web/lib/msv3/client.ts',
+    suche: '  if (fault) {',
+    ersatz: '  if (false && fault) {',
+    tests: ['web/lib/msv3/client.test.ts'],
+  },
+  {
     name: 'Audit schluckt den Exit-Code',
     datei: 'scripts/audit.sh',
     suche: 'bun audit --audit-level="$stufe" ${ausnahmen[@]+"${ausnahmen[@]}"}',

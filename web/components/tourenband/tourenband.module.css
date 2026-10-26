@@ -1,0 +1,112 @@
+.band {
+  margin: 1.5rem 0 2.5rem;
+}
+
+.kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+
+.kopf h2 {
+  margin: 0;
+}
+
+.stand {
+  margin: 0;
+  color: var(--tinte-leise);
+}
+
+.liste {
+  display: flex;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  border: 2px solid var(--tinte);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.fenster {
+  position: relative;
+  flex-basis: 0;
+  min-width: 7.5rem;
+  display: grid;
+  align-content: start;
+  gap: 0.125rem;
+  padding: 0.75rem 1rem 1rem;
+  border-left: 1px solid var(--linie);
+}
+
+.fenster:first-child {
+  border-left: 0;
+}
+
+.fenster[data-stand='vorbei'] {
+  background: var(--flaeche);
+  color: var(--tinte-leise);
+}
+
+.fenster[data-stand='laeuft'] {
+  background: var(--papier);
+  box-shadow: inset 0 -6px 0 var(--tinte);
+}
+
+.tour {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.ende {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.zustand,
+.haupt {
+  color: inherit;
+}
+
+.fenster[data-stand='laeuft'] .zustand {
+  font-weight: 700;
+}
+
+.naechstes {
+  margin: 0.75rem 0 0;
+  font-weight: 650;
+}
+
+.jetzt {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--tinte);
+}
+
+@media (max-width: 40rem) {
+  .liste {
+    flex-direction: column;
+  }
+
+  .fenster {
+    border-left: 0;
+    border-top: 1px solid var(--linie);
+  }
+
+  .fenster:first-child {
+    border-top: 0;
+  }
+
+  .jetzt {
+    display: none;
+  }
+
+  .fenster[data-stand='laeuft'] {
+    box-shadow: inset 6px 0 0 var(--tinte);
+  }
+}

@@ -1,0 +1,5 @@
+.inhalt {
+  max-width: var(--breite);
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
