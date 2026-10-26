@@ -79,3 +79,25 @@ Lieferengpass-Radar fiele im Hobby-Tarif ohnehin auf einen täglichen Cron zurü
 ## E11 — Neuer Name der Engine
 
 _Offen, entschieden an Abend 3._
+
+## E12 — Eigener SOAP-Server, node-soap als Prüfer
+
+_26.10.2026._ Die Grosshandel-Attrappe nimmt SOAP selbst entgegen (Node, `fast-xml-parser`,
+Zod) statt über den Server des Pakets `soap`. Grund: Grösse, Anmeldung, Grenze je Mandant und
+das Abweisen jeder DTD laufen so nachweislich **vor** dem Parsen, in einer Reihenfolge, die im
+Code steht. `soap` bleibt im Projekt als generischer Client, der seine Aufrufe allein aus der WSDL
+erzeugt (`test/konformitaet.test.ts`); läuft er durch, passen WSDL und Server zusammen. Preis:
+etwas mehr eigener Code für Umschlag und Antworten.
+
+## E13 — Eine Artikeldatei für beide Hälften
+
+_26.10.2026._ `daten/artikel.json` liefert dem Grosshandel den Bestand und der Web-App die
+Artikel der Apotheke. Zwei Listen liefen sonst auseinander (andere PZN, andere Namen), und der
+Fehler fiele erst in der Oberfläche auf. Beim Laden prüft Zod jede PZN samt Prüfziffer.
+
+## E14 — Lager und Bestellbuch im Speicher
+
+_26.10.2026._ Die Attrappe hält Lager und Bestellungen im Speicher; ein Neustart setzt beides
+zurück. Für eine Übungsattrappe reicht das, und die Demo beginnt so immer mit demselben
+Bestand. Ein echter virtueller Grosshandel bräuchte eine Datenbank, damit der Bestellstatus
+sieben Tage lang abrufbar bleibt (Pflichtenheft Kap. 6.3); das steht als Grenze in der Fallstudie.

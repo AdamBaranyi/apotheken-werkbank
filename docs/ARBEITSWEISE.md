@@ -31,8 +31,10 @@ Test – oder über überflüssigen Code.
 
 Ergänzt an jedem Abend. Format: Vorschlag, Entscheid, Grund.
 
-| Datum      | Vorschlag                                              | Entscheid | Grund                                                          |
-| ---------- | ------------------------------------------------------ | --------- | -------------------------------------------------------------- |
-| 26.10.2026 | Engine «Kassenflow» nennen                             | verworfen | Name einer aktiven Kassen-App (E1)                             |
-| 26.10.2026 | Gesprächsvorbereitung als `docs/GESPRAECH.md` ins Repo | verworfen | öffentliches Repo, verrät den Anlass (E7)                      |
-| 26.10.2026 | Pester 6 statt 5                                       | verworfen | bekannte Schnittstelle zählt mehr als die neueste Fassung (E8) |
+| Datum      | Vorschlag                                              | Entscheid | Grund                                                                                                           |
+| ---------- | ------------------------------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------- |
+| 26.10.2026 | Engine «Kassenflow» nennen                             | verworfen | Name einer aktiven Kassen-App (E1)                                                                              |
+| 26.10.2026 | Gesprächsvorbereitung als `docs/GESPRAECH.md` ins Repo | verworfen | öffentliches Repo, verrät den Anlass (E7)                                                                       |
+| 26.10.2026 | Pester 6 statt 5                                       | verworfen | bekannte Schnittstelle zählt mehr als die neueste Fassung (E8)                                                  |
+| 26.10.2026 | SOAP-Server mit dem Paket `soap`                       | verworfen | Grenzen und Anmeldung sollen sichtbar vor dem Parsen laufen; `soap` prüft stattdessen als Client die WSDL (E12) |
+| 26.10.2026 | MSV3-Operationen aus dem Gedächtnis modellieren        | verworfen | Pflichtenheft 1.0h als öffentliche Quelle gefunden, Namen von dort (docs/MSV3.md)                               |

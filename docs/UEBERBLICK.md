@@ -121,3 +121,18 @@ Kassen-Attrappe an.
 ## Was das Bauen gelehrt hat
 
 Wird an jedem Bauabend ergänzt.
+
+### Abend 1, MSV3
+
+- MSV3 ist keine einzelne Schnittstelle, sondern **sieben kleine SOAP-Dienste je Grosshändler**,
+  jeder unter eigener Adresse. Ein Bestell-Tool für mehrere Apotheken spricht also mit vielen
+  Diensten, je mit eigenen Zugangsdaten und eigenen Bestellfenstern.
+- Die wichtigste Regel steckt in der Fehlerbehandlung: Meldet der Server einen Fehler, ist
+  nachweislich nichts passiert; bricht dagegen die Verbindung ab, weiss die Apotheke es nicht.
+  Darum trägt jede Bestellung eine eigene ID und es gibt `bestellstatusAbfragen` – ohne das
+  gäbe es Doppelbestellungen.
+- Eine Antwort ist selten «lieferbar» oder «nicht lieferbar»: Die Menge wird auf bis zu neun
+  Anteile verteilt (Hauptlager, zweites Lager, Nachlieferung durch den Hersteller …), gesteuert
+  durch die Liefervorgabe der Apotheke. Ein virtueller Grosshandel optimiert genau hier.
+- Die WSDL der Norm ist nicht öffentlich; die Namen der Attrappe sind eine Näherung. Ein echter
+  Grosshändler-Client liefe nicht ohne Anpassung.
