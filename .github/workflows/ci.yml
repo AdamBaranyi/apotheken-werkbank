@@ -64,3 +64,53 @@ jobs:
       # "moderate", blockiert aber nichts.
       - name: Bekannte Schwachstellen
         run: bash scripts/audit.sh high
+
+  web:
+    name: Datenbank, Grosshandel und Browser
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      # Node 24 führt die TypeScript-Dateien der Attrappe und des
+      # Einrichtungsskripts direkt aus.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - run: bun install --frozen-lockfile
+
+      # Nur Datenbank, Anmeldung und REST; was die Tests nicht brauchen, startet nicht.
+      - name: Supabase lokal starten
+        run: ./node_modules/.bin/supabase start -x realtime,storage-api,imgproxy,mailpit,studio,edge-runtime,logflare,vector,supavisor,postgres-meta
+
+      - name: Datenbankregeln in beiden Rollen
+        run: bun run test:db
+
+      - name: Sabotage an den Datenbankregeln
+        run: bun run sabotage:db
+
+      # Konten, Apotheken und Zugänge mit Passwörtern, die nur in diesem Lauf gelten.
+      - name: Testdaten einrichten
+        run: bun run einrichten
+
+      - name: Browser für die Tests
+        run: cd web && ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Build und Browser-Tests in drei Breiten
+        env:
+          CI: '1'
+        run: bun run test:e2e
+
+      - name: Bericht der Browser-Tests, falls etwas scheiterte
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-bericht
+          path: web/playwright-report
+          retention-days: 7
