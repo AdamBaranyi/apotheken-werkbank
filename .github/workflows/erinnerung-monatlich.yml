@@ -1,0 +1,56 @@
+name: Erinnerung monatlich
+
+# Für die Handgriffe, die niemand meldet, weil sie ausserhalb des Repositorys
+# passieren: Gratis-Projekte wach halten, Ausnahmen nachprüfen, liegengebliebene
+# Pull Requests mergen. Ohne diesen Lauf hängt die Wartung am Gedächtnis.
+#
+# tests/wartung.test.ts prüft, dass jeder hier genannte Pfad im Repo existiert.
+
+on:
+  schedule:
+    # Am Ersten jedes Monats, 07:05 UTC.
+    - cron: '5 7 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  erinnern:
+    name: Wartungsliste öffnen
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Issue anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          monat=$(date +'%m.%Y')
+
+          gh label create wartung --repo "$REPO" --color 0E8A16 \
+            --description "Wiederkehrende Wartung" 2>/dev/null || true
+
+          gh issue create --repo "$REPO" \
+            --title "Monatliche Wartung $monat" \
+            --label wartung \
+            --assignee AdamBaranyi \
+            --body "$(cat <<'EOF'
+          Rund 10 Minuten. Der Reihe nach:
+
+          - [ ] **Offene Pull Requests**: grüne mergen. Das hält nebenbei die geplanten
+                Läufe am Leben – GitHub schaltet sie in öffentlichen Repositories nach
+                60 Tagen ohne Aktivität ab.
+          - [ ] **Supabase**: Projekt im Dashboard aktiv? Gratis-Projekte schlafen nach
+                sieben Tagen ohne Aufruf ein; die Demo wäre dann tot.
+          - [ ] **Vercel**: Nutzung im Rahmen des Hobby-Tarifs (Usage im Dashboard).
+          - [ ] **Ausnahmen nachprüfen**: jede Ausnahme in `scripts/audit.sh` und
+                `docs/SECURITY.md`, deren «prüfen bis» in diesem Monat liegt: Gibt es ein
+                Update, ist der Befund weg? Sonst neu bewerten und höchstens einen Monat
+                verlängern. Dazu das Issue «Sicherheitsmeldungen» ansehen.
+
+          Erledigt? Issue schliessen. Am Ersten des nächsten Monats kommt das nächste.
+          EOF
+          )"

@@ -1,0 +1,8 @@
+bun.lock
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+supabase/migrations/
+engine/laeufe/

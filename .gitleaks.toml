@@ -1,0 +1,10 @@
+# Die eingebauten Regeln von gitleaks gelten weiter. Eng ausgenommen ist nur
+# der öffentliche Schlüssel von Supabase (sb_publishable_…): Er steht absichtlich
+# im Browser-Code, gitleaks meldet ihn trotzdem als generic-api-key. Ein
+# geheimer Schlüssel (sb_secret_…) wird weiter gefunden.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Öffentlicher Supabase-Schlüssel, für den Browser bestimmt"
+regexes = ['''^sb_publishable_[A-Za-z0-9_-]+$''']

@@ -1,0 +1,24 @@
+Copyright (c) 2026 Adam Baranyi. Alle Rechte vorbehalten.
+
+Der Quelltext dieses Repositorys ist öffentlich, damit er gelesen und beurteilt
+werden kann. Das ist keine Lizenz: Nutzung, Veränderung und Weitergabe, ganz
+oder in Teilen, sind ohne schriftliche Erlaubnis nicht gestattet.
+
+Bestandteile Dritter stehen unter ihren eigenen Lizenzen, insbesondere die
+Abhängigkeiten aus package.json und bun.lock (überwiegend MIT, Apache-2.0, ISC
+und BSD) sowie die PowerShell-Module Pester und PSScriptAnalyzer (Apache-2.0
+beziehungsweise MIT), die nicht im Repository liegen.
+
+Alle Artikel, Apotheken, Rezeptdaten und Grosshändler in diesem Repository sind
+erfunden. Kasse und Grosshandel sind Attrappen; Ähnlichkeiten mit echten
+Produkten beschränken sich auf öffentlich beschriebene Schnittstellen.
+
+---
+
+Copyright (c) 2026 Adam Baranyi. All rights reserved.
+
+The source code in this repository is public so that it can be read and
+assessed. This is not a licence: use, modification and distribution, in whole
+or in part, require written permission. Third-party components remain under
+their own licences. All articles, pharmacies, prescription data and
+wholesalers in this repository are fictional.

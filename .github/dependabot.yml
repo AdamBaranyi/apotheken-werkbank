@@ -1,0 +1,62 @@
+# Updates laufen von selbst und melden sich. Drei Regeln gelten überall:
+#
+# 1. Keine Vorabversionen. Dependabot schlägt Beta, RC und Canary nur vor,
+#    wenn die eingesetzte Fassung schon eine ist – hier ist das nirgends so.
+# 2. Wartezeit (cooldown): sieben Tage nach der Veröffentlichung. Schützt vor
+#    kaputten und gekaperten Neuversionen. Gilt nie für Security-Updates.
+# 3. "Funktioniert" heisst grün. Jeder dieser Pull Requests löst den vollen
+#    CI-Lauf aus. Gemergt wird nur, was grün ist.
+#
+# Keine Zuweisung: Ein zugewiesener Pull Request mailt jede Woche. Die Pull
+# Requests stehen im Reiter «Pull requests»; echte Funde meldet allein das
+# Issue «Sicherheitsmeldungen» des täglichen Laufs.
+
+version: 2
+
+updates:
+  # Ein Lockfile im Wurzelverzeichnis für alle Workspaces. Grenze: GitHub liest
+  # bun.lock nicht für Sicherheitswarnungen. Den Alarm liefert der tägliche
+  # Lauf über scripts/audit.sh.
+  - package-ecosystem: bun
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Zurich
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Minor und Patch als ein Sammel-PR; Major-Sprünge kommen einzeln.
+      alltag:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Die Typen von Node folgen der Laufzeit (Node 24), nicht dem Neusten.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # TypeScript 7 (in Go neu gebaut) ist kein gewöhnliches Update; der
+      # Sprung wird bewusst entschieden, nicht wöchentlich angeboten.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+
+  # Eine veraltete Action ist fremde Codeausführung in der CI. Die Actions
+  # sind an Commits geheftet; Dependabot hebt Kennung und Kommentar zusammen.
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: monthly
+      time: '06:00'
+      timezone: Europe/Zurich
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: ci

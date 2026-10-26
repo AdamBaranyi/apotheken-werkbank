@@ -1,0 +1,26 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+
+# Von Next erzeugt, gehört nicht ins Repository
+next-env.d.ts
+*.tsbuildinfo
+test-results/
+playwright-report/
+.vercel/
+
+# Geheimnisse nur in Vercel, Supabase und GitHub-Secrets
+.env
+.env.*
+!.env.example
+
+# Supabase-CLI: lokale Zwischenstände
+supabase/.branches/
+supabase/.temp/
+
+# Engine: Läufe, Bildschirmfotos und Berichte entstehen lokal und in der CI
+engine/laeufe/
+*.local
+.DS_Store

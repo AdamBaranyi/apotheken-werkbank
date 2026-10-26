@@ -1,0 +1,72 @@
+name: Erinnerung wöchentlich
+
+# Ein liegengebliebener Update-PR meldet sich nie wieder von selbst. Dieser
+# Lauf fasst nach – aber nur, wenn wirklich etwas offen ist. Eine Erinnerung,
+# die jede Woche kommt, auch wenn nichts zu tun ist, wird weggewischt.
+
+on:
+  schedule:
+    # Montags 07:00 UTC, kurz nachdem Dependabot um 06:00 Zürich gelaufen ist.
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  erinnern:
+    name: Offene Update-PRs melden
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Nachsehen und melden
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # PR-Titel kann im öffentlichen Repo jeder setzen. Sie kommen nur als
+          # Shell-Variable in den Text, nie als Ausdruck der Workflow-Syntax:
+          # Die Shell wertet den Inhalt einer Variablen nicht noch einmal aus.
+          offen=$(gh pr list --repo "$REPO" --state open \
+            --json number,title,createdAt \
+            --jq '.[] | "- #\(.number) \(.title) (offen seit \(.createdAt[:10]))"')
+
+          if [ -z "$offen" ]; then
+            echo "Keine offenen Pull Requests. Keine Erinnerung nötig."
+            exit 0
+          fi
+
+          # Steht schon eine offene Erinnerung, kommt keine zweite dazu. Ohne
+          # --label und --search lesen: beide fragen den nachhinkenden Suchindex.
+          vorhanden=$(gh issue list --repo "$REPO" --state open --limit 200 \
+            --json number,title,author \
+            --jq '[.[] | select(.title == "Update-PRs warten" and .author.login == "app/github-actions")][0].number // empty')
+
+          if [ -n "$vorhanden" ]; then
+            echo "Erinnerung #$vorhanden ist noch offen, kein neues Issue."
+            exit 0
+          fi
+
+          gh label create wartung --repo "$REPO" --color 0E8A16 \
+            --description "Wiederkehrende Wartung" 2>/dev/null || true
+
+          gh issue create --repo "$REPO" \
+            --title "Update-PRs warten" \
+            --label wartung \
+            --assignee AdamBaranyi \
+            --body "$(cat <<EOF
+          Diese Pull Requests sind offen:
+
+          $offen
+
+          **Grün heisst mergen, rot heisst anschauen.** Ein roter Update-PR ist keine
+          Störung, sondern der Fund: Die Tests sagen, dass dieses Update so nicht
+          funktioniert.
+
+          Dieses Issue schliesst sich nicht von selbst – schliess es, wenn du durch bist.
+          Solange es offen steht, kommt keine zweite Erinnerung.
+          EOF
+          )"
