@@ -1,0 +1,123 @@
+# Überblick: Automatisierung der Vor-Ort-Apotheke
+
+Dieses Repo ist ein Übungs- und Portfolio-Projekt. Es baut drei Arbeitsfelder nach, in denen
+Software heute deutschen Vor-Ort-Apotheken Handarbeit abnimmt, und lernt dabei deren Eigenheiten
+kennen. Kein Produkt, kein Kunde, keine echten Daten: Kasse und Grosshandel sind Attrappen, alle
+Artikel sind erfunden und als erfunden gekennzeichnet.
+
+Die Datei wächst mit: Jeder Bauabend ergänzt unten, was das Bauen gelehrt hat.
+
+## Die Lage
+
+- **Wer:** inhabergeführte Apotheken in Deutschland, oft als Verbund aus einer Hauptapotheke und
+  bis zu drei Filialen. Verkauft wird in der Offizin, dem Verkaufsraum, am HV-Tisch
+  (Handverkauf).
+- **Womit:** Ein Warenwirtschafts- und Kassensystem auf Windows-Arbeitsplätzen ist das Zentrum.
+  Daran hängen der Grosshandel (Bestellung über MSV3), das E-Rezept über die
+  Telematikinfrastruktur, oft ein Kommissionierautomat und das Kartenterminal.
+- **Das Problem:** Viele Abläufe laufen noch von Hand, weil zwischen den Systemen Schnittstellen
+  fehlen, teuer sind oder nur einen Teil der Aufgabe abdecken. Wer automatisieren will, muss
+  entweder eine Schnittstelle nutzen, die es gibt, oder die Oberfläche bedienen wie ein Mensch.
+- **Die Regeln:** Apotheken verarbeiten Gesundheitsdaten (besondere Kategorie nach Art. 9
+  DSGVO), echte Rezepte und echte Bestellungen. Fehler kosten Geld oder gefährden Patienten.
+  Darum gilt: lieber abbrechen und melden als raten.
+
+## Drei Arbeitsfelder und was dieses Repo davon nachbaut
+
+### 1. Kasse ohne Schnittstelle bedienen (Computer-Use)
+
+Eine Engine bedient die Kassensoftware nur über den Bildschirm: Bildschirmfoto, Text und Lage
+per OCR lesen, Maus und Tastatur steuern, das Ergebnis wieder per OCR prüfen. Ein **Flow** ist
+dabei ein Arbeitsablauf an der Kasse (Verkauf buchen, Tagesabschluss), beschrieben als Datei.
+Jede Apotheke hat eigene Fenstertitel, Feldnamen und Layouts; einen Flow für eine neue Apotheke
+**ausrollen** heisst, ihn mit deren Parametern anzulegen, zu prüfen und freizugeben. **Stabil
+halten** heisst: auf Bildschirmzustände warten statt fest zu schlafen, nach jedem Schritt prüfen,
+nie doppelt buchen, jeden Fehlschlag mit Bildschirmfoto und Laufbericht melden.
+
+Der Unterschied zu klassischer Robotersteuerung (RPA): Findet die Engine den erwarteten Zustand
+nicht, schlägt ein Modell mit Bildverständnis genau eine Aktion aus einer festen Liste vor
+(«Selbstheilung»), und die Engine führt nur Erlaubtes aus. Bei einer echten Kasse zeigt jedes
+Bildschirmfoto Gesundheitsdaten; ein solches Modell darf dort nur laufen, wo die Daten bleiben
+dürfen (lokal oder mit Vertrag und Schwärzung). Dieses Repo schickt nur Bildschirmfotos der
+Attrappe mit erfundenen Daten an ein Modell.
+
+**Hier nachgebaut:** `engine/` (PowerShell 7, Treiber für Windows und für Tests),
+`attrappe/` (Kassen-Attrappe als WinForms-Fenster in zwei Layouts = zwei Apotheken), `flows/`
+(Flows je Apotheke), Windows-Läufe in der CI mit echtem Bildschirmfoto, OCR und Eingabe, dazu der
+Flow-Monitor in der Web-App.
+
+### 2. Nicht vorrätige Artikel beim Grosshandel bestellen (MSV3)
+
+Fehlt ein Artikel im Lager (in der Apotheke heisst er dann «Defekt»), fragt die Apotheke beim
+Grosshandel die Verfügbarkeit ab und bestellt. Die Schnittstelle dafür ist MSV3, eine
+SOAP-Schnittstelle des deutschen pharmazeutischen Grosshandels. Ein Bestell-Tool, das mehrere
+Apotheken und Standorte bedient, ist mandantenfähig: Jede Apotheke hat eigene Zugänge je
+Grosshändler. Die nächste Stufe ist ein **virtueller Grosshandel**: ein eigener MSV3-Dienst, an
+den die Apotheken bestellen und der die Bestellung an echte Grosshändler weitergibt, nach Preis,
+Verfügbarkeit und Lieferzeit.
+
+**Hier nachgebaut:** `grosshandel-attrappe/` als MSV3-Dienst mit eigener WSDL, Lager je Artikel,
+Teillieferung, Ablehnungsgründen und mehreren Mandanten (also die Server-Seite), und in `web/`
+das Bestell-Tool als Client (Artikel, Verfügbarkeit, Warenkorb, Bestellung, Status). Operationen,
+Versionen und Fehlercodes stehen mit Quellen in `docs/MSV3.md`.
+
+### 3. Cannabis-Versorgung über die Apotheke
+
+Seit dem 1. April 2024 ist Medizinalcannabis in Deutschland kein Betäubungsmittel mehr. Rezepte
+kommen oft von Telemedizin-Anbietern; Apotheken brauchen dafür Webshop, Warenwirtschaft,
+Anbindung der Telemediziner, Prüf- und Herstellungsprotokolle mit qualifizierter elektronischer
+Signatur (QES) und Controlling. Die Regeln sind in Bewegung: Der Gesetzentwurf BT-Drs. 21/3061
+will Blüten nur noch nach persönlichem Arztkontakt verschreiben lassen und den Versand von Blüten
+verbieten; im Januar 2026 war die Anhörung, im August 2026 lief die Beratung laut Lobbyregister
+noch. Ein Versandverbot stärkt die Vor-Ort-Apotheke.
+
+**Hier nachgebaut:** bewusst nicht als eigener Teil, weil echte Rezeptdaten und Signaturen kein
+Übungsmaterial sind. Der Prototyp «Rezeptdatensatz → Kasse» berührt die Nahtstelle: Ein
+erfundener Rezeptdatensatz aus einer Telemedizin-Attrappe legt über die Engine den Verkauf in der
+Kassen-Attrappe an.
+
+### Dazu: Kassentool und schnelle Prototypen
+
+- **Kassentool** in `web/`: Verkauf mit Kennzeichen rezeptpflichtig oder frei, Mehrwertsteuer aus
+  der Konfiguration (Vorgabe Deutschland), Zahlung bar oder Karte als Buchung ohne
+  Zahlungsanbieter, Beleg als PDF, Tagesabschluss. Dazu Anmeldung, Rechte je Apotheke in der
+  Datenbank, Sicherheits-Kopfzeilen und Grenzen gegen Missbrauch.
+- **Prototypen** in `prototypen/` nach `docs/PROTOTYP-REZEPT.md`: zwei Stunden von der Frage bis
+  zum Entscheid. Ein **Paket** ist hier ein Leistungsbündel für eine Apotheke: welche Teile,
+  wie viele Standorte, welche Flows. Neue Paketideen werden als Prototyp geprüft, bevor jemand
+  sie baut.
+
+## Begriffe
+
+| Begriff  | Bedeutung                                                                                          |
+| -------- | -------------------------------------------------------------------------------------------------- |
+| Offizin  | Verkaufsraum der Apotheke                                                                          |
+| HV-Tisch | Handverkaufstisch, der Platz an der Kasse                                                          |
+| Defekt   | Artikel, der gerade nicht am Lager ist und bestellt werden muss                                    |
+| PZN      | Pharmazentralnummer, acht Stellen, die letzte ist eine Prüfziffer; Hauptkennzeichen eines Artikels |
+| GTIN     | weltweite Artikelnummer (Strichcode), steht neben der PZN                                          |
+| Rx / OTC | rezeptpflichtig / frei verkäuflich                                                                 |
+| MSV3     | SOAP-Schnittstelle zwischen Apotheke und pharmazeutischem Grosshandel                              |
+| E-Rezept | elektronisches Rezept über die Telematikinfrastruktur, für Kassenpatienten seit 2024 Pflicht       |
+| QES      | qualifizierte elektronische Signatur, rechtlich der Unterschrift gleichgestellt                    |
+| Flow     | Arbeitsablauf an der Kasse als Datei, je Apotheke parametriert                                     |
+
+## Rahmen des Trainings
+
+- **Markt Deutschland:** PZN, deutsche Mehrwertsteuer, Beträge in Euro im deutschen Format.
+- **Web-App auf Vercel (Hobby):** Funktionen laufen in genau einer Region, hier Frankfurt
+  (`fra1`; ohne Einstellung wäre es Washington, `iad1`). Cron-Aufträge nur einmal täglich, mit
+  bis zu 59 Minuten Spielraum. Im Monat inbegriffen: 1 Million Funktionsaufrufe, 4 Stunden
+  Rechenzeit, 100 GB Transfer. Nur für nicht kommerzielle, persönliche Nutzung; dieses Repo ist
+  genau das. Stand 26.10.2026, Vercel-Dokumentation.
+- **Datenbank Supabase (Gratis):** Region Frankfurt, nahe bei den Funktionen. Gratis-Projekte
+  schlafen nach sieben Tagen ohne Aufruf ein.
+- **Grosshandel-Attrappe auf einem eigenen Server:** Ein SOAP-Dienst braucht einen Dauerprozess,
+  den Vercel-Funktionen nicht bieten. So reden Bestell-Tool und Grosshandel über das Netz wie in
+  der Wirklichkeit.
+- **Windows nur in der CI:** Die Engine läuft echt auf Windows-Läufern von GitHub Actions
+  (kostenlos für öffentliche Repos); auf dem Mac laufen ihre Tests gegen einen Test-Treiber.
+
+## Was das Bauen gelehrt hat
+
+Wird an jedem Bauabend ergänzt.
