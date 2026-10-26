@@ -134,3 +134,27 @@ nur in der Umgebung des Servers.
 _26.10.2026._ In der CI laufen die Playwright-Tests gegen `next start`, nicht gegen den
 Entwicklungsserver: Nur so stimmen CSP, Kopfzeilen und Verhalten mit dem Deploy überein. Drei
 Breiten (320, 768, 1440 px), auf jedem Bildschirm axe, Schriftgrösse und Querscrollen.
+
+## E19 — Vorschau mit eigenem Schlüssel
+
+_26.10.2026._ Vercel baut für jeden Pull Request eine Vorschau, auch für Updates von
+Dependabot, also für Code, den noch niemand geprüft hat. Die Vorschau bekommt darum einen
+eigenen `ZUGANG_SCHLUESSEL`, einen Zufallswert, der nirgends gespeichert ist. Gelangt eine
+Vorschau an ihre Umgebung, kann sie die Zugänge der Produktion trotzdem nicht entschlüsseln;
+«Bestellen» zeigt dort die Meldung «Die gespeicherten Zugangsdaten lassen sich nicht lesen».
+Geprüft wird das Bestellen vor dem Merge in der CI, nicht in der Vorschau.
+
+## E20 — Attrappe ohne veröffentlichten Port
+
+_26.10.2026._ Auf vps1 hängt die Attrappe nur im Netz des gemeinsamen Caddy, unter dem Namen
+`werkbank-grosshandel`. Kein Port auf dem Server: Docker umgeht ufw bei veröffentlichten Ports,
+ohne Port gibt es nichts zu umgehen. Dazu läuft der Container nur lesbar, ohne Linux-Rechte und
+als Benutzer `node`.
+
+## E21 — Produktionszugänge ohne Klartext
+
+_26.10.2026._ `scripts/produktion-zugaenge.ts` erzeugt je Apotheke ein Passwort für die
+Attrappe und schreibt es nur zweifach verwandelt weg: als scrypt-Hash für vps1 und als
+Geheimtext für Supabase. Der Klartext existiert nur während des Laufs. Die Konten der
+Demo-Apotheken legt Adam selbst in Supabase an, mit Passwörtern aus seinem Passwortmanager;
+die SQL verknüpft sie nur und bricht ab, solange sie fehlen.

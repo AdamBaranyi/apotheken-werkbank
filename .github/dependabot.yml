@@ -60,3 +60,19 @@ updates:
     open-pull-requests-limit: 3
     commit-message:
       prefix: ci
+
+  # Basis-Abbilder der Grosshandel-Attrappe (node, bun). Auf vps1 baut
+  # infra/deploy.sh ohnehin mit --pull; hier kommen neue Fassungen der Tags.
+  # Node bleibt auf der LTS-Linie 24: keine Major-Sprünge.
+  - package-ecosystem: docker
+    directory: '/grosshandel-attrappe'
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      - dependency-name: node
+        update-types: ['version-update:semver-major']

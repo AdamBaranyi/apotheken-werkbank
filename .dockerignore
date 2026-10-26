@@ -1,0 +1,11 @@
+# Build-Kontext als Freigabeliste: nur, was das Abbild der Grosshandel-Attrappe
+# braucht. Vor allem nie .lokal/ (lokale Schlüssel und Mandanten) und keine
+# .env-Dateien.
+*
+!package.json
+!bun.lock
+!bunfig.toml
+!web/package.json
+!grosshandel-attrappe/package.json
+!grosshandel-attrappe/src
+!daten

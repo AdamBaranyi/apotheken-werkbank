@@ -14,6 +14,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import pg from 'pg';
 import { passwortHashen } from '../grosshandel-attrappe/src/anmeldung.ts';
 import { verschluesseln } from '../web/lib/verschluesselung.ts';
+import { DEMO_APOTHEKEN, passwortErzeugen } from './demo-apotheken.ts';
 
 const ORDNER = '.lokal';
 const ATTRAPPE = 'http://127.0.0.1:3501/msv3';
@@ -33,12 +34,6 @@ function status(): Status {
   if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(s.API_URL))
     throw new Error('Nur gegen eine lokale Supabase.');
   return s;
-}
-
-function geheim(): string {
-  return randomBytes(18)
-    .toString('base64')
-    .replace(/[^A-Za-z0-9]/g, 'k');
 }
 
 function schluessel(): string {
@@ -63,25 +58,6 @@ async function kontoAnlegen(s: Status, email: string, passwort: string): Promise
   return ((await antwort.json()) as { id: string }).id;
 }
 
-const APOTHEKEN = [
-  {
-    name: 'Apotheke am Nordtor (erfunden)',
-    email: 'inhaber.nord@werkbank.test',
-    rolle: 'inhaber',
-    kennung: 'nord1001',
-    vertrag: 'standard',
-    btm: true,
-  },
-  {
-    name: 'Süd-Apotheke Musterstadt (erfunden)',
-    email: 'mitarbeit.sued@werkbank.test',
-    rolle: 'mitarbeiter',
-    kennung: 'sued2002',
-    vertrag: 'spaet',
-    btm: false,
-  },
-] as const;
-
 async function main() {
   mkdirSync(ORDNER, { recursive: true, mode: 0o700 });
   const s = status();
@@ -93,8 +69,8 @@ async function main() {
 
   const mandanten = [];
   const konten = [];
-  for (const a of APOTHEKEN) {
-    const ghPasswort = geheim();
+  for (const a of DEMO_APOTHEKEN) {
+    const ghPasswort = passwortErzeugen();
     mandanten.push({
       kundenkennung: a.kennung,
       name: a.name,
@@ -102,7 +78,7 @@ async function main() {
       btmErlaubnis: a.btm,
       vertrag: a.vertrag,
     });
-    const kontoPasswort = geheim();
+    const kontoPasswort = passwortErzeugen();
     const userId = await kontoAnlegen(s, a.email, kontoPasswort);
     konten.push({ email: a.email, passwort: kontoPasswort, apotheke: a.name, rolle: a.rolle });
     const { rows } = await db.query<{ id: string }>(

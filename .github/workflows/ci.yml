@@ -114,3 +114,17 @@ jobs:
           name: playwright-bericht
           path: web/playwright-report
           retention-days: 7
+
+  # Das Abbild für vps1 bei jedem Pull Request bauen und starten, wie es dort
+  # läuft (nur lesbar, ohne Rechte). Sonst fiele ein kaputtes Update der
+  # Basis-Abbilder erst beim Ausrollen auf.
+  abbild:
+    name: Abbild der Grosshandel-Attrappe
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Bauen, starten, anfragen
+        run: bash infra/abbild-pruefen.sh

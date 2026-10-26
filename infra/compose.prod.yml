@@ -1,0 +1,49 @@
+# Grosshandel-Attrappe auf vps1 (infra/deploy.sh startet sie).
+#
+# Kein veröffentlichter Port: Erreichbar ist der Dienst nur über das Netz des
+# gemeinsamen Caddy (im Compose von Tallyroom), unter dem Namen
+# werkbank-grosshandel. Docker umgeht ufw bei veröffentlichten Ports; ohne
+# Port gibt es nichts zu umgehen.
+name: werkbank-grosshandel
+
+services:
+  attrappe:
+    image: werkbank-grosshandel:${WERKBANK_VERSION:-lokal}
+    restart: unless-stopped
+    environment:
+      MANDANTEN_DATEI: /run/werkbank/mandanten.json
+      # Wartungsfenster wie bei echten Grosshändlern (MSV3, Kap. 2.2.7).
+      NACHTBETRIEB: ${NACHTBETRIEB:-02:00-03:00}
+      # Caddy setzt X-Forwarded-For selbst und übernimmt keinen Wert von
+      # aussen; die Sperre nach Fehlversuchen zählt so je Absender.
+      PROXY_VERTRAUEN: '1'
+    volumes:
+      - ${WERKBANK_MANDANTEN:-/etc/apotheken-werkbank/mandanten.json}:/run/werkbank/mandanten.json:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 256m
+    pids_limit: 100
+    networks:
+      proxy:
+        aliases:
+          - werkbank-grosshandel
+    # Node 24 bringt fetch mit; curl fehlt im Abbild.
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3501/gesundheit').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# Das Netz des gemeinsamen Caddy. Zieht der Proxy um, genügt PROXY_NETZ.
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETZ:-tallyroom-prod_default}

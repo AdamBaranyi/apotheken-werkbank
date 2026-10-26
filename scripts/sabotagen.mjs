@@ -98,6 +98,20 @@ export const SABOTAGEN = [
     tests: ['web/lib/herkunft.test.ts'],
   },
   {
+    name: 'Deploy baut ohne frische Basis-Abbilder',
+    datei: 'infra/deploy.sh',
+    suche: 'docker build --pull -f',
+    ersatz: 'docker build -f',
+    tests: ['tests/deploy-skript.test.ts'],
+  },
+  {
+    name: 'Deploy läuft ohne Mandanten weiter',
+    datei: 'infra/deploy.sh',
+    suche: 'if [ ! -f "$WERKBANK_MANDANTEN" ]; then',
+    ersatz: 'if false; then',
+    tests: ['tests/deploy-skript.test.ts'],
+  },
+  {
     name: 'Audit schluckt den Exit-Code',
     datei: 'scripts/audit.sh',
     suche: 'bun audit --audit-level="$stufe" ${ausnahmen[@]+"${ausnahmen[@]}"}',

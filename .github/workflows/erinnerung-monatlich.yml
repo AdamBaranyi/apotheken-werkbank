@@ -46,6 +46,10 @@ jobs:
           - [ ] **Supabase**: Projekt im Dashboard aktiv? Gratis-Projekte schlafen nach
                 sieben Tagen ohne Aufruf ein; die Demo wäre dann tot.
           - [ ] **Vercel**: Nutzung im Rahmen des Hobby-Tarifs (Usage im Dashboard).
+          - [ ] **vps1**: `sudo /opt/apotheken-werkbank/infra/deploy.sh` baut die
+                Grosshandel-Attrappe mit frischen Basis-Abbildern neu (`infra/deploy.sh`,
+                Ablauf in `docs/BETRIEB.md`). Danach muss
+                https://grosshandel.adambaranyi.xyz/gesundheit «ok» antworten.
           - [ ] **Ausnahmen nachprüfen**: jede Ausnahme in `scripts/audit.sh` und
                 `docs/SECURITY.md`, deren «prüfen bis» in diesem Monat liegt: Gibt es ein
                 Update, ist der Befund weg? Sonst neu bewerten und höchstens einen Monat

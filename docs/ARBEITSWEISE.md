@@ -42,3 +42,5 @@ Ergänzt an jedem Abend. Format: Vorschlag, Entscheid, Grund.
 | 26.10.2026 | Verschlüsselung im Einrichtungsskript als eigene Kopie         | verworfen | im Review: zwei Kopien laufen auseinander; das Skript nutzt jetzt die Funktion der App                          |
 | 26.10.2026 | AES-GCM ohne `authTagLength`                                   | verworfen | im Review: Node 24 nahm einen auf 4 Byte gekürzten Prüfwert an; Test und Sabotage ergänzt                       |
 | 26.10.2026 | SSRF-Test nur gegen 169.254.169.254                            | ergänzt   | unter Sabotage fiele er nur durch Zeitüberschreitung auf; zuerst eine erreichbare, nicht freigegebene Adresse   |
+| 26.10.2026 | Vorschau-Deploys mit dem Schlüssel der Produktion              | verworfen | ungeprüfter Code in Vorschauen; eigener Zufallsschlüssel (E19)                                                  |
+| 26.10.2026 | Demo-Konten per SQL direkt in `auth.users` anlegen             | verworfen | Passwörter gehören in Adams Passwortmanager, nicht in den Verlauf einer KI (E21)                                |

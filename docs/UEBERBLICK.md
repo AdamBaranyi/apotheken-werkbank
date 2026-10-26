@@ -149,3 +149,7 @@ Wird an jedem Bauabend ergänzt.
 - Zwei Messungen widersprachen der Erwartung: Supabase schaltet mit `[auth.email]
 enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
   `authTagLength` einen auf 4 Byte gekürzten Prüfwert an.
+- Beim ersten Deploy auf Vercel: Die CLI lädt ohne `.vercelignore` alles hoch, auch was Git
+  ignoriert, und `vercel link` legte ungefragt eine `.env.local` mit einem Token an und
+  ergänzte `.gitignore`. Gebaut wird in Washington (`iad1`), die Funktionen laufen trotzdem in
+  Frankfurt (`fra1`); das zeigt die Kopfzeile `x-vercel-id`.

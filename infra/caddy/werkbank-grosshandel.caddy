@@ -1,0 +1,29 @@
+# Vorlage für den gemeinsamen Caddy auf vps1 (infra/Caddyfile von Tallyroom).
+# Die Adresse kommt dort aus WERKBANK_GROSSHANDEL_SITE_ADDRESS; ohne Wert gilt
+# ein lokaler Name, damit Caddy in der Entwicklung kein Zertifikat holt.
+{$WERKBANK_GROSSHANDEL_SITE_ADDRESS:werkbank-grosshandel.localhost} {
+	encode zstd gzip
+
+	# Zweite Schranke vor der Attrappe: MSV3 erlaubt höchstens 200 000 Byte je
+	# Anfrage (Pflichtenheft Kap. 2.2.4); die Attrappe prüft das selbst.
+	request_body {
+		max_size 256KB
+	}
+
+	reverse_proxy werkbank-grosshandel:3501
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+		-Via
+		defer
+	}
+
+	log {
+		output file /var/log/caddy/werkbank-grosshandel.log {
+			roll_size 10MiB
+			roll_keep 5
+			roll_keep_for 336h
+		}
+	}
+}
