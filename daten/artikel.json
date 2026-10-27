@@ -1,12 +1,12 @@
 {
-  "hinweis": "Alle Artikel sind erfunden. Die PZN haben eine gültige Prüfziffer; eine Übereinstimmung mit echten Nummern wäre Zufall. Preise in Cent, Mehrwertsteuer als Kategorie (Sätze in der Konfiguration der Kasse).",
+  "hinweis": "Alle Artikel sind erfunden. Die PZN haben eine gültige Prüfziffer; eine Übereinstimmung mit echten Nummern wäre Zufall. Preise in Cent, Steuergruppe statt Steuersatz: Welcher Satz gilt, hängt am Land (Tabelle steuersaetze).",
   "artikel": [
     {
       "pzn": "99100008",
       "name": "Probatin 400 mg Filmtabletten",
       "packung": "20 St.",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 395,
       "grosshandel": {
         "bestand": 120,
@@ -21,7 +21,7 @@
       "name": "Probatin 400 mg Filmtabletten",
       "packung": "50 St.",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 795,
       "grosshandel": {
         "bestand": 3,
@@ -36,7 +36,7 @@
       "name": "Demoxan Nasenspray",
       "packung": "10 ml",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 549,
       "grosshandel": {
         "bestand": 0,
@@ -51,7 +51,7 @@
       "name": "Fictolat Saft",
       "packung": "100 ml",
       "rezeptpflichtig": true,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 1290,
       "grosshandel": {
         "bestand": 0,
@@ -66,7 +66,7 @@
       "name": "Lehrsalbe",
       "packung": "50 g",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 875,
       "grosshandel": {
         "bestand": 0,
@@ -81,7 +81,7 @@
       "name": "Musterzin Augentropfen",
       "packung": "10 ml",
       "rezeptpflichtig": true,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 1645,
       "grosshandel": {
         "bestand": 12,
@@ -97,7 +97,7 @@
       "name": "Erfundol 5 mg Tabletten",
       "packung": "100 St.",
       "rezeptpflichtig": true,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 4320,
       "grosshandel": {
         "bestand": 30,
@@ -112,7 +112,7 @@
       "name": "Kaltprobe Injektionslösung",
       "packung": "5 Fertigspritzen",
       "rezeptpflichtig": true,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 18990,
       "grosshandel": {
         "bestand": 6,
@@ -128,7 +128,7 @@
       "name": "Seltenol Kapseln",
       "packung": "30 St.",
       "rezeptpflichtig": true,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 6250,
       "grosshandel": {
         "bestand": 0,
@@ -143,7 +143,7 @@
       "name": "Direktan Pflaster",
       "packung": "10 St.",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "sonstiges",
       "preisCent": 1199,
       "grosshandel": {
         "bestand": 0,
@@ -159,7 +159,7 @@
       "name": "Vitaminmuster Brausetabletten",
       "packung": "20 St.",
       "rezeptpflichtig": false,
-      "mwst": "ermaessigt",
+      "steuergruppe": "lebensmittel",
       "preisCent": 449,
       "grosshandel": {
         "bestand": 500,
@@ -174,7 +174,7 @@
       "name": "Hustenmuster Pastillen",
       "packung": "24 St.",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 689,
       "grosshandel": {
         "bestand": 60,
@@ -189,7 +189,7 @@
       "name": "Wundprobe Gel",
       "packung": "20 g",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 925,
       "grosshandel": {
         "bestand": 8,
@@ -204,7 +204,7 @@
       "name": "Allergomuster 10 mg Tabletten",
       "packung": "50 St.",
       "rezeptpflichtig": false,
-      "mwst": "voll",
+      "steuergruppe": "arzneimittel",
       "preisCent": 1495,
       "grosshandel": {
         "bestand": 25,

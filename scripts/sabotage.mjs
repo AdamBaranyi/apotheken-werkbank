@@ -35,7 +35,12 @@ for (const s of liste) {
     fehler++;
     continue;
   }
-  writeFileSync(s.datei, original.replace(s.suche, s.ersatz));
+  // Als Funktion: Ein Ersatztext als Zeichenkette deutet «$$» als «$» und
+  // zerstörte so jedes SQL mit Dollar-Quoting.
+  writeFileSync(
+    s.datei,
+    original.replace(s.suche, () => s.ersatz),
+  );
   let lauf;
   try {
     ausfuehren(s.vorbereiten);
