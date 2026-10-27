@@ -88,6 +88,32 @@
   background: var(--tinte-leise);
 }
 
+.knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.zweitknopf {
+  min-height: 3rem;
+  padding: 0.5rem 1.5rem;
+  border: 2px solid var(--tinte);
+  border-radius: var(--radius);
+  background: var(--papier);
+  color: var(--tinte);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.zweitknopf:hover {
+  background: var(--flaeche);
+}
+
+.zweitknopf[aria-disabled='true'] {
+  cursor: progress;
+}
+
 /* Schmal: jede Zeile ein Block mit Beschriftungen aus data-titel. */
 @media (max-width: 48rem) {
   .tabelle thead {

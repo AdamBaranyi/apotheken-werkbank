@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { Metadata } from 'next';
 import { Tourenband } from '@/components/tourenband/Tourenband';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
@@ -40,8 +41,8 @@ export default async function Bestellen() {
     <>
       <h1>Bestellen</h1>
       <p className={styles.einleitung}>
-        Verfügbarkeit beim Grosshändler über MSV3 prüfen. Die Anfrage ist unverbindlich und
-        reserviert nichts.
+        Verfügbarkeit beim Grosshändler über MSV3 prüfen; die Anfrage ist unverbindlich und
+        reserviert nichts. «Verbindlich bestellen» sendet die Mengen als Bestellung.
         {zugang ? ` Grosshändler: ${zugang.bezeichnung}.` : ''}
       </p>
       {!zugang ? (
@@ -54,7 +55,11 @@ export default async function Bestellen() {
         <Tourenband vertrag={vertrag} zeitpunkt={new Date()} />
       ) : null}
       {zugang ? (
-        <Abfrage artikel={(artikel ?? []) as KatalogArtikel[]} zugangId={zugang.id} />
+        <Abfrage
+          artikel={(artikel ?? []) as KatalogArtikel[]}
+          zugangId={zugang.id}
+          schluessel={randomUUID()}
+        />
       ) : null}
     </>
   );
