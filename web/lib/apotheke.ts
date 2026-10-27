@@ -17,7 +17,9 @@ export interface Arbeitsplatz {
  */
 export const arbeitsplatzLaden = cache(async (): Promise<Arbeitsplatz | null> => {
   const sitzung = await sitzungLesen();
-  if (!sitzung) redirect('/anmelden');
+  // Meist hat proxy.ts schon umgeleitet. Hier landen Server-Aktionen, deren
+  // Sitzung inzwischen abgelaufen ist (#1): Die Anmeldung sagt es dann.
+  if (!sitzung) redirect('/anmelden?sitzung=abgelaufen');
   const supabase = await supabaseServer();
   const { data } = await supabase
     .from('mitglieder')

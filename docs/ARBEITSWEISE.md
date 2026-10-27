@@ -27,6 +27,17 @@ Jede Prüfung muss einmal rot gesehen werden. Dafür wird absichtlich ein Fehler
 scheitern, danach wird zurückgebaut. Eine Sabotage, die grün bleibt, ist ein Befund über den
 Test – oder über überflüssigen Code.
 
+## Bug-Kette
+
+Ein gefundener Fehler läuft immer gleich durch: Issue mit Schritten zum Nachstellen und
+vermuteter Ursache, ein Test, der den Fehler zeigt und zuerst rot in die CI geht, dann der Fix
+im selben Pull Request, grüner Lauf, Merge mit «Fixes #…». Eine Sabotage hält fest, dass der
+Test den Fehler wirklich fängt.
+
+Erstes Beispiel: #1, gefunden beim Bau der Kasse. Lief die Sitzung ab, während ein Formular
+offen war, endete das Senden auf einer englischen Fehlerseite, weil `proxy.ts` auch Aufrufe von
+Server-Aktionen umleitete. Pull Request #2: erster Commit nur der Test (rot), zweiter der Fix.
+
 ## Was die KI vorschlug und was verworfen wurde
 
 Ergänzt an jedem Abend. Format: Vorschlag, Entscheid, Grund.
