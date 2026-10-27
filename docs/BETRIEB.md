@@ -64,8 +64,10 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
 - **Datenbank:** Migrationen aus `supabase/migrations/`; in der Cloud tragen sie dieselben
   Versionen wie die Dateinamen. Danach die Advisors ansehen; bewusst Offenes steht in
   `docs/SECURITY.md`.
-- **Web-App:** Jeder Push auf `main` geht nach der Verbindung mit GitHub auf Vercel; bis dahin
-  von Hand mit `bunx vercel@64.5.0 deploy --prod` aus dem Wurzelordner.
+- **Web-App:** Seit 27.10.2026 mit GitHub verbunden (Vercel-App nur für dieses Repository):
+  Jeder Push auf `main` geht in die Produktion, jeder Pull Request bekommt eine Vorschau mit
+  eigenem Schlüssel (E19). Von Hand nur im Notfall: `bunx vercel@64.5.0 deploy --prod` aus dem
+  Wurzelordner.
 
 ## Wo was steht
 
