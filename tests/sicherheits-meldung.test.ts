@@ -46,7 +46,7 @@ function melden(bericht: string, ...argumente: string[]) {
   writeFileSync(datei, bericht);
   return skriptAusfuehren('scripts/sicherheits-meldung.sh', [datei, ...argumente], ordner, {
     GH_TOKEN: 'attrappe',
-    GH_REPO: 'AdamBaranyi/Apotheken-Werkbank',
+    GH_REPO: 'AdamBaranyi/apotheken-werkbank',
   });
 }
 

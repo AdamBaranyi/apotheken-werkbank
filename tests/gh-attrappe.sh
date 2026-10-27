@@ -58,7 +58,7 @@ case "${1:-} ${2:-}" in
       "$(option --title "$@")" "$(option --label "$@")" "$(option --assignee "$@")" >> "$d/aufrufe"
     option --body "$@" > "$d/body"
     echo 7 > "$d/nummer"
-    echo "https://github.com/AdamBaranyi/Apotheken-Werkbank/issues/7"
+    echo "https://github.com/AdamBaranyi/apotheken-werkbank/issues/7"
     ;;
   "issue edit")
     echo "issue edit $3" >> "$d/aufrufe"

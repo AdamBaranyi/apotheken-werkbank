@@ -33,8 +33,9 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
    übernehmen (Caddyfile im Repository von Tallyroom) und dort
    `WERKBANK_GROSSHANDEL_SITE_ADDRESS=grosshandel.adambaranyi.xyz` setzen. Caddy holt das
    Zertifikat selbst, sobald der DNS-Eintrag stimmt.
-3. **Repository auf vps1:** öffentlich, ohne Deploy-Schlüssel:
-   `sudo git clone https://github.com/AdamBaranyi/Apotheken-Werkbank.git /opt/apotheken-werkbank`
+3. **Repository auf vps1:** öffentlich ohne Deploy-Schlüssel; solange es privat ist, nur mit
+   einem Deploy-Schlüssel, der lesen darf:
+   `sudo git clone https://github.com/AdamBaranyi/apotheken-werkbank.git /opt/apotheken-werkbank`
 4. **Zugänge erzeugen** (auf dem Mac): `node scripts/produktion-zugaenge.ts` schreibt
    `.lokal/produktion/mandanten.json` (Hashes für vps1) und `.lokal/produktion/zugaenge.sql`
    (Geheimtext für Supabase). Beide gehören zusammen.
