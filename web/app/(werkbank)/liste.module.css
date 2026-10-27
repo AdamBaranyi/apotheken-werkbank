@@ -1,0 +1,85 @@
+/* Listen der Werkbank (Belege, Abschlüsse, Bestellungen): eine Zeile je Eintrag, schmal als Block. */
+.einleitung {
+  color: var(--tinte-leise);
+}
+
+.leer {
+  padding: 1.5rem 1rem;
+  border: 1px dashed var(--linie-feld);
+  border-radius: var(--radius);
+  color: var(--tinte-leise);
+  max-width: none;
+}
+
+.tabelle {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabelle th {
+  text-align: left;
+  font-weight: 650;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--tinte);
+}
+
+.tabelle td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--linie);
+  vertical-align: top;
+}
+
+.tabelle th:first-child,
+.tabelle td:first-child {
+  padding-left: 0;
+}
+
+.tabelle .zahl {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.marke {
+  display: inline-block;
+  padding: 0 0.375rem;
+  border: 1px solid var(--tinte);
+  border-radius: 2px;
+  font-weight: 650;
+}
+
+@media (max-width: 48rem) {
+  .tabelle thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabelle tr {
+    display: block;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .tabelle td {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border: 0;
+  }
+
+  .tabelle .zahl {
+    text-align: left;
+  }
+
+  .tabelle td::before {
+    content: attr(data-titel);
+    font-weight: 650;
+  }
+
+  .tabelle td:empty {
+    display: none;
+  }
+}

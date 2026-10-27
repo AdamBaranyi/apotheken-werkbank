@@ -80,7 +80,7 @@
 }
 
 .knopf:hover {
-  background: #26394a;
+  background: var(--tinte-hover);
 }
 
 .knopf[aria-disabled='true'] {

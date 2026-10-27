@@ -1,8 +1,8 @@
 import Link from 'next/link';
+import { Bereiche } from './Bereiche';
 import styles from './kopf.module.css';
 
-/** Kopf der Werkbank: Marke, Bereiche, Apotheke, Abmelden. Nur Bereiche, die es schon gibt. */
-const BEREICHE = [{ pfad: '/bestellen', name: 'Bestellen' }];
+/** Kopf der Werkbank: Marke, Bereiche, Apotheke, Abmelden. */
 
 export function Kopf({ apotheke, email }: { apotheke: string; email: string }) {
   return (
@@ -14,15 +14,7 @@ export function Kopf({ apotheke, email }: { apotheke: string; email: string }) {
         <Link href="/bestellen" className={styles.marke}>
           Apotheken-Werkbank
         </Link>
-        <nav aria-label="Bereiche">
-          <ul className={styles.bereiche}>
-            {BEREICHE.map((b) => (
-              <li key={b.pfad}>
-                <Link href={b.pfad}>{b.name}</Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <Bereiche />
         <div className={styles.konto}>
           <span className={styles.apotheke}>{apotheke}</span>
           <span className={styles.email}>{email}</span>
