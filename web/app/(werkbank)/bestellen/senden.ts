@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
 import { sendenUndAuswerten } from '@/lib/bestellung/senden';
+import { grosshandelBremse } from '@/lib/bremse';
 import { meldungAusFehler } from '@/lib/fehler';
 import { supabaseServer } from '@/lib/supabase/server';
 import { positionenLesen, positionenSchema } from './eingabe';
@@ -42,6 +43,8 @@ export async function bestellungSenden(_vorher: SendeStand, form: FormData): Pro
   if (!geprueft.success)
     return { fehler: geprueft.error.issues[0]?.message ?? 'Eingabe ungültig.' };
   const { schluessel, zugangId, positionen } = geprueft.data;
+  const gebremst = await grosshandelBremse(platz.apotheke.id);
+  if (gebremst) return { fehler: gebremst };
   const supabase = await supabaseServer();
   const anlegen = () =>
     supabase

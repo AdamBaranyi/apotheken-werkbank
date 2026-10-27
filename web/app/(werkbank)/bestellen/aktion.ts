@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
+import { grosshandelBremse } from '@/lib/bremse';
 import { verfuegbarkeitAnfragen } from '@/lib/msv3/anfragen';
 import { Msv3Fehler } from '@/lib/msv3/client';
 import type { Anteil } from '@/lib/msv3/schema';
@@ -29,6 +30,8 @@ export async function pruefen(_vorher: PruefStand, form: FormData): Promise<Prue
   if (!geprueft.success) {
     return { mengen, fehler: geprueft.error.issues[0]?.message ?? 'Eingabe ungültig.' };
   }
+  const gebremst = await grosshandelBremse(platz.apotheke.id);
+  if (gebremst) return { mengen, fehler: gebremst };
   try {
     const zugang = await zugangLaden(geprueft.data.zugangId);
     if (!zugang)

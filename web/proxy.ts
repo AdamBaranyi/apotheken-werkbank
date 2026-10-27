@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { SITZUNGS_COOKIE } from './lib/supabase/cookies';
 
 /**
  * Läuft vor jeder Seite: Nonce für die Content Security Policy, Sitzung von
@@ -40,6 +41,7 @@ export async function proxy(anfrage: NextRequest) {
     process.env.SUPABASE_URL ?? '',
     process.env.SUPABASE_PUBLISHABLE_KEY ?? '',
     {
+      cookieOptions: SITZUNGS_COOKIE,
       cookies: {
         getAll: () => anfrage.cookies.getAll(),
         setAll: (liste) => {

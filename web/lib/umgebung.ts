@@ -15,6 +15,15 @@ const schema = z.object({
     .refine((s) => Buffer.from(s, 'base64').length === 32, '32 Byte als Base64 erwartet'),
   /** Kommagetrennte Basisadressen, die der Server aufrufen darf (Schutz vor SSRF). */
   GROSSHANDEL_ERLAUBT: z.string().min(1),
+  /**
+   * Rolle werkbank_bremse über den Pooler (lib/bremse.ts), ohne sslmode in der
+   * Adresse: TLS stellt der Code ein. Fehlt sie (etwa in einer Vorschau), bremst
+   * nur Supabase selbst.
+   */
+  BREMSE_DATENBANK_URL: z
+    .string()
+    .regex(/^postgres(ql)?:\/\/[^?]+$/, 'postgres://… ohne Parameter erwartet')
+    .optional(),
 });
 
 export type Umgebung = z.infer<typeof schema> & { grosshandelErlaubt: string[] };

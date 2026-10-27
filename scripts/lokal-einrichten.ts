@@ -1,7 +1,7 @@
 /**
  * Richtet die lokale Umgebung ein (auch in der CI): Mandanten der
- * Grosshandel-Attrappe, zwei Testkonten, zwei erfundene Apotheken und je einen
- * verschlüsselten Grosshändler-Zugang. Passwörter entstehen bei jedem Lauf neu
+ * Grosshandel-Attrappe, zwei Testkonten, zwei erfundene Apotheken, je einen
+ * verschlüsselten Grosshändler-Zugang und das Passwort der Rolle für die Bremse. Passwörter entstehen bei jedem Lauf neu
  * und landen nur in .lokal/ (nie im Repo); der Schlüssel für die Zugänge
  * bleibt zwischen Läufen gleich.
  *
@@ -64,6 +64,16 @@ async function main() {
   const zugangSchluessel = schluessel();
   const db = new pg.Client({ connectionString: s.DB_URL });
   await db.connect();
+  // Passwort der Rolle für die Bremse (lib/bremse.ts), je Lauf neu.
+  const bremsePasswort = passwortErzeugen();
+  const { rows: befehl } = await db.query<{ sql: string }>(
+    "select format('alter role werkbank_bremse password %L', $1::text) as sql",
+    [bremsePasswort],
+  );
+  await db.query(befehl[0]?.sql ?? '');
+  const bremseUrl = new URL(s.DB_URL);
+  bremseUrl.username = 'werkbank_bremse';
+  bremseUrl.password = bremsePasswort;
   await db.query("delete from auth.users where email like '%@werkbank.test'");
   await db.query("delete from public.apotheken where name like '%(erfunden)'");
 
@@ -112,6 +122,7 @@ async function main() {
       `SUPABASE_PUBLISHABLE_KEY=${s.PUBLISHABLE_KEY}`,
       `ZUGANG_SCHLUESSEL=${zugangSchluessel}`,
       `GROSSHANDEL_ERLAUBT=${ATTRAPPE}`,
+      `BREMSE_DATENBANK_URL=${bremseUrl.toString()}`,
       '',
     ].join('\n'),
     { mode: 0o600 },

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
 import { abfragbar, bestellungLaden } from '@/lib/bestellung/laden';
 import { statusUndAuswerten } from '@/lib/bestellung/senden';
+import { grosshandelBremse } from '@/lib/bremse';
 import { meldungAusFehler } from '@/lib/fehler';
 import { supabaseServer } from '@/lib/supabase/server';
 
@@ -25,6 +26,8 @@ export async function statusAbfragen(_vorher: AbfrageStand, form: FormData): Pro
   const b = id.success ? await bestellungLaden(id.data) : null;
   if (!b) return { fehler: 'Diese Bestellung gibt es nicht.' };
   if (!abfragbar(b, new Date())) redirect(`/bestellungen/${b.id}`);
+  const gebremst = await grosshandelBremse(platz.apotheke.id);
+  if (gebremst) return { fehler: gebremst };
   const ergebnis = await statusUndAuswerten(b.zugang_id, b.id);
   const supabase = await supabaseServer();
   if (b.status === 'wird_gesendet') {
