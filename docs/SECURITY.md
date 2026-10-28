@@ -83,11 +83,12 @@ Vorgesehen:
 
 ## Behobene Befunde
 
-| Datum      | Befund                                                                       | Behebung                                                                |
-| ---------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| 26.10.2026 | Ein Zugang mit falschem Schlüssel liess die Seite Bestellen abstürzen        | Meldung statt Absturz, Test und Sabotage                                |
-| 26.10.2026 | AES-GCM nahm in Node 24 einen auf 4 Byte gekürzten Prüfwert an               | `authTagLength: 16`, Test und Sabotage                                  |
-| 26.10.2026 | Abmelden mit Origin «null» gab einen Fehler 500                              | Herkunft geprüft ohne Absturz, 403; Test und Sabotage                   |
-| 26.10.2026 | Advisor 0029: Hilfsfunktionen der Regeln über `/rest/v1/rpc` aufrufbar       | Umzug ins Schema `privat`, Test wie der Advisor, Sabotage               |
-| 27.10.2026 | Fünf Fehlversuche je Konto sperrten das echte Konto (Aussperren als Angriff) | Grenzen je Konto und IP, je Konto höher (E23); im Browser-Test gemessen |
-| 27.10.2026 | Die Sabotage-Runde verfälschte Ersatztexte mit `$$` (Dollar-Quoting)         | Ersatz per Funktion statt als Zeichenkette                              |
+| Datum      | Befund                                                                        | Behebung                                                                            |
+| ---------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 26.10.2026 | Ein Zugang mit falschem Schlüssel liess die Seite Bestellen abstürzen         | Meldung statt Absturz, Test und Sabotage                                            |
+| 26.10.2026 | AES-GCM nahm in Node 24 einen auf 4 Byte gekürzten Prüfwert an                | `authTagLength: 16`, Test und Sabotage                                              |
+| 26.10.2026 | Abmelden mit Origin «null» gab einen Fehler 500                               | Herkunft geprüft ohne Absturz, 403; Test und Sabotage                               |
+| 26.10.2026 | Advisor 0029: Hilfsfunktionen der Regeln über `/rest/v1/rpc` aufrufbar        | Umzug ins Schema `privat`, Test wie der Advisor, Sabotage                           |
+| 27.10.2026 | Abgelaufene Sitzung: Senden eines Formulars endete auf einer Fehlerseite (#1) | `proxy.ts` leitet Server-Aktionen nicht um, die Aktion selbst schon; Test, Sabotage |
+| 27.10.2026 | Fünf Fehlversuche je Konto sperrten das echte Konto (Aussperren als Angriff)  | Grenzen je Konto und IP, je Konto höher (E23); im Browser-Test gemessen             |
+| 27.10.2026 | Die Sabotage-Runde verfälschte Ersatztexte mit `$$` (Dollar-Quoting)          | Ersatz per Funktion statt als Zeichenkette                                          |

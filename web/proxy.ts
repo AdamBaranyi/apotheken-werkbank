@@ -1,14 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { SITZUNGS_COOKIE } from './lib/supabase/cookies';
+import { zurAnmeldung } from './lib/zutritt';
 
 /**
  * Läuft vor jeder Seite: Nonce für die Content Security Policy, Sitzung von
- * Supabase auffrischen, und ohne Anmeldung zur Anmeldung leiten. Ein Layout
- * ist keine Sperre – jede Seite und jede Server-Aktion prüft die Sitzung
- * zusätzlich selbst.
+ * Supabase auffrischen, und ohne Anmeldung zur Anmeldung leiten (ausser bei
+ * Server-Aktionen, siehe lib/zutritt.ts). Ein Layout ist keine Sperre – jede
+ * Seite und jede Server-Aktion prüft die Sitzung zusätzlich selbst.
  */
-const OEFFENTLICH = ['/anmelden'];
 
 function csp(nonce: string): string {
   const entwicklung = process.env.NODE_ENV !== 'production';
@@ -53,8 +53,12 @@ export async function proxy(anfrage: NextRequest) {
     },
   );
   const { data } = await supabase.auth.getUser();
-  const pfad = anfrage.nextUrl.pathname;
-  if (!data.user && !OEFFENTLICH.includes(pfad)) {
+  const umleiten = zurAnmeldung({
+    angemeldet: Boolean(data.user),
+    pfad: anfrage.nextUrl.pathname,
+    serverAktion: anfrage.headers.has('next-action'),
+  });
+  if (umleiten) {
     const ziel = anfrage.nextUrl.clone();
     ziel.pathname = '/anmelden';
     ziel.search = '';
