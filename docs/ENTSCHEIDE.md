@@ -158,3 +158,72 @@ Attrappe und schreibt es nur zweifach verwandelt weg: als scrypt-Hash für vps1 
 Geheimtext für Supabase. Der Klartext existiert nur während des Laufs. Die Konten der
 Demo-Apotheken legt Adam selbst in Supabase an, mit Passwörtern aus seinem Passwortmanager;
 die SQL verknüpft sie nur und bricht ab, solange sie fehlen.
+
+## E22 — Kasse: Belege nur anhängen, Regeln an den Tabellen
+
+_27.10.2026._ Ein Beleg wird nie geändert oder gelöscht; korrigiert wird mit einem Storno, einem
+Gegenbeleg mit denselben Positionen und Preisen. Wer bucht, schickt nur PZN, Menge,
+Rezept-Häkchen und Zahlung; Preis, Steuersatz, Belegnummer und Summen setzt die Datenbank. Die
+Regeln stehen als Trigger, Prüfungen und RLS an den Tabellen, nicht in einer Funktion: So gelten
+sie auch für einen direkten Aufruf der REST-Schnittstelle mit dem eigenen Token. Die beiden
+Funktionen der Kasse laufen mit den Rechten der aufrufenden Person (SECURITY INVOKER, kein
+Advisor-Befund); nur die Trigger haben Besitzerrechte und liegen im Schema `privat`. Positionen
+lassen sich nur in derselben Anfrage wie der Kopf anhängen (`erstellt_am = now()`).
+Belegnummern laufen je Apotheke lückenlos über einen Zähler in derselben Transaktion; ein
+Abbruch rollt ihn mit zurück. Gegen den Doppelklick dient die ID aus dem Seitenaufbau, nicht
+`on conflict do nothing`: Der Trigger hätte den Zähler vorher schon erhöht. Steuersätze hängen
+an Land und Steuergruppe, nicht am Artikel (ein Arzneimittel trägt in Deutschland 19 %, in der
+Schweiz 2,6 %). Stornieren darf nur, wer die Apotheke führt; den Tag schliesst jedes Mitglied
+ab. Preis: mehr SQL, und Trigger sind schwerer zu lesen als eine einzelne Funktion.
+
+## E23 — Bremse über eine eigene Datenbankrolle
+
+_27.10.2026._ Vor der Anmeldung gibt es keine Sitzung, Supabase sieht nur die IP des Servers, den
+Hook für Passwortversuche gibt es erst im bezahlten Tarif, und ein Zähler im Speicher einer
+Vercel-Funktion sähe nur die eigenen Anfragen. Eine Funktion für anon über REST wäre für jeden
+mit dem öffentlichen Schlüssel erreichbar (Advisor 0028). Darum: Rolle `werkbank_bremse`, die
+genau zwei Funktionen im Schema `privat` ausführen darf, erreicht über den Pooler von Supabase
+(Transaktionsmodus, IPv4) mit TLS gegen die CA von Supabase. In der Datenbank stehen nur
+HMAC-Werte. Grenzen in 15 Minuten: 5 Fehlversuche je Konto und IP, 10 je Konto, 30 je IP; beim
+Grosshändler 60 Aufrufe je Minute und Apotheke. Die IP gilt nur auf Vercel, wo der Rand
+`x-real-ip` setzt. Antwortet die Datenbank nicht, lässt die Bremse durch und protokolliert es.
+Gemessen: «5 je Konto» allein sperrte im Test das echte Konto – jeder könnte die Apotheke so
+aussperren. Preis: ein weiteres Geheimnis (`BREMSE_DATENBANK_URL`) und eine
+Datenbankverbindung je Anmeldung.
+
+## E24 — Beleg als PDF ohne Bibliothek
+
+_27.10.2026._ Ein Kassenbon ist eine Spalte Text. Ein eigener Schreiber von gut 100 Zeilen
+erzeugt ihn: eine Seite in der Breite einer 80-mm-Rolle, Courier (eine der 14 Standardschriften,
+nicht eingebettet), WinAnsi, Zeichen ab 0x80 als Oktalfolge. pdf-lib hat seit 2021 kein Release,
+PDFKit lädt Schriftdateien zur Laufzeit, die auf Vercel erst gebündelt werden müssten, und Chrome
+ohne Kopf ist für eine Funktion zu gross. Die Tests prüfen jeden Versatz im Verzeichnis aufs Byte
+und dass Klammern im Text keine Befehle werden. Preis: kein getaggtes PDF; barrierefrei ist die
+HTML-Ansicht des Belegs.
+
+## E25 — Bestellen mit Liefervorgabe «MaxVerbund»
+
+_27.10.2026._ Gemessen im Test: Mit der Liefervorgabe «Normal» liefert die Attrappe nur aus dem
+Hauptlager, obwohl die Verfügbarkeit den Verbund schon anzeigte – die Apotheke bekäme weniger,
+als sie gesehen hat. «MaxVerbund» liefert aus Hauptlager und zweitem Lager; Nachlieferung und
+Dispo bleiben «möglich» und werden nicht still mitbestellt. Die Bestellung steht vor dem Senden
+in der Datenbank, ihre ID ist die Bestell-ID beim Grosshändler. Der Status folgt nur den
+Antworten (Pflichtenheft Kap. 2.3.6): Exception des Servers heisst «abgelehnt», Abbruch oder
+unlesbare Antwort «unklar», dann klärt die Statusabfrage. Preis: Wer Nachlieferung will, bestellt
+sie heute nicht aus der Werkbank.
+
+## E26 — Lighthouse: hart, was nicht vom Rechner abhängt
+
+_27.10.2026._ In der CI gelten Barrierefreiheit und gute Praxis ab 95 als Grenze; die Leistung
+steht mit dem Leistungsindex des Läufers im Protokoll, weil sie auf geteilten Läufern stark
+schwankt. Hart zählt sie lokal mit `--streng` (Median aus drei Messungen, ruhiger Rechner). SEO
+wird nicht gemessen: Die Werkbank steht hinter einer Anmeldung und sagt «noindex». Lighthouse
+läuft über `npx` in fester, über sieben Tage alter Fassung; als Abhängigkeit brächte es unter
+anderem einen Fehler-Client und Puppeteer in jede Installation. Preis: Seine Unterpakete stehen
+in keinem Lockfile (docs/SECURITY.md).
+
+## E27 — Dunkel nach Systemeinstellung
+
+_27.10.2026._ Hell bleibt die Vorgabe; wünscht das System dunkel, tauschen dieselben Variablen
+ihre Werte. Text hält dort mindestens 4,5 : 1, Feldränder 3 : 1. Die Browser-Tests laufen
+zusätzlich dunkel in 390 px, und axe prüft die Kontraste auch dort.

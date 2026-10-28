@@ -51,27 +51,43 @@ Umgesetzt (Abend 1):
 - Funktionen mit SECURITY DEFINER stehen nicht im veröffentlichten Schema, bis auf eine
   begründete (siehe unten); `supabase/tests/schnittstelle.test.ts` prüft das wie der Advisor.
 
+Umgesetzt (Abend 2):
+
+- Kasse: Belege werden nur angehängt; Preise, Steuersätze, Nummern und Summen setzt die
+  Datenbank, die Rezeptpflicht prüft sie selbst. Die Regeln stehen an den Tabellen und gelten
+  auch für direkte Aufrufe der REST-Schnittstelle (E22, `supabase/tests/kasse.test.ts`).
+- Bestellungen: ID vor dem Senden, Status nur entlang der Antworten des Grosshändlers (E25).
+- Bremse für Anmeldung und Grosshändler über eine eigene Datenbankrolle, nur HMAC-Werte, TLS
+  gegen die CA von Supabase (E23).
+- Sitzungs-Cookies `httpOnly`, `SameSite=Lax`, im Produktionsbuild `Secure`; die Browser-Tests
+  prüfen, dass kein Skript sie lesen kann.
+- Dazu `Cross-Origin-Resource-Policy: same-origin` und eine längere `Permissions-Policy`;
+  Seiten mit Daten und der Beleg als PDF gehen mit `no-store` hinaus.
+- Server-Aktionen ohne Sitzung leitet `proxy.ts` nicht um; die Aktion leitet selbst um (#1).
+
 Vorgesehen:
 
-- Rate-Limit auf Anmeldung und teuren Aktionen (Abend 2). Supabase begrenzt Anmeldungen je
-  IP-Adresse, sieht aber nur die Adresse des Servers, nicht die der Person.
-- Sitzungs-Cookies nur für den Server lesbar (`httpOnly`), weil der Browser nie direkt mit
-  Supabase spricht (Abend 2).
 - Die Engine führt vorgeschlagene Aktionen eines Modells nur aus einer festen Liste aus, mit
   Deckel je Lauf und je Tag; Bildschirmfotos echter Kassen gehen nie an einen Dienst ausserhalb.
 
 ## Bewusst offen
 
-| Meldung                                    | Wo                                             | Grund                                                                                                                                                                                                 |
-| ------------------------------------------ | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Advisor 0029 (SECURITY DEFINER, aufrufbar) | `public.zugang_fuer_bestellung`                | Der Server holt damit im Namen der angemeldeten Person den Geheimtext eines Zugangs der eigenen Apotheke (E17). Ohne den Schlüssel des Servers ist er nutzlos; anon darf die Funktion nicht aufrufen. |
-| Advisor 0005 (Index unbenutzt)             | `mitglieder_user_idx`, `zugaenge_apotheke_idx` | Frische Datenbank; die Indizes tragen die Regeln je Apotheke und die Fremdschlüssel.                                                                                                                  |
+| Meldung                                       | Wo                                             | Grund                                                                                                                                                                                                 |
+| --------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Advisor 0029 (SECURITY DEFINER, aufrufbar)    | `public.zugang_fuer_bestellung`                | Der Server holt damit im Namen der angemeldeten Person den Geheimtext eines Zugangs der eigenen Apotheke (E17). Ohne den Schlüssel des Servers ist er nutzlos; anon darf die Funktion nicht aufrufen. |
+| Advisor 0005 (Index unbenutzt)                | `mitglieder_user_idx`, `zugaenge_apotheke_idx` | Frische Datenbank; die Indizes tragen die Regeln je Apotheke und die Fremdschlüssel.                                                                                                                  |
+| Lighthouse über `npx`                         | CI, `scripts/lighthouse.mjs`                   | Feste, über sieben Tage alte Fassung; ihre Unterpakete stehen in keinem Lockfile. Der Lauf hat keine Geheimnisse und nur Leserechte (E26).                                                            |
+| CA von Supabase aus der Kette übernommen      | `web/lib/supabase-ca.ts`                       | Gleicher Fingerabdruck an zwei Pooler-Adressen; der Abgleich mit dem Download im Dashboard steht noch aus.                                                                                            |
+| Bremse lässt bei Datenbankausfall durch       | `web/lib/bremse.ts`                            | Ein Ausfall soll die Apotheke nicht aussperren; Supabase begrenzt Anmeldungen zusätzlich, der Ausfall steht im Protokoll.                                                                             |
+| Status einer Bestellung schreibt das Mitglied | `public.bestellungen`                          | Kopie der Antwort des Grosshändlers, nur entlang erlaubter Wechsel; massgeblich bleibt der Grosshändler (Statusabfrage).                                                                              |
 
 ## Behobene Befunde
 
-| Datum      | Befund                                                                 | Behebung                                                  |
-| ---------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| 26.10.2026 | Ein Zugang mit falschem Schlüssel liess die Seite Bestellen abstürzen  | Meldung statt Absturz, Test und Sabotage                  |
-| 26.10.2026 | AES-GCM nahm in Node 24 einen auf 4 Byte gekürzten Prüfwert an         | `authTagLength: 16`, Test und Sabotage                    |
-| 26.10.2026 | Abmelden mit Origin «null» gab einen Fehler 500                        | Herkunft geprüft ohne Absturz, 403; Test und Sabotage     |
-| 26.10.2026 | Advisor 0029: Hilfsfunktionen der Regeln über `/rest/v1/rpc` aufrufbar | Umzug ins Schema `privat`, Test wie der Advisor, Sabotage |
+| Datum      | Befund                                                                       | Behebung                                                                |
+| ---------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 26.10.2026 | Ein Zugang mit falschem Schlüssel liess die Seite Bestellen abstürzen        | Meldung statt Absturz, Test und Sabotage                                |
+| 26.10.2026 | AES-GCM nahm in Node 24 einen auf 4 Byte gekürzten Prüfwert an               | `authTagLength: 16`, Test und Sabotage                                  |
+| 26.10.2026 | Abmelden mit Origin «null» gab einen Fehler 500                              | Herkunft geprüft ohne Absturz, 403; Test und Sabotage                   |
+| 26.10.2026 | Advisor 0029: Hilfsfunktionen der Regeln über `/rest/v1/rpc` aufrufbar       | Umzug ins Schema `privat`, Test wie der Advisor, Sabotage               |
+| 27.10.2026 | Fünf Fehlversuche je Konto sperrten das echte Konto (Aussperren als Angriff) | Grenzen je Konto und IP, je Konto höher (E23); im Browser-Test gemessen |
+| 27.10.2026 | Die Sabotage-Runde verfälschte Ersatztexte mit `$$` (Dollar-Quoting)         | Ersatz per Funktion statt als Zeichenkette                              |

@@ -6,7 +6,8 @@ MSV3-Grosshandel-Attrappe, ein Kassentool als Web-App und schnelle Prototypen. K
 kein Kunde, keine echten Daten.
 
 **Stand:** im Aufbau. Worum es geht und was davon nachgebaut wird: [docs/UEBERBLICK.md](docs/UEBERBLICK.md).
-Entscheide: [docs/ENTSCHEIDE.md](docs/ENTSCHEIDE.md). Sicherheit: [docs/SECURITY.md](docs/SECURITY.md).
+Kasse und Bestellung: [docs/KASSE.md](docs/KASSE.md). Entscheide: [docs/ENTSCHEIDE.md](docs/ENTSCHEIDE.md).
+Sicherheit: [docs/SECURITY.md](docs/SECURITY.md). Betrieb: [docs/BETRIEB.md](docs/BETRIEB.md).
 
 ## Lizenz
 
