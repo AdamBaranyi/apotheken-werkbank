@@ -1,25 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { schritteFuer } from './schritte';
+import { SCHRITTE } from './schritte';
 
 describe('Rundgang', () => {
-  it('erklärt Bestellen und Kasse mit eigenen Schritten', () => {
-    expect(schritteFuer('/bestellen').map((s) => s.titel)).toContain('Verfügbarkeit prüfen');
-    expect(schritteFuer('/kasse').map((s) => s.titel)).toContain('Verkauf buchen');
-  });
-
-  it('andere Seiten bekommen den kurzen Rundgang', () => {
-    expect(schritteFuer('/kasse/belege').map((s) => s.titel)).toEqual([
-      'Willkommen in der Werkbank',
-      'Die Bereiche',
+  it('führt der Reihe nach durch alle Bereiche der Werkbank', () => {
+    const pfade = [...new Set(SCHRITTE.flatMap((s) => (s.pfad ? [s.pfad] : [])))];
+    expect(pfade).toEqual([
+      '/bestellen',
+      '/bestellungen',
+      '/kasse',
+      '/kasse/belege',
+      '/kasse/abschluss',
     ]);
   });
 
-  it('jeder Schritt hat Titel und Text', () => {
-    for (const pfad of ['/bestellen', '/kasse', '/bestellungen']) {
-      for (const s of schritteFuer(pfad)) {
-        expect(s.titel.length, pfad).toBeGreaterThan(3);
-        expect(s.text.length, pfad).toBeGreaterThan(20);
-      }
+  it('beginnt und endet dort, wo man gerade ist', () => {
+    expect(SCHRITTE[0]?.pfad).toBeUndefined();
+    expect(SCHRITTE.at(-1)?.pfad).toBeUndefined();
+  });
+
+  it('jeder Schritt hat Titel und Text, kein Titel doppelt', () => {
+    for (const s of SCHRITTE) {
+      expect(s.titel.length, s.titel).toBeGreaterThan(3);
+      expect(s.text.length, s.titel).toBeGreaterThan(20);
     }
+    expect(new Set(SCHRITTE.map((s) => s.titel)).size).toBe(SCHRITTE.length);
   });
 });
