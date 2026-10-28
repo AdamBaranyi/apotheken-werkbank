@@ -98,6 +98,13 @@ export const SABOTAGEN = [
     tests: ['web/lib/herkunft.test.ts'],
   },
   {
+    name: 'Server-Aktionen ohne Sitzung werden umgeleitet (#1)',
+    datei: 'web/lib/zutritt.ts',
+    suche: '&& !serverAktion;',
+    ersatz: ';',
+    tests: ['web/lib/zutritt.test.ts'],
+  },
+  {
     name: 'Deploy baut ohne frische Basis-Abbilder',
     datei: 'infra/deploy.sh',
     suche: 'docker build --pull -f',
