@@ -76,11 +76,11 @@ language sql stable security definer set search_path = '' as $$ select privat.is
   ...kasseUndBestellung(),
 ];
 
-/** Die Regeln von Abend 2: Kasse, Abschluss, Bestellungen, Bremse. */
+/** Die Regeln von Abend 2: Kasse, Abschluss, Bestellungen, Bremse, Befunde der Durchsicht. */
 function kasseUndBestellung() {
   const KASSE = 'supabase/migrations/20261027120000_kasse.sql';
   const BESTELLUNG = 'supabase/migrations/20261027120200_bestellungen.sql';
-  const BREMSE = 'supabase/migrations/20261027120300_bremse.sql';
+  const DURCHSICHT = 'supabase/migrations/20261028090000_durchsicht.sql';
   const kasse = ['supabase/tests/kasse.test.ts'];
   return [
     {
@@ -127,11 +127,40 @@ function kasseUndBestellung() {
     },
     {
       name: 'Bremse für Angemeldete erreichbar',
-      datei: BREMSE,
-      suche: 'grant execute on function privat.bremse_zaehlen(text[]) to werkbank_bremse;',
+      datei: DURCHSICHT,
+      suche: 'grant execute on function privat.bremse_freigeben(bigint[]) to werkbank_bremse;',
       ersatz:
-        'grant execute on function privat.bremse_zaehlen(text[]) to werkbank_bremse, authenticated;',
+        'grant execute on function privat.bremse_freigeben(bigint[]) to werkbank_bremse, authenticated;',
       tests: ['supabase/tests/bremse.test.ts'],
+    },
+    {
+      name: 'Bremse ohne Sperre: Gleichzeitige Versuche kommen über die Grenze',
+      datei: DURCHSICHT,
+      suche: '    perform pg_advisory_xact_lock(v_sperre);',
+      ersatz: '    null;',
+      tests: ['supabase/tests/bremse.test.ts'],
+    },
+    {
+      name: 'Gleicher Schlüssel, andere Zahlung: still der alte Beleg',
+      datei: DURCHSICHT,
+      suche:
+        '      or v_alt.zahlart is distinct from p_zahlart\n      or v_alt.gegeben_cent is distinct from p_gegeben_cent\n',
+      ersatz: '',
+      tests: kasse,
+    },
+    {
+      name: 'Gleicher Schlüssel, anderes Original: still das alte Storno',
+      datei: DURCHSICHT,
+      suche: '    if v_alt.storno_von is distinct from p_original then',
+      ersatz: '    if false then',
+      tests: kasse,
+    },
+    {
+      name: 'Gleicher Schlüssel, andere Mengen: still die alte Bestellung',
+      datei: DURCHSICHT,
+      suche: '    if v_alt.zugang_id is distinct from p_zugang\n      or exists (',
+      ersatz: '    if v_alt.zugang_id is distinct from p_zugang\n      or false and exists (',
+      tests: ['supabase/tests/bestellungen.test.ts'],
     },
   ].map((s) => ({ ...s, vorbereiten: RESET, konfig: KONFIG }));
 }

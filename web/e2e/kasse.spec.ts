@@ -28,6 +28,17 @@ test.describe('Kasse', () => {
     );
   });
 
+  test('Enter im Mengenfeld bucht nicht, sondern führt zurück zur Erfassung', async ({ page }) => {
+    await page.goto('/kasse');
+    await erfassen(page, PROBATIN);
+    const menge = page.getByLabel(/^Menge Probatin/);
+    await menge.fill('3');
+    await menge.press('Enter');
+    await expect(page.getByLabel('PZN oder Artikel')).toBeFocused();
+    await expect(page.getByRole('row', { name: /Summe/ })).toContainText('11,85 €');
+    await expect(page).toHaveURL(/\/kasse$/);
+  });
+
   test('bar mit Rx-Artikel: ohne Rezept abgelehnt, dann Beleg mit Rückgeld und PDF', async ({
     page,
   }) => {

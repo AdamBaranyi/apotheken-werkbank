@@ -68,7 +68,17 @@ export function ausFehler(f: {
 }
 
 export function ausStatus(s: Bestellstatusantwort): Ergebnis {
-  if (s.status === 'BestellantwortVerfuegbar' && s.bestellung) return ausAntwort(s.bestellung);
+  if (s.status === 'BestellantwortVerfuegbar') {
+    if (s.bestellung) return ausAntwort(s.bestellung);
+    // Angekommen ist sie, nur fehlt die Antwort. «Nicht angekommen» lüde zum
+    // zweiten Bestellen ein.
+    return {
+      status: 'unklar',
+      meldung:
+        'Die Bestellung ist angekommen, der Grosshändler hat die Antwort aber nicht mitgeschickt. Bitte später erneut abfragen.',
+      antwort: null,
+    };
+  }
   if (s.status === 'BestellantwortNichtVerfuegbar') {
     return {
       status: 'ohne_antwort',

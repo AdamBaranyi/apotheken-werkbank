@@ -3,7 +3,8 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
-import { abfragbar, bestellungLaden } from '@/lib/bestellung/laden';
+import { abfragbar } from '@/lib/bestellung/abfrage';
+import { bestellungLaden } from '@/lib/bestellung/laden';
 import { statusUndAuswerten } from '@/lib/bestellung/senden';
 import { grosshandelBremse } from '@/lib/bremse';
 import { meldungAusFehler } from '@/lib/fehler';

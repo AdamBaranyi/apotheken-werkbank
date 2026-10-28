@@ -73,7 +73,7 @@ describe('Bestellung anlegen', () => {
   it('derselbe Schlüssel zweimal: dieselbe Bestellung, nichts doppelt', async () => {
     const id = randomUUID();
     const erst = await anlegen(w.inhaberNord, w.zugangNord, [{ pzn: PROBATIN, menge: 3 }], id);
-    const nochmal = await anlegen(w.inhaberNord, w.zugangNord, [{ pzn: PROBATIN, menge: 9 }], id);
+    const nochmal = await anlegen(w.inhaberNord, w.zugangNord, [{ pzn: PROBATIN, menge: 3 }], id);
     expect(nochmal.zeilen[0]).toEqual({ ...erst.zeilen[0], neu: false });
     const { zeilen } = await als<{ menge: number }>(
       w,
@@ -82,6 +82,21 @@ describe('Bestellung anlegen', () => {
       [id],
     );
     expect(zeilen).toEqual([{ menge: 3 }]);
+  });
+
+  it('derselbe Schlüssel mit anderen Mengen: Fehler statt still die alte Bestellung', async () => {
+    const id = randomUUID();
+    await anlegen(w.inhaberNord, w.zugangNord, [{ pzn: PROBATIN, menge: 3 }], id);
+    for (const positionen of [
+      [{ pzn: PROBATIN, menge: 4 }],
+      [{ pzn: VITAMIN, menge: 3 }],
+      [
+        { pzn: PROBATIN, menge: 3 },
+        { pzn: VITAMIN, menge: 1 },
+      ],
+    ]) {
+      expect((await anlegen(w.inhaberNord, w.zugangNord, positionen, id)).fehler).toBe('WB004');
+    }
   });
 
   it('nur mit einem Zugang der eigenen Apotheke; ohne Anmeldung gar nicht', async () => {

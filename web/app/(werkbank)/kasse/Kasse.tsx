@@ -113,6 +113,7 @@ export function Kasse({
           summe={summe}
           onAendern={aendern}
           onEntfernen={entfernen}
+          onMengeFertig={() => feld.current?.focus()}
         />
         {zeilen.length > 0 ? <Zahlung summe={summe} waehrung={waehrung} /> : null}
         <div className={styles.fuss}>

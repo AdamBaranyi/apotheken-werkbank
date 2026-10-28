@@ -64,3 +64,13 @@ const ZEIT = {
 export function zeitText(iso: string, land: string): string {
   return (land === 'CH' ? ZEIT.CH : ZEIT.DE).format(new Date(iso));
 }
+
+const UHRZEIT = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  timeStyle: 'medium',
+});
+
+/** Uhrzeit mit Sekunden, deutsche Zeit (die Bestellungen gehen an deutsche Grosshändler). */
+export function uhrzeitText(zeitpunkt: Date): string {
+  return UHRZEIT.format(zeitpunkt);
+}

@@ -67,9 +67,3 @@ export async function bestellungenLaden(apothekeId: string): Promise<Bestellung[
     .limit(50);
   return z.array(zeileSchema).parse(data ?? []);
 }
-
-/** Ob die Statusabfrage etwas klären kann; «wird gesendet» erst nach einer Minute. */
-export function abfragbar(b: Pick<Bestellung, 'status' | 'erstellt_am'>, jetzt: Date): boolean {
-  if (b.status === 'unklar' || b.status === 'nicht_angekommen') return true;
-  return b.status === 'wird_gesendet' && jetzt.getTime() - Date.parse(b.erstellt_am) > 60_000;
-}

@@ -1,10 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { bremseFrei, bremseSchluessel, vertrauteIp } from './bremse';
+import { bremseSchluessel, bremseVersuch, grosshandelBremse, vertrauteIp } from './bremse';
 
 /*
  * Die App-Seite der Bremse. Die Zählregeln selbst prüfen die Datenbanktests
  * (supabase/tests/bremse.test.ts); hier: Schlüssel ohne Klartext, IP nur von
- * Vercel, und ein Ausfall der Datenbank sperrt niemanden aus.
+ * Vercel, und was ein Ausfall der Datenbank heisst. Die Bremse meldet ihn;
+ * die Anmeldung sperrt dann (app/anmelden/aktion.test.ts), der Aufruf beim
+ * Grosshändler läuft weiter.
  */
 beforeAll(() => {
   process.env.SUPABASE_URL = 'http://127.0.0.1:54401';
@@ -36,10 +38,18 @@ describe('Bremse in der App', () => {
     ).toBeNull();
   });
 
-  it('lässt durch, wenn die Datenbank nicht antwortet, und schreibt es ins Protokoll', async () => {
+  it('meldet «gestört», wenn die Datenbank nicht antwortet, und schreibt es ins Protokoll', async () => {
     const protokoll = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    expect(await bremseFrei([{ schluessel: 'konto:a', grenze: 1 }], 900)).toBe(true);
-    expect(protokoll).toHaveBeenCalledWith('Bremse nicht erreichbar, lasse durch', 'ECONNREFUSED');
+    expect(await bremseVersuch([{ schluessel: 'konto:a', grenze: 1 }], 900)).toEqual({
+      stand: 'gestoert',
+    });
+    expect(protokoll).toHaveBeenCalledWith('Bremse nicht erreichbar', 'ECONNREFUSED');
+    protokoll.mockRestore();
+  });
+
+  it('beim Grosshändler lässt eine gestörte Bremse durch: Bestellen geht vor', async () => {
+    const protokoll = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(await grosshandelBremse('3f6b1c1e-0000-4000-8000-000000000001')).toBeNull();
     protokoll.mockRestore();
   });
 });

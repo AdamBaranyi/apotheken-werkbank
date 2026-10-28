@@ -3,9 +3,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Anteile } from '@/components/anteile/Anteile';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
-import { abfragbar, bestellungLaden } from '@/lib/bestellung/laden';
+import { abfragbar, abfrageAb } from '@/lib/bestellung/abfrage';
+import { bestellungLaden } from '@/lib/bestellung/laden';
 import { STATUS_ERKLAERUNG, STATUS_TEXT } from '@/lib/bestellung/texte';
-import { zeitText } from '@/lib/kasse/beleg-daten';
+import { uhrzeitText, zeitText } from '@/lib/kasse/beleg-daten';
 import { zusammenhalten } from '@/lib/satz';
 import styles from './bestellung.module.css';
 import { StatusAbfrage } from './StatusAbfrage';
@@ -23,6 +24,7 @@ export default async function BestellungSeite({ params }: Props) {
   const b = await bestellungLaden((await params).id);
   if (!b) notFound();
   const lieferung = new Map(b.antwort?.positionen.map((p) => [p.pzn, p]) ?? []);
+  const abfrage = abfrageAb(b);
   return (
     <>
       <h1>Bestellung {b.support_id}</h1>
@@ -32,7 +34,14 @@ export default async function BestellungSeite({ params }: Props) {
         </h2>
         <p>{STATUS_ERKLAERUNG[b.status]}</p>
         {b.meldung ? <p className={styles.meldung}>{b.meldung}</p> : null}
-        {abfragbar(b, new Date()) ? <StatusAbfrage bestellung={b.id} /> : null}
+        {abfrage === null ? null : abfragbar(b, new Date()) ? (
+          <StatusAbfrage bestellung={b.id} />
+        ) : (
+          <p className={styles.meldung}>
+            Statusabfrage ab <span className="ziffern">{uhrzeitText(abfrage)}</span> Uhr: So lange
+            verarbeitet der Grosshändler die Bestellung vielleicht noch. Danach die Seite neu laden.
+          </p>
+        )}
       </section>
       <dl className={styles.angaben}>
         <div>

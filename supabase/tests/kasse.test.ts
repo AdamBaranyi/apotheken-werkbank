@@ -109,6 +109,21 @@ describe('Verkauf buchen', () => {
     expect(naechster.zeilen[0]?.belegnummer).toBe(2);
   });
 
+  it('derselbe Schlüssel mit anderem Inhalt: Fehler statt still der alte Beleg', async () => {
+    // Nach einem Abbruch den Bon geändert oder mit «Zurück» zur alten Kasse: Der
+    // neue Verkauf darf nicht still als der alte Beleg erscheinen.
+    const schluessel = randomUUID();
+    await buchen(w, w.inhaberNord, w.nord, [{ pzn: PROBATIN, menge: 1 }], undefined, schluessel);
+    for (const [positionen, zahlung] of [
+      [[{ pzn: PROBATIN, menge: 2 }], { zahlart: 'karte' }],
+      [[{ pzn: VITAMIN, menge: 1 }], { zahlart: 'karte' }],
+      [[{ pzn: PROBATIN, menge: 1 }], { zahlart: 'bar', gegeben: 500 }],
+    ] as const) {
+      const anders = await buchen(w, w.inhaberNord, w.nord, [...positionen], zahlung, schluessel);
+      expect(anders.fehler, JSON.stringify(positionen)).toBe('WK011');
+    }
+  });
+
   it('rezeptpflichtig ohne vorgelegtes Rezept: abgelehnt, mit Rezept: gebucht', async () => {
     const ohne = await buchen(w, w.inhaberNord, w.nord, [{ pzn: FICTOLAT, menge: 1 }]);
     expect(ohne.fehler).toBe('WK002');
@@ -239,6 +254,14 @@ describe('Storno', () => {
     expect((await beleg(w, w.inhaberNord, original?.id ?? ''))?.storniert_durch).toBe(
       storno.zeilen[0]?.id,
     );
+  });
+
+  it('derselbe Schlüssel für das Storno eines anderen Belegs: Fehler', async () => {
+    const a = (await buchen(w, w.inhaberNord, w.nord, [{ pzn: PROBATIN, menge: 1 }])).zeilen[0];
+    const b = (await buchen(w, w.inhaberNord, w.nord, [{ pzn: VITAMIN, menge: 1 }])).zeilen[0];
+    const schluessel = randomUUID();
+    await stornieren(w, w.inhaberNord, a?.id ?? '', schluessel);
+    expect((await stornieren(w, w.inhaberNord, b?.id ?? '', schluessel)).fehler).toBe('WK011');
   });
 
   it('Mitarbeiter stornieren nicht', async () => {

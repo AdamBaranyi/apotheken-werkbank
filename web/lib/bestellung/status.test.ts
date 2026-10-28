@@ -106,4 +106,20 @@ describe('Status einer Bestellung', () => {
     expect(ausStatus({ status: 'BestellantwortNichtVerfuegbar' }).status).toBe('ohne_antwort');
     expect(ausStatus({ status: 'KennungUnbekannt' }).status).toBe('nicht_angekommen');
   });
+
+  it('«Antwort verfügbar» ohne Antwort: unklar, nicht «nicht angekommen»', () => {
+    // Angekommen ist sie; «nicht angekommen» lüde zum zweiten Bestellen ein.
+    const ergebnis = ausStatus({ status: 'BestellantwortVerfuegbar' });
+    expect(ergebnis.status).toBe('unklar');
+    expect(ergebnis.meldung).toContain('angekommen');
+  });
+
+  it('ein Fault ohne MSV3-Angaben heisst «unklar»: ob ausgeführt, weiss niemand', () => {
+    const ergebnis = ausFehler({
+      exceptiontyp: 'ClientException',
+      errorCode: 'C-FAULT',
+      endanwenderText: 'Der Grosshändler meldet einen Fehler ohne nähere Angaben.',
+    });
+    expect(ergebnis.status).toBe('unklar');
+  });
 });

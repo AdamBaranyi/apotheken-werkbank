@@ -11,10 +11,11 @@ import { umgebung } from '@/lib/umgebung';
  * über die eigene Rolle werkbank_bremse und den Pooler von Supabase, nicht
  * über die REST-Schnittstelle: Vor der Anmeldung gibt es keine Sitzung.
  *
- * In der Datenbank stehen nur HMAC-Werte, nie E-Mail oder IP. Antwortet die
- * Datenbank nicht, lässt die Bremse durch und schreibt es ins Protokoll:
- * Ein Ausfall soll die Apotheke nicht aussperren; Supabase begrenzt
- * Anmeldungen zusätzlich selbst.
+ * Prüfen und Zählen geschehen in einem Aufruf unter einer Sperre je
+ * Schlüssel; so kommen auch gleichzeitige Versuche nicht über die Grenze. In
+ * der Datenbank stehen nur HMAC-Werte, nie E-Mail oder IP. Antwortet die
+ * Datenbank nicht, meldet die Bremse «gestört»; was dann gilt, entscheidet der
+ * Aufrufer: Die Anmeldung sperrt, der Aufruf beim Grosshändler läuft weiter.
  */
 export type BremsenArt = 'konto' | 'konto-ip' | 'ip' | 'grosshandel';
 
@@ -22,6 +23,13 @@ export interface BremsenEintrag {
   schluessel: string;
   grenze: number;
 }
+
+/** «aus»: keine Adresse eingerichtet (lokal ohne Einrichtung, Vorschau). */
+export type BremsenStand =
+  | { stand: 'frei'; ids: string[] }
+  | { stand: 'gebremst' }
+  | { stand: 'aus' }
+  | { stand: 'gestoert' };
 
 let hmacSchluessel: Buffer | undefined;
 
@@ -63,60 +71,77 @@ function tls(url: string): false | { ca: string; rejectUnauthorized: true } {
   return { ca: SUPABASE_ROOT_CA, rejectUnauthorized: true };
 }
 
-async function mitDatenbank<T>(arbeit: (c: pg.Client) => Promise<T>, ersatz: T): Promise<T> {
+let pool: pg.Pool | undefined;
+
+/** Wenige Verbindungen je Instanz, im Leerlauf nach 10 s geschlossen. */
+function verbindung(url: string): pg.Pool {
+  if (!pool) {
+    pool = new pg.Pool({
+      connectionString: url,
+      ssl: tls(url),
+      max: 3,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 3000,
+      query_timeout: 3000,
+    });
+    // Reisst eine ruhende Verbindung ab, darf das den Server nicht beenden.
+    pool.on('error', (fehler: Error & { code?: string }) => {
+      console.error('Bremse: Verbindung abgerissen', fehler.code ?? fehler.name);
+    });
+  }
+  return pool;
+}
+
+function protokoll(fehler: unknown): void {
+  const f = fehler as { code?: string; name?: string };
+  console.error('Bremse nicht erreichbar', f.code ?? f.name);
+}
+
+/**
+ * Prüft und zählt einen Versuch je Schlüssel. «frei» trägt die Nummern der
+ * Einträge; ein gelungener Versuch gibt sie mit bremseFreigeben zurück.
+ */
+export async function bremseVersuch(
+  eintraege: BremsenEintrag[],
+  fensterSekunden: number,
+): Promise<BremsenStand> {
   const url = umgebung().BREMSE_DATENBANK_URL;
-  if (!url) return ersatz;
-  const client = new pg.Client({
-    connectionString: url,
-    ssl: tls(url),
-    connectionTimeoutMillis: 3000,
-    query_timeout: 3000,
-  });
+  if (!url) return { stand: 'aus' };
   try {
-    await client.connect();
-    return await arbeit(client);
+    const { rows } = await verbindung(url).query<{ ids: string[] | null }>(
+      'select privat.bremse_versuchen($1, $2, $3) as ids',
+      [eintraege.map((e) => e.schluessel), eintraege.map((e) => e.grenze), fensterSekunden],
+    );
+    const ids = rows[0]?.ids;
+    return ids ? { stand: 'frei', ids } : { stand: 'gebremst' };
   } catch (fehler) {
-    const f = fehler as { code?: string; name?: string };
-    console.error('Bremse nicht erreichbar, lasse durch', f.code ?? f.name);
-    return ersatz;
-  } finally {
-    await client.end().catch(() => undefined);
+    protokoll(fehler);
+    return { stand: 'gestoert' };
   }
 }
 
-/** Frei, solange jeder Schlüssel im Fenster unter seiner Grenze liegt. Zählt nicht. */
-export function bremseFrei(eintraege: BremsenEintrag[], fensterSekunden: number): Promise<boolean> {
-  return mitDatenbank(async (c) => {
-    const { rows } = await c.query<{ frei: boolean }>(
-      'select privat.bremse_frei($1, $2, $3) as frei',
-      [eintraege.map((e) => e.schluessel), eintraege.map((e) => e.grenze), fensterSekunden],
-    );
-    return rows[0]?.frei ?? true;
-  }, true);
-}
-
-/** Zählt einen Versuch je Schlüssel, etwa nach einer gescheiterten Anmeldung. */
-export function bremseZaehlen(schluessel: string[]): Promise<void> {
-  return mitDatenbank(async (c) => {
-    await c.query('select privat.bremse_zaehlen($1)', [schluessel]);
-  }, undefined);
+/** Ein gelungener Versuch zählt nicht mehr. Scheitert das, zählt er bis zum Ende des Fensters. */
+export async function bremseFreigeben(ids: string[]): Promise<void> {
+  const url = umgebung().BREMSE_DATENBANK_URL;
+  if (!url || ids.length === 0) return;
+  try {
+    await verbindung(url).query('select privat.bremse_freigeben($1::bigint[])', [ids]);
+  } catch (fehler) {
+    protokoll(fehler);
+  }
 }
 
 /**
  * Aufrufe beim Grosshändler je Apotheke: höchstens 60 je Minute. Ein Skript
  * in einer Schleife soll nicht dazu führen, dass der Grosshändler den Zugang
- * der Apotheke sperrt. Prüft und zählt in einer Verbindung.
+ * der Apotheke sperrt. Bei gestörter Bremse geht Bestellen vor.
  */
-export function grosshandelBremse(apothekeId: string): Promise<string | null> {
-  const schluessel = bremseSchluessel('grosshandel', apothekeId);
-  return mitDatenbank(async (c) => {
-    const { rows } = await c.query<{ frei: boolean }>(
-      'select privat.bremse_frei($1, $2, 60) as frei',
-      [[schluessel], [60]],
-    );
-    if (rows[0]?.frei === false)
-      return 'Zu viele Anfragen an den Grosshändler. Bitte in einer Minute erneut.';
-    await c.query('select privat.bremse_zaehlen($1)', [[schluessel]]);
-    return null;
-  }, null);
+export async function grosshandelBremse(apothekeId: string): Promise<string | null> {
+  const versuch = await bremseVersuch(
+    [{ schluessel: bremseSchluessel('grosshandel', apothekeId), grenze: 60 }],
+    60,
+  );
+  return versuch.stand === 'gebremst'
+    ? 'Zu viele Anfragen an den Grosshändler. Bitte in einer Minute erneut.'
+    : null;
 }

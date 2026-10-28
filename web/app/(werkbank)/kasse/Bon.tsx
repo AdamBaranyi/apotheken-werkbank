@@ -17,14 +17,26 @@ interface Props {
   summe: number;
   onAendern: (pzn: string, teil: Partial<BonZeile>) => void;
   onEntfernen: (pzn: string) => void;
+  /** Enter im Mengenfeld: zurück zur Erfassung statt buchen. */
+  onMengeFertig: () => void;
 }
 
 /**
  * Der Bon: eine Zeile je Artikel. Die Felder heissen «menge-PZN» und
  * «rezept-PZN»; so liest sie die Aktion. Rezeptpflichtige Artikel brauchen das
- * Häkchen «Rezept liegt vor», sonst lehnt die Datenbank den Verkauf ab.
+ * Häkchen «Rezept liegt vor», sonst lehnt die Datenbank den Verkauf ab. Enter
+ * in einem Mengenfeld bucht nicht: Wer die Menge bestätigt oder dort
+ * versehentlich scannt, will weiter erfassen.
  */
-export function Bon({ zeilen, katalog, waehrung, summe, onAendern, onEntfernen }: Props) {
+export function Bon({
+  zeilen,
+  katalog,
+  waehrung,
+  summe,
+  onAendern,
+  onEntfernen,
+  onMengeFertig,
+}: Props) {
   if (zeilen.length === 0) {
     return (
       <p className={styles.leer}>Der Bon ist leer. Erfassen Sie einen Artikel über die PZN.</p>
@@ -85,6 +97,11 @@ export function Bon({ zeilen, katalog, waehrung, summe, onAendern, onEntfernen }
                   max={999}
                   value={z.menge}
                   onChange={(e) => onAendern(z.pzn, { menge: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter') return;
+                    e.preventDefault();
+                    onMengeFertig();
+                  }}
                   aria-label={`Menge ${name}`}
                   className={styles.menge}
                 />
