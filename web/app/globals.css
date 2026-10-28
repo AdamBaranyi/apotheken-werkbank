@@ -9,6 +9,7 @@
   --linie: #c7d0d5;
   --linie-feld: #6f7f89;
   --tinte: #14212b;
+  --tinte-hover: #26394a;
   --tinte-leise: #4a5964;
   --daten-normal: #1d6b48;
   --daten-verbund: #2554a0;
@@ -20,6 +21,29 @@
   --breite: 72rem;
   color-scheme: light;
   accent-color: var(--tinte);
+}
+
+/*
+ * Dunkel, wenn das System es wünscht: dieselben Rollen, neue Werte. Text
+ * mindestens 4,5 : 1 auf Papier und Fläche, Feldränder mindestens 3 : 1.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papier: #10181e;
+    --flaeche: #1a252d;
+    --linie: #34444f;
+    --linie-feld: #8a9aa5;
+    --tinte: #e8eef2;
+    --tinte-hover: #cfd9df;
+    --tinte-leise: #aab7c0;
+    --daten-normal: #56c98f;
+    --daten-verbund: #84aeff;
+    --daten-nachlieferung: #e5aa45;
+    --daten-dispo: #a5b1bb;
+    --daten-defekt: #ff8a80;
+    --fokus-innen: #10181e;
+    color-scheme: dark;
+  }
 }
 
 *,

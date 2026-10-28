@@ -13,12 +13,13 @@ Grosshändler. Ein SOAP-Dienst braucht einen Dauerprozess; Vercel-Funktionen bie
 
 ## Geheimnisse und wo sie liegen
 
-| Was                                 | Wo                                                                    |
-| ----------------------------------- | --------------------------------------------------------------------- |
-| `ZUGANG_SCHLUESSEL` (AES-256-GCM)   | Vercel (Produktion, als Secret) und lokal in `.lokal/produktion/`     |
-| Schlüssel der Vorschau              | nur Vercel (Preview), eigener Zufallswert, nirgends gespeichert (E19) |
-| Passwörter der Grosshändler-Zugänge | nirgends im Klartext: als Hash auf vps1, als Geheimtext in Supabase   |
-| Passwörter der Demo-Konten          | Passwortmanager von Adam; Claude sieht sie nie                        |
+| Was                                              | Wo                                                                                                                                                                             |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ZUGANG_SCHLUESSEL` (AES-256-GCM)                | Vercel (Produktion, als Secret) und lokal in `.lokal/produktion/`                                                                                                              |
+| Schlüssel der Vorschau                           | nur Vercel (Preview), eigener Zufallswert, nirgends gespeichert (E19)                                                                                                          |
+| Passwörter der Grosshändler-Zugänge              | nirgends im Klartext: als Hash auf vps1, als Geheimtext in Supabase                                                                                                            |
+| Passwörter der Demo-Konten                       | Passwortmanager von Adam; Claude sieht sie nie                                                                                                                                 |
+| `BREMSE_DATENBANK_URL` (Rolle `werkbank_bremse`) | Vercel (Produktion, als Secret) und lokal in `.lokal/produktion/bremse-url.txt`; Supabase kennt nur den SCRAM-Verifier. Die Vorschau hat keine: Dort bremst nur Supabase (E23) |
 
 `.lokal/` steht in `.gitignore`, `.vercelignore` und `.dockerignore`. Vercel und Docker laden
 ohne die beiden Freigabelisten alles hoch, was im Ordner liegt, auch was Git ignoriert.
@@ -50,8 +51,14 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
    up» aus) und die beiden Konten anlegen (`inhaber.nord@werkbank.test`,
    `mitarbeit.sued@werkbank.test`, «Auto Confirm User»). Danach `zugaenge.sql` im SQL-Editor
    ausführen; ohne die Konten bricht sie mit einer Meldung ab.
-8. **Prüfen:** `https://grosshandel.adambaranyi.xyz/gesundheit` antwortet «ok»; nach der
-   Anmeldung in der Web-App zeigt «Bestellen» die Bestellfenster.
+8. **Bremse (E23):** `node scripts/produktion-bremse.ts` schreibt
+   `.lokal/produktion/bremse.sql` (nur der Verifier) und `.lokal/produktion/bremse-url.txt`.
+   Die SQL in Supabase ausführen, dann
+   `bunx vercel@64.5.0 env add BREMSE_DATENBANK_URL production --sensitive < .lokal/produktion/bremse-url.txt`
+   und neu ausrollen.
+9. **Prüfen:** `https://grosshandel.adambaranyi.xyz/gesundheit` antwortet «ok»; nach der
+   Anmeldung in der Web-App zeigt «Bestellen» die Bestellfenster. Fünf falsche Passwörter
+   hintereinander führen beim sechsten Versuch zu «Zu viele Versuche».
 
 ## Laufend
 
@@ -61,6 +68,12 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
 - **Neue Passwörter für die Zugänge:** Schritt 4, dann 5, 6 und die SQL aus Schritt 7. Nur
   beides zusammen: Hash und Geheimtext müssen zum selben Passwort gehören
   (`tests/produktion-zugaenge.test.ts`).
+- **Passwort der Bremse wechseln:** Schritt 8 noch einmal; die alte Adresse gilt danach nicht
+  mehr.
+- **Anmeldung meldet «gerade gestört»:** Die Bremse erreicht die Datenbank nicht (Protokoll in
+  Vercel: «Bremse nicht erreichbar» mit Code). Status des Poolers bei Supabase prüfen; scheitert
+  die Anmeldung der Rolle (`28P01`), Schritt 8. Absichtlich: Bei gestörter Bremse kommt niemand
+  herein (E23).
 - **Datenbank:** Migrationen aus `supabase/migrations/`; in der Cloud tragen sie dieselben
   Versionen wie die Dateinamen. Danach die Advisors ansehen; bewusst Offenes steht in
   `docs/SECURITY.md`.
@@ -78,4 +91,7 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
 | `infra/deploy.sh`                        | Ausrollen; getestet in `tests/deploy-skript.test.ts`      |
 | `infra/caddy/werkbank-grosshandel.caddy` | Vorlage für den gemeinsamen Caddy                         |
 | `scripts/produktion-zugaenge.ts`         | Zugänge für die Produktion                                |
+| `scripts/produktion-bremse.ts`           | Passwort der Rolle `werkbank_bremse` für die Produktion   |
+| `web/lib/supabase-ca.ts`                 | CA von Supabase für TLS zum Pooler                        |
+| `scripts/lighthouse.mjs`                 | Lighthouse gegen den Produktionsbuild (CI und lokal)      |
 | `web/vercel.json`                        | Region und Installation auf Vercel                        |

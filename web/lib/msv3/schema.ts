@@ -56,3 +56,37 @@ export const vertragsdatenSchema = z.object({
   }),
 });
 export type Vertragsdaten = z.infer<typeof vertragsdatenSchema>['vertragsdaten'];
+
+/** Antwort auf «bestellen» (Pflichtenheft Kap. 6.2): je Auftrag Positionen mit Anteilen oder ein Auftragsfehler. */
+const antwortPositionSchema = z.object({
+  pzn: z.string(),
+  menge: zahl,
+  liefervorgabe: z.string(),
+  anteil: z.array(anteilSchema).default([]),
+});
+
+const antwortAuftragSchema = z.object({
+  id: z.string(),
+  auftragsart: z.string(),
+  auftragskennung: z.string(),
+  auftragsfehler: z
+    .object({ errorCode: z.string(), endanwenderText: z.string(), technischerText: z.string() })
+    .optional(),
+  position: z.array(antwortPositionSchema).default([]),
+});
+
+const antwortBestellungSchema = z.object({
+  id: z.string(),
+  nachtbetrieb: wahr,
+  auftrag: z.array(antwortAuftragSchema).min(1),
+});
+export type Bestellantwort = z.infer<typeof antwortBestellungSchema>;
+
+export const bestellantwortSchema = z.object({ bestellung: antwortBestellungSchema });
+
+/** Antwort auf «bestellstatusAbfragen» (Kap. 6.3); die Bestellung nur am Tag der Bestellung. */
+export const bestellstatusSchema = z.object({
+  status: z.enum(['KennungUnbekannt', 'BestellantwortNichtVerfuegbar', 'BestellantwortVerfuegbar']),
+  bestellung: antwortBestellungSchema.optional(),
+});
+export type Bestellstatusantwort = z.infer<typeof bestellstatusSchema>;

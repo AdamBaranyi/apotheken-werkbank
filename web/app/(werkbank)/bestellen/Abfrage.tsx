@@ -5,6 +5,7 @@ import { Anteile } from '@/components/anteile/Anteile';
 import { zusammenhalten } from '@/lib/satz';
 import { pruefen, type PruefStand } from './aktion';
 import styles from './bestellen.module.css';
+import { bestellungSenden, type SendeStand } from './senden';
 
 export interface KatalogArtikel {
   pzn: string;
@@ -16,14 +17,28 @@ export interface KatalogArtikel {
 /**
  * Mengen eintragen und beim Grosshändler anfragen. Die Antwort steht direkt
  * beim Artikel. Mengen bleiben nach dem Senden stehen (React setzt ein
- * Formular sonst zurück); der Knopf behält den Fokus und sperrt sich nur
- * per aria-disabled.
+ * Formular sonst zurück); die Knöpfe behalten den Fokus und sperren sich nur
+ * per aria-disabled. Enter löst den ersten Knopf aus, die unverbindliche
+ * Anfrage; bestellt wird nur mit dem zweiten. Der Schlüssel stammt aus dem
+ * Seitenaufbau und wird zur Bestell-ID: Ein zweiter Klick bestellt nichts doppelt.
  */
-export function Abfrage({ artikel, zugangId }: { artikel: KatalogArtikel[]; zugangId: string }) {
+export function Abfrage({
+  artikel,
+  zugangId,
+  schluessel,
+}: {
+  artikel: KatalogArtikel[];
+  zugangId: string;
+  schluessel: string;
+}) {
   const [stand, aktion, laeuft] = useActionState<PruefStand, FormData>(pruefen, { mengen: {} });
+  const [sendeStand, senden, sendet] = useActionState<SendeStand, FormData>(bestellungSenden, {});
+  const beschaeftigt = laeuft || sendet;
+  const fehler = sendeStand.fehler ?? stand.fehler;
   return (
     <form action={aktion} className={styles.abfrage}>
       <input type="hidden" name="zugangId" value={zugangId} />
+      <input type="hidden" name="schluessel" value={schluessel} />
       <table className={styles.tabelle}>
         <caption className="unsichtbar">Artikel mit Menge und Verfügbarkeit</caption>
         <thead>
@@ -76,19 +91,32 @@ export function Abfrage({ artikel, zugangId }: { artikel: KatalogArtikel[]; zuga
         </tbody>
       </table>
       <div className={styles.fuss}>
-        <p role="alert" className={stand.fehler ? styles.fehler : 'unsichtbar'}>
-          {stand.fehler ?? ''}
+        <p role="alert" className={fehler ? styles.fehler : 'unsichtbar'}>
+          {fehler ?? ''}
         </p>
-        <button
-          type="submit"
-          className={styles.knopf}
-          aria-disabled={laeuft}
-          onClick={(e) => {
-            if (laeuft) e.preventDefault();
-          }}
-        >
-          {laeuft ? 'Frage den Grosshändler …' : 'Verfügbarkeit prüfen'}
-        </button>
+        <div className={styles.knoepfe}>
+          <button
+            type="submit"
+            className={styles.zweitknopf}
+            aria-disabled={beschaeftigt}
+            onClick={(e) => {
+              if (beschaeftigt) e.preventDefault();
+            }}
+          >
+            {laeuft ? 'Frage den Grosshändler …' : 'Verfügbarkeit prüfen'}
+          </button>
+          <button
+            type="submit"
+            formAction={senden}
+            className={styles.knopf}
+            aria-disabled={beschaeftigt}
+            onClick={(e) => {
+              if (beschaeftigt) e.preventDefault();
+            }}
+          >
+            {sendet ? 'Bestellung wird gesendet …' : 'Verbindlich bestellen'}
+          </button>
+        </div>
       </div>
     </form>
   );

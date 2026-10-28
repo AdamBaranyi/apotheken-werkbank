@@ -13,6 +13,13 @@ test.describe('Sicherheit im Browser', () => {
     expect(kopf['content-security-policy']).toContain("frame-ancestors 'none'");
     expect(kopf['x-powered-by']).toBeUndefined();
     expect(kopf['x-content-type-options']).toBe('nosniff');
+    expect(kopf['cross-origin-resource-policy']).toBe('same-origin');
+    expect(kopf['permissions-policy']).toContain('camera=()');
+  });
+
+  test('Seiten mit Daten landen in keinem Zwischenspeicher', async ({ request }) => {
+    const antwort = await request.get('/kasse');
+    expect(antwort.headers()['cache-control']).toContain('no-store');
   });
 
   test('der Browser spricht nur mit der eigenen Adresse und verletzt die CSP nie', async ({

@@ -2,10 +2,12 @@
 
 import { z } from 'zod';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
+import { grosshandelBremse } from '@/lib/bremse';
 import { verfuegbarkeitAnfragen } from '@/lib/msv3/anfragen';
 import { Msv3Fehler } from '@/lib/msv3/client';
 import type { Anteil } from '@/lib/msv3/schema';
 import { zugangLaden } from '@/lib/zugang';
+import { positionenLesen, positionenSchema } from './eingabe';
 
 export interface PruefStand {
   mengen: Record<string, number>;
@@ -14,36 +16,22 @@ export interface PruefStand {
   fehler?: string;
 }
 
-const eingabe = z.object({
-  zugangId: z.uuid(),
-  positionen: z
-    .array(z.object({ pzn: z.string().regex(/^\d{8}$/), menge: z.number().int().min(1).max(9999) }))
-    .min(1, 'Bitte bei mindestens einem Artikel eine Menge eintragen.')
-    .max(50, 'Höchstens 50 Artikel je Anfrage.'),
-});
-
-function positionenLesen(form: FormData) {
-  const positionen: { pzn: string; menge: number }[] = [];
-  for (const [schluessel, wert] of form.entries()) {
-    const pzn = /^menge-(\d{8})$/.exec(schluessel)?.[1];
-    const menge = Number(wert);
-    if (pzn && String(wert).trim() !== '' && Number.isFinite(menge) && menge > 0) {
-      positionen.push({ pzn, menge: Math.floor(menge) });
-    }
-  }
-  return positionen;
-}
+const eingabe = z.object({ zugangId: z.uuid(), positionen: positionenSchema });
 
 /** Verfügbarkeit beim Grosshändler anfragen (unverbindlich, reserviert nichts). */
 export async function pruefen(_vorher: PruefStand, form: FormData): Promise<PruefStand> {
   const platz = await arbeitsplatzLaden();
   const positionen = positionenLesen(form);
-  const mengen = Object.fromEntries(positionen.map((p) => [p.pzn, p.menge]));
+  const mengen = Object.fromEntries(
+    positionen.filter((p) => Number.isFinite(p.menge)).map((p) => [p.pzn, p.menge]),
+  );
   if (!platz) return { mengen, fehler: 'Dieses Konto gehört zu keiner Apotheke.' };
   const geprueft = eingabe.safeParse({ zugangId: form.get('zugangId'), positionen });
   if (!geprueft.success) {
     return { mengen, fehler: geprueft.error.issues[0]?.message ?? 'Eingabe ungültig.' };
   }
+  const gebremst = await grosshandelBremse(platz.apotheke.id);
+  if (gebremst) return { mengen, fehler: gebremst };
   try {
     const zugang = await zugangLaden(geprueft.data.zugangId);
     if (!zugang)

@@ -153,3 +153,31 @@ enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
   ignoriert, und `vercel link` legte ungefragt eine `.env.local` mit einem Token an und
   ergänzte `.gitignore`. Gebaut wird in Washington (`iad1`), die Funktionen laufen trotzdem in
   Frankfurt (`fra1`); das zeigt die Kopfzeile `x-vercel-id`.
+
+### Abend 2, Kasse und Bestellung
+
+- Der Mehrwertsatz hängt nicht am Artikel, sondern an Land und Warengruppe: Ein Arzneimittel
+  trägt in Deutschland 19 %, in der Schweiz 2,6 %. «Voll» und «ermässigt» im Artikel war ein
+  Modellfehler von Abend 1, sichtbar erst, als das Land umschaltbar wurde.
+- Eine echte Kasse in Deutschland braucht eine TSE: Jede Buchung wird signiert, der Beleg nennt
+  Seriennummern, Signaturzähler und Prüfwert (§ 6 KassenSichV). Die Kasse der Werkbank sagt auf
+  jedem Beleg, dass das fehlt (docs/KASSE.md).
+- Belege werden nie geändert; korrigiert wird mit einem Storno. Lückenlose Nummern gehen nur mit
+  einem Zähler in derselben Transaktion – und nicht mit `on conflict do nothing`, weil ein
+  Trigger davor schon hochzählt.
+- Doppelklick und Abbruch löst dieselbe Idee: Die ID entsteht vor dem Senden. Beim Beleg kommt
+  sie aus dem Seitenaufbau, bei der Bestellung geht sie als Bestell-ID an den Grosshändler, und
+  nach einem Abbruch fragt man mit ihr nach, statt neu zu bestellen.
+- Was die Verfügbarkeit zeigt, ist nicht, was bestellt wird: Die Liefervorgabe entscheidet, ob
+  der Verbund mitliefert. Erst ein Test machte den Unterschied sichtbar.
+- Läuft die Sitzung ab, während ein Formular offen ist, darf `proxy.ts` den Aufruf einer
+  Server-Aktion nicht umleiten; Next versteht die Umleitung nicht und zeigt eine Fehlerseite
+  (#1, die erste Bug-Kette).
+- Auf Vercel sieht Supabase nur die IP des Servers. Eine Bremse für die Anmeldung braucht darum
+  eigene Zähler; die IP der Person liefert Vercel in `x-real-ip`. Der Pooler von Supabase zeigt
+  ein Zertifikat einer eigenen CA, die man mitliefern muss, statt die Prüfung abzuschalten.
+- Eine Sperre nur je Konto ist selbst ein Angriffspunkt: Fünf falsche Passwörter von irgendwem
+  sperren die Apotheke aus. Gemessen im eigenen Test, als das Testkonto gesperrt war.
+- Eine Bremse muss prüfen und zählen in einem Schritt, sonst kommen gleichzeitige Versuche
+  gemeinsam durch; und lässt sie bei Störung durch, lässt sie sich abschalten: erst überlasten,
+  dann raten. Beides fand die Durchsicht vor dem Merge, nicht die Tests.

@@ -1,4 +1,5 @@
 import { test, type Page, type TestInfo } from '@playwright/test';
+import { erfassen, FICTOLAT, PROBATIN } from '../e2e/kasse-hilfen';
 import { SITZUNG } from '../e2e/konten';
 
 /* Zwischenbilder je Breite. Alle Daten sind erfunden. */
@@ -35,5 +36,41 @@ test.describe('angemeldet', () => {
       .getByText('25 von 30', { exact: true })
       .waitFor();
     await festhalten(page, info, 'bestellen');
+  });
+
+  test('Kasse, Beleg und Abschluss', async ({ page }, info) => {
+    await page.goto('/kasse');
+    await erfassen(page, PROBATIN, PROBATIN, FICTOLAT, '99113703');
+    await page.getByLabel('Rezept liegt vor').check();
+    await page.getByLabel('Gegeben').fill('50');
+    await festhalten(page, info, 'kasse');
+    await page.getByRole('button', { name: 'Verkauf buchen' }).click();
+    await page.getByRole('heading', { level: 1, name: /^Beleg \d+$/ }).waitFor();
+    await festhalten(page, info, 'beleg');
+    await page.goto('/kasse/belege');
+    await festhalten(page, info, 'belege');
+    await page.goto('/kasse/abschluss');
+    await festhalten(page, info, 'abschluss-offen');
+    // Parallele Läufe schliessen vielleicht zuerst ab; dann gibt es kein Bild davon.
+    const knopf = page.getByRole('button', { name: 'Tag abschliessen' });
+    if ((await knopf.count()) > 0) {
+      await knopf.click();
+      const titel = page.getByRole('heading', { level: 1, name: /^Abschluss \d+$/ });
+      await titel
+        .or(page.getByRole('main').getByRole('alert').filter({ hasText: 'keine' }))
+        .waitFor();
+      if (await titel.isVisible()) await festhalten(page, info, 'abschluss');
+    }
+  });
+
+  test('Bestellung und Bestellungen', async ({ page }, info) => {
+    await page.goto('/bestellen');
+    await page.getByLabel('Menge Probatin 400 mg Filmtabletten, 50 St.').fill('6');
+    await page.getByLabel('Menge Seltenol Kapseln, 30 St.').fill('2');
+    await page.getByRole('button', { name: 'Verbindlich bestellen' }).click();
+    await page.getByRole('heading', { level: 2, name: /^Status:/ }).waitFor();
+    await festhalten(page, info, 'bestellung');
+    await page.goto('/bestellungen');
+    await festhalten(page, info, 'bestellungen');
   });
 });

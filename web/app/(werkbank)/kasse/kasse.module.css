@@ -1,0 +1,291 @@
+/* Kasse: Erfassen oben, darunter Bon und Zahlung. Beträge rechtsbündig mit Tabellenziffern. */
+.einleitung {
+  color: var(--tinte-leise);
+}
+
+.kasse,
+.verkauf {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.erfassen {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 40rem;
+}
+
+.erfassen > label,
+.gegeben > label {
+  font-weight: 650;
+}
+
+.erfassenZeile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pzn,
+.betrag,
+.menge {
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--linie-feld);
+  border-radius: var(--radius);
+  background: var(--papier);
+  font-variant-numeric: tabular-nums;
+}
+
+.pzn {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.pzn[aria-invalid='true'] {
+  border: 2px solid var(--daten-defekt);
+}
+
+.betrag {
+  width: 9rem;
+}
+
+.menge {
+  width: 5.5rem;
+  min-height: 2.75rem;
+}
+
+.hinweis {
+  margin: 0;
+  color: var(--daten-defekt);
+  font-weight: 600;
+}
+
+.leer {
+  margin: 0;
+  max-width: none;
+  padding: 1.5rem 1rem;
+  border: 1px dashed var(--linie-feld);
+  border-radius: var(--radius);
+  color: var(--tinte-leise);
+}
+
+.bon {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bon th {
+  text-align: left;
+  font-weight: 650;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--tinte);
+}
+
+.bon td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--linie);
+  vertical-align: top;
+}
+
+.bon td:first-child,
+.bon th:first-child {
+  padding-left: 0;
+}
+
+.bon th:nth-child(3),
+.bon th:nth-child(4),
+.bon td:nth-child(3),
+.bon td:nth-child(4) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bon tfoot th,
+.bon tfoot td {
+  border-bottom: 0;
+  padding-top: 1rem;
+  text-align: right;
+  font-size: 1.25rem;
+  font-weight: 750;
+}
+
+.rx {
+  margin-left: 0.5rem;
+  padding: 0 0.375rem;
+  border: 1px solid var(--tinte);
+  border-radius: 2px;
+  font-weight: 700;
+}
+
+.rezept,
+.zahlart {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+}
+
+.rezept {
+  margin-top: 0.25rem;
+}
+
+.rezept input,
+.zahlart input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+}
+
+.entfernen,
+.zweitknopf {
+  min-height: 2.75rem;
+  padding: 0.25rem 1rem;
+  border: 1px solid var(--linie-feld);
+  border-radius: var(--radius);
+  background: var(--papier);
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.zweitknopf {
+  min-height: 3rem;
+  border: 2px solid var(--tinte);
+  font-weight: 700;
+}
+
+.entfernen:hover,
+.zweitknopf:hover {
+  background: var(--flaeche);
+}
+
+.zahlung {
+  display: grid;
+  gap: 1rem;
+  max-width: 40rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+}
+
+.zahlung legend {
+  padding: 0 0.25rem;
+  font-weight: 650;
+}
+
+.zahlarten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.5rem;
+}
+
+.gegeben {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.rueckgeld,
+.karteHinweis {
+  margin: 0;
+}
+
+.rueckgeld {
+  font-weight: 650;
+}
+
+.karteHinweis {
+  color: var(--tinte-leise);
+}
+
+.fuss {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fehler {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--daten-defekt);
+  border-radius: var(--radius);
+  color: var(--daten-defekt);
+  font-weight: 600;
+}
+
+.knopf {
+  min-height: 3rem;
+  padding: 0.5rem 1.5rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--tinte);
+  color: var(--papier);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.knopf:hover {
+  background: var(--tinte-hover);
+}
+
+.knopf[aria-disabled='true'] {
+  cursor: not-allowed;
+  background: var(--tinte-leise);
+}
+
+/* Schmal: jede Bonzeile ein Block, Beschriftungen aus data-titel. */
+@media (max-width: 48rem) {
+  .bon thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .bon tbody tr {
+    display: block;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .bon tbody td {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border: 0;
+    text-align: left;
+  }
+
+  .bon tbody td:nth-child(3),
+  .bon tbody td:nth-child(4) {
+    text-align: left;
+  }
+
+  .bon tbody td::before {
+    content: attr(data-titel);
+    font-weight: 650;
+  }
+
+  .bon tbody td:last-child {
+    display: block;
+  }
+
+  .bon tbody td:last-child::before {
+    content: none;
+  }
+
+  .bon tfoot tr {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .bon tfoot th,
+  .bon tfoot td {
+    padding-left: 0;
+  }
+}

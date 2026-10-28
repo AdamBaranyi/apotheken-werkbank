@@ -55,3 +55,17 @@ Ergänzt an jedem Abend. Format: Vorschlag, Entscheid, Grund.
 | 26.10.2026 | SSRF-Test nur gegen 169.254.169.254                            | ergänzt   | unter Sabotage fiele er nur durch Zeitüberschreitung auf; zuerst eine erreichbare, nicht freigegebene Adresse   |
 | 26.10.2026 | Vorschau-Deploys mit dem Schlüssel der Produktion              | verworfen | ungeprüfter Code in Vorschauen; eigener Zufallsschlüssel (E19)                                                  |
 | 26.10.2026 | Demo-Konten per SQL direkt in `auth.users` anlegen             | verworfen | Passwörter gehören in Adams Passwortmanager, nicht in den Verlauf einer KI (E21)                                |
+| 27.10.2026 | Kasse über SECURITY-DEFINER-Funktionen in `public` schreiben   | verworfen | je Funktion ein Advisor-Befund; Regeln an den Tabellen gelten für jeden Weg (E22)                               |
+| 27.10.2026 | Doppelklick mit `on conflict do nothing` abfangen              | verworfen | der Trigger zählte vorher hoch: Lücke in den Belegnummern (E22)                                                 |
+| 27.10.2026 | Bremse als Funktion für anon über REST                         | verworfen | Advisor 0028, für jeden mit dem öffentlichen Schlüssel erreichbar (E23)                                         |
+| 27.10.2026 | 5 Fehlversuche je Konto                                        | verworfen | im Browser-Test gemessen: sperrt das echte Konto; jetzt Konto und IP 5, Konto 10 (E23)                          |
+| 27.10.2026 | TLS zum Pooler mit `rejectUnauthorized: false`                 | verworfen | CA von Supabase mitgeliefert, Fingerabdruck notiert (E23)                                                       |
+| 27.10.2026 | Beleg-PDF mit einer Bibliothek                                 | verworfen | ohne Pflege oder mit Schriftdateien zur Laufzeit; ein Bon ist eine Spalte Text (E24)                            |
+| 27.10.2026 | Bestellen mit Liefervorgabe «Normal»                           | verworfen | im Test gemessen: liefert weniger, als die Verfügbarkeit zeigte (E25)                                           |
+| 27.10.2026 | Mengen still runden (2,5 → 2)                                  | verworfen | bei einer verbindlichen Bestellung eine Meldung statt einer stillen Änderung                                    |
+| 27.10.2026 | Lighthouse als Abhängigkeit im Lockfile                        | verworfen | brächte Fehler-Client und Puppeteer in jede Installation; `npx` mit fester Fassung (E26)                        |
+| 28.10.2026 | Gleicher Schlüssel liefert immer den vorhandenen Beleg         | verworfen | Durchsicht vor dem Merge: Ein geänderter Bon erschiene still als der alte; Inhalt verglichen, WK011 (E22)       |
+| 28.10.2026 | Bremse prüft und zählt in zwei Aufrufen                        | verworfen | Durchsicht: gleichzeitige Versuche kamen zusammen über die Grenze; ein Aufruf unter Sperre (E23)                |
+| 28.10.2026 | Anmeldung bei gestörter Bremse durchlassen                     | verworfen | Durchsicht: erst überlasten, dann unbegrenzt raten; die Anmeldung sperrt jetzt (E23)                            |
+| 28.10.2026 | Statusabfrage gleich nach dem Abbruch                          | verworfen | Durchsicht: «nicht angekommen» zu früh lädt zum zweiten Bestellen ein (E25)                                     |
+| 28.10.2026 | Fault ohne MSV3-Angaben als ServerException                    | verworfen | Durchsicht: Ob ausgeführt, weiss niemand; jetzt «unklar» (E25)                                                  |

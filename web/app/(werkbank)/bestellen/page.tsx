@@ -1,26 +1,13 @@
+import { randomUUID } from 'node:crypto';
 import type { Metadata } from 'next';
 import { Tourenband } from '@/components/tourenband/Tourenband';
 import { arbeitsplatzLaden } from '@/lib/apotheke';
-import { vertragsdatenAbfragen } from '@/lib/msv3/anfragen';
-import { Msv3Fehler } from '@/lib/msv3/client';
-import type { Vertragsdaten } from '@/lib/msv3/schema';
+import { vertragLaden } from '@/lib/bestellung/vertrag';
 import { supabaseServer } from '@/lib/supabase/server';
-import { zugangLaden } from '@/lib/zugang';
 import { Abfrage, type KatalogArtikel } from './Abfrage';
 import styles from './bestellen.module.css';
 
 export const metadata: Metadata = { title: 'Bestellen' };
-
-async function vertragLaden(zugangId: string): Promise<Vertragsdaten | string> {
-  try {
-    const zugang = await zugangLaden(zugangId);
-    if (!zugang) return 'Der Zugang zum Grosshändler fehlt.';
-    return await vertragsdatenAbfragen(zugang);
-  } catch (fehler) {
-    if (fehler instanceof Msv3Fehler) return fehler.endanwenderText;
-    throw fehler;
-  }
-}
 
 export default async function Bestellen() {
   const platz = await arbeitsplatzLaden();
@@ -34,14 +21,14 @@ export default async function Bestellen() {
       .eq('apotheke_id', platz.apotheke.id),
   ]);
   const zugang = zugaenge?.[0];
-  const vertrag = zugang ? await vertragLaden(zugang.id) : null;
+  const vertrag = zugang ? await vertragLaden(platz.apotheke.id, zugang.id) : null;
 
   return (
     <>
       <h1>Bestellen</h1>
       <p className={styles.einleitung}>
-        Verfügbarkeit beim Grosshändler über MSV3 prüfen. Die Anfrage ist unverbindlich und
-        reserviert nichts.
+        Verfügbarkeit beim Grosshändler über MSV3 prüfen; die Anfrage ist unverbindlich und
+        reserviert nichts. «Verbindlich bestellen» sendet die Mengen als Bestellung.
         {zugang ? ` Grosshändler: ${zugang.bezeichnung}.` : ''}
       </p>
       {!zugang ? (
@@ -54,7 +41,11 @@ export default async function Bestellen() {
         <Tourenband vertrag={vertrag} zeitpunkt={new Date()} />
       ) : null}
       {zugang ? (
-        <Abfrage artikel={(artikel ?? []) as KatalogArtikel[]} zugangId={zugang.id} />
+        <Abfrage
+          artikel={(artikel ?? []) as KatalogArtikel[]}
+          zugangId={zugang.id}
+          schluessel={randomUUID()}
+        />
       ) : null}
     </>
   );

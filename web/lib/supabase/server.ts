@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import { umgebung } from '@/lib/umgebung';
+import { SITZUNGS_COOKIE } from './cookies';
 
 /**
  * Supabase im Namen der angemeldeten Person: Jede Abfrage läuft mit ihrer
@@ -13,6 +14,7 @@ export async function supabaseServer() {
   const u = umgebung();
   const speicher = await cookies();
   return createServerClient(u.SUPABASE_URL, u.SUPABASE_PUBLISHABLE_KEY, {
+    cookieOptions: SITZUNGS_COOKIE,
     cookies: {
       getAll: () => speicher.getAll(),
       setAll: (liste) => {

@@ -1,0 +1,227 @@
+/* Der Beleg als schmale Spalte, wie ein Bon: oben Kopfangaben, dann Positionen, Summen, Steuer. */
+.beleg {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 40rem;
+  padding: 1.25rem 1rem;
+  border: 1px solid var(--linie);
+  border-top: 4px solid var(--tinte);
+  border-radius: var(--radius);
+}
+
+.kopf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0;
+}
+
+.kopf dt,
+.summen dt {
+  color: var(--tinte-leise);
+}
+
+.kopf dd,
+.summen dd {
+  margin: 0;
+  font-weight: 650;
+}
+
+.verweis {
+  margin: 0;
+  font-weight: 650;
+}
+
+.tabelle {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabelle caption {
+  text-align: left;
+  font-weight: 650;
+  padding-bottom: 0.25rem;
+}
+
+.tabelle th {
+  text-align: left;
+  font-weight: 650;
+  padding: 0.375rem 0.5rem;
+  border-bottom: 2px solid var(--tinte);
+}
+
+.tabelle td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--linie);
+  vertical-align: top;
+}
+
+.tabelle th:first-child,
+.tabelle td:first-child {
+  padding-left: 0;
+}
+
+.tabelle th:not(:first-child),
+.tabelle td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabelle abbr {
+  text-decoration: none;
+}
+
+.summen {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.summen div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.summe {
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid var(--tinte);
+  font-size: 1.25rem;
+}
+
+.summe dt {
+  color: var(--tinte);
+  font-weight: 750;
+}
+
+.notiz {
+  color: var(--tinte-leise);
+}
+
+.beleg > .notiz {
+  margin: 0;
+}
+
+.aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.knopf,
+.zweitknopf,
+.gefahr {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.knopf {
+  border: 0;
+  background: var(--tinte);
+  color: var(--papier);
+}
+
+.knopf:hover {
+  background: var(--tinte-hover);
+}
+
+.zweitknopf {
+  border: 2px solid var(--tinte);
+  background: var(--papier);
+  color: var(--tinte);
+}
+
+.zweitknopf:hover {
+  background: var(--flaeche);
+}
+
+.storno {
+  max-width: 40rem;
+  padding: 1rem;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+}
+
+/* list-item behält das Dreieck, das zeigt: Hier lässt sich etwas aufklappen. */
+.storno summary {
+  display: list-item;
+  padding: 0.5rem 0;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.stornoFormular {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+}
+
+.gefahr {
+  border: 2px solid var(--daten-defekt);
+  background: var(--papier);
+  color: var(--daten-defekt);
+}
+
+.gefahr:hover {
+  background: var(--flaeche);
+}
+
+.gefahr[aria-disabled='true'] {
+  cursor: progress;
+}
+
+.fehler {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--daten-defekt);
+  border-radius: var(--radius);
+  color: var(--daten-defekt);
+  font-weight: 600;
+}
+
+/* Schmal: jede Tabellenzeile ein Block, Beschriftungen aus data-titel. */
+@media (max-width: 30rem) {
+  .beleg {
+    padding: 1rem 0.75rem;
+  }
+
+  .tabelle thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabelle tr {
+    display: block;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .tabelle td,
+  .tabelle td:not(:first-child) {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.125rem 0;
+    border: 0;
+    text-align: right;
+    white-space: normal;
+  }
+
+  .tabelle td::before {
+    content: attr(data-titel);
+    flex: none;
+    color: var(--tinte-leise);
+    text-align: left;
+  }
+}

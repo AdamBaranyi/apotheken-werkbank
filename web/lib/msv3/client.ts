@@ -37,6 +37,13 @@ export class Msv3Fehler extends Error {
 }
 
 const MAX_BYTES = 200_000;
+/** Die Typen, die ein MSV3-Server melden darf; die übrigen setzt nur dieser Client. */
+const SERVER_TYPEN = new Set<string>([
+  'ServerException',
+  'AuthorizationException',
+  'DenialOfServiceException',
+  'ValidationException',
+]);
 const NAMENSRAUM = 'http://werkbank.example/msv3/v1.0';
 const LISTEN = new Set([
   'artikel',
@@ -92,8 +99,16 @@ function koerperLesen(xml: string, funktion: string): unknown {
   const fault = koerper?.Fault as { detail?: { msv3Fehler?: Record<string, string> } } | undefined;
   if (fault) {
     const f = fault.detail?.msv3Fehler ?? {};
+    // Ohne Typ aus MSV3 weiss niemand, ob die Funktion ausgeführt wurde.
+    if (!SERVER_TYPEN.has(f.exceptiontyp ?? '')) {
+      throw new Msv3Fehler(
+        'ClientException',
+        'C-FAULT',
+        'Der Grosshändler meldet einen Fehler ohne nähere Angaben.',
+      );
+    }
     throw new Msv3Fehler(
-      (f.exceptiontyp as Exceptiontyp | undefined) ?? 'ServerException',
+      f.exceptiontyp as Exceptiontyp,
       f.errorCode ?? 'UNBEKANNT',
       f.endanwenderText ?? 'Der Grosshändler meldet einen Fehler.',
     );

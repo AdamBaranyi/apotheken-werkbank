@@ -80,15 +80,23 @@ export async function weltAbbauen(welt: Welt): Promise<void> {
   welt.client.release();
 }
 
-/** Führt eine Abfrage als Rolle aus, in einem Sicherungspunkt, damit ein Fehler die Transaktion nicht beendet. */
+/**
+ * Führt eine Abfrage als Rolle aus, in einem Sicherungspunkt, damit ein Fehler
+ * die Transaktion nicht beendet. Danach laufen die aufgeschobenen Prüfungen
+ * (`set constraints all immediate`) wie beim Commit einer echten Anfrage.
+ * Mit `behalten` bleibt das Ergebnis für die nächsten Schritte des Tests
+ * stehen; sonst wird es zurückgerollt.
+ */
 export async function als<T extends pg.QueryResultRow>(
   welt: Welt,
   wer: 'anon' | string,
   sql: string,
   werte: unknown[] = [],
-): Promise<{ zeilen: T[]; fehler?: string }> {
+  { behalten = false }: { behalten?: boolean } = {},
+): Promise<{ zeilen: T[]; fehler?: string; meldung?: string }> {
   const c = welt.client;
   await c.query('savepoint probe');
+  let ok = false;
   try {
     if (wer === 'anon') {
       await c.query(`select set_config('request.jwt.claims', '{"role":"anon"}', true)`);
@@ -99,11 +107,20 @@ export async function als<T extends pg.QueryResultRow>(
       await c.query('set local role authenticated');
     }
     const ergebnis = await c.query<T>(sql, werte);
+    await c.query('set constraints all immediate');
+    ok = true;
     return { zeilen: ergebnis.rows };
   } catch (fehler) {
-    return { zeilen: [], fehler: (fehler as { code?: string }).code ?? String(fehler) };
+    const f = fehler as { code?: string; message?: string };
+    return { zeilen: [], fehler: f.code ?? String(fehler), meldung: f.message ?? '' };
   } finally {
-    await c.query('rollback to savepoint probe');
+    await c.query(ok && behalten ? 'release savepoint probe' : 'rollback to savepoint probe');
+    await c.query('set constraints all deferred');
     await c.query('reset role');
   }
+}
+
+/** Schreibt als Besitzer der Tabellen (wie ein Verwaltungsskript), am Rollenmodell vorbei. */
+export async function alsBesitzer(welt: Welt, sql: string, werte: unknown[] = []): Promise<void> {
+  await welt.client.query(sql, werte);
 }

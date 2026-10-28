@@ -1,0 +1,146 @@
+.status {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 48rem;
+  margin-bottom: 2rem;
+  padding: 1.25rem 1rem;
+  border: 1px solid var(--linie);
+  border-top: 4px solid var(--tinte);
+  border-radius: var(--radius);
+}
+
+.status h2,
+.status p {
+  margin: 0;
+}
+
+.marke {
+  display: inline-block;
+  padding: 0 0.5rem;
+  border: 2px solid var(--tinte);
+  border-radius: 2px;
+}
+
+.meldung {
+  font-weight: 650;
+}
+
+.angaben {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem 2rem;
+  margin: 0 0 2rem;
+}
+
+.angaben dt {
+  color: var(--tinte-leise);
+}
+
+.angaben dd {
+  margin: 0;
+  font-weight: 650;
+}
+
+/* Die Bestell-ID ist lang und ohne Leerzeichen: Sie darf überall umbrechen. */
+.kennung {
+  overflow-wrap: anywhere;
+}
+
+.abfrage {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.knopf {
+  min-height: 3rem;
+  padding: 0.5rem 1.5rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--tinte);
+  color: var(--papier);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.knopf:hover {
+  background: var(--tinte-hover);
+}
+
+.knopf[aria-disabled='true'] {
+  cursor: progress;
+  background: var(--tinte-leise);
+}
+
+.fehler {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--daten-defekt);
+  border-radius: var(--radius);
+  color: var(--daten-defekt);
+  font-weight: 600;
+}
+
+.tabelle {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-collapse: collapse;
+}
+
+.tabelle caption {
+  text-align: left;
+  font-size: 1.25rem;
+  font-weight: 650;
+  padding-bottom: 0.5rem;
+}
+
+.tabelle th {
+  text-align: left;
+  font-weight: 650;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--tinte);
+}
+
+.tabelle td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--linie);
+  vertical-align: top;
+}
+
+.tabelle th:first-child,
+.tabelle td:first-child {
+  padding-left: 0;
+}
+
+@media (max-width: 48rem) {
+  .tabelle thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabelle tr {
+    display: block;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .tabelle td {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border: 0;
+  }
+
+  .tabelle td::before {
+    content: attr(data-titel);
+    font-weight: 650;
+  }
+
+  .tabelle td:empty {
+    display: none;
+  }
+}
