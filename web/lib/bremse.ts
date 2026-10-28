@@ -16,7 +16,7 @@ import { umgebung } from '@/lib/umgebung';
  * Ein Ausfall soll die Apotheke nicht aussperren; Supabase begrenzt
  * Anmeldungen zusätzlich selbst.
  */
-export type BremsenArt = 'konto' | 'ip' | 'grosshandel';
+export type BremsenArt = 'konto' | 'konto-ip' | 'ip' | 'grosshandel';
 
 export interface BremsenEintrag {
   schluessel: string;

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /*
- * Browser-Tests in drei Breiten. Lokal laufen sie gegen den Entwicklungsserver
+ * Browser-Tests in drei Breiten, dazu schmal im Dunkelmodus. Lokal laufen sie gegen den Entwicklungsserver
  * (BASIS_URL=http://localhost:3500), in der CI gegen den Produktionsbuild auf
  * 3502 mit der Grosshandel-Attrappe auf 3501. Konten und Zugänge legt
  * scripts/lokal-einrichten.ts vorher an.
@@ -35,6 +35,15 @@ export default defineConfig({
     {
       name: 'breit-1440',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    // Dieselben Bildschirme dunkel: axe prüft die Kontraste auch dort.
+    {
+      name: 'dunkel-390',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 390, height: 844 },
+        colorScheme: 'dark',
+      },
     },
   ],
   ...(process.env.BASIS_URL

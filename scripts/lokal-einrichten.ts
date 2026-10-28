@@ -74,6 +74,8 @@ async function main() {
   const bremseUrl = new URL(s.DB_URL);
   bremseUrl.username = 'werkbank_bremse';
   bremseUrl.password = bremsePasswort;
+  // Zähler der Bremse leeren: Fehlversuche früherer Testläufe sperrten sonst Konten.
+  await db.query('delete from privat.bremsen');
   await db.query("delete from auth.users where email like '%@werkbank.test'");
   await db.query("delete from public.apotheken where name like '%(erfunden)'");
 

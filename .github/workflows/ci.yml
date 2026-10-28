@@ -102,10 +102,15 @@ jobs:
       - name: Browser für die Tests
         run: cd web && ./node_modules/.bin/playwright install --with-deps chromium
 
-      - name: Build und Browser-Tests in drei Breiten
+      - name: Build und Browser-Tests in drei Breiten und dunkel
         env:
           CI: '1'
         run: bun run test:e2e
+
+      # Mit der Sitzung der Browser-Tests. Hart: Barrierefreiheit und gute
+      # Praxis ab 95; die Leistung steht nur im Protokoll (Läufer schwanken).
+      - name: Lighthouse
+        run: node scripts/lighthouse.mjs
 
       - name: Bericht der Browser-Tests, falls etwas scheiterte
         if: failure()

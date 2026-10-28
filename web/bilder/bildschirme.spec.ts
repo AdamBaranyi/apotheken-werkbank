@@ -51,5 +51,26 @@ test.describe('angemeldet', () => {
     await festhalten(page, info, 'belege');
     await page.goto('/kasse/abschluss');
     await festhalten(page, info, 'abschluss-offen');
+    // Parallele Läufe schliessen vielleicht zuerst ab; dann gibt es kein Bild davon.
+    const knopf = page.getByRole('button', { name: 'Tag abschliessen' });
+    if ((await knopf.count()) > 0) {
+      await knopf.click();
+      const titel = page.getByRole('heading', { level: 1, name: /^Abschluss \d+$/ });
+      await titel
+        .or(page.getByRole('main').getByRole('alert').filter({ hasText: 'keine' }))
+        .waitFor();
+      if (await titel.isVisible()) await festhalten(page, info, 'abschluss');
+    }
+  });
+
+  test('Bestellung und Bestellungen', async ({ page }, info) => {
+    await page.goto('/bestellen');
+    await page.getByLabel('Menge Probatin 400 mg Filmtabletten, 50 St.').fill('6');
+    await page.getByLabel('Menge Seltenol Kapseln, 30 St.').fill('2');
+    await page.getByRole('button', { name: 'Verbindlich bestellen' }).click();
+    await page.getByRole('heading', { level: 2, name: /^Status:/ }).waitFor();
+    await festhalten(page, info, 'bestellung');
+    await page.goto('/bestellungen');
+    await festhalten(page, info, 'bestellungen');
   });
 });

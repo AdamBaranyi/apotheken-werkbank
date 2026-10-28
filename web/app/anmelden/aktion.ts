@@ -21,10 +21,13 @@ const ABGELEHNT = 'E-Mail oder Passwort stimmt nicht.';
 const GEBREMST = 'Zu viele Versuche. Bitte in 15 Minuten erneut.';
 
 /**
- * Höchstens 5 Fehlversuche je Konto und 20 je IP in 15 Minuten (E23). Gezählt
- * werden nur Fehlversuche, sonst sperrten sich Apotheken mit einer IP selbst.
- * Die Grenze je Konto gilt auch für Adressen, die es nicht gibt: So verrät
- * die Sperre nicht, welche Konten bestehen.
+ * Fehlversuche in 15 Minuten (E23): 5 je Konto und IP (eine Quelle, ein
+ * Konto), 10 je Konto (verteilte Versuche), 30 je IP (eine Quelle, viele
+ * Konten). Eine Sperre nur je Konto liesse jeden mit fünf Fehlversuchen die
+ * Apotheke aussperren; die höhere Grenze macht das teurer. Gezählt werden nur
+ * Fehlversuche, auch für Adressen, die es nicht gibt: So verrät die Sperre
+ * nicht, welche Konten bestehen. Ohne verlässliche IP (lokal) gilt nur die
+ * Grenze je Konto.
  */
 const FENSTER_SEKUNDEN = 900;
 
@@ -37,9 +40,15 @@ export async function anmelden(_vorher: AnmeldeStand, form: FormData): Promise<A
   if (!geprueft.success) return { fehler: 'Bitte E-Mail und Passwort eingeben.', email: roh.email };
 
   const ip = vertrauteIp(await headers());
+  const email = geprueft.data.email;
   const bremse = [
-    { schluessel: bremseSchluessel('konto', geprueft.data.email), grenze: 5 },
-    ...(ip ? [{ schluessel: bremseSchluessel('ip', ip), grenze: 20 }] : []),
+    { schluessel: bremseSchluessel('konto', email), grenze: 10 },
+    ...(ip
+      ? [
+          { schluessel: bremseSchluessel('konto-ip', `${email}|${ip}`), grenze: 5 },
+          { schluessel: bremseSchluessel('ip', ip), grenze: 30 },
+        ]
+      : []),
   ];
   if (!(await bremseFrei(bremse, FENSTER_SEKUNDEN))) return { fehler: GEBREMST, email: roh.email };
 

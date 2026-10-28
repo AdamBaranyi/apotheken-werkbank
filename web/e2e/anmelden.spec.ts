@@ -10,9 +10,11 @@ test.describe('Anmeldung', () => {
     await bildschirmPruefen(page);
   });
 
-  test('falsches Passwort: Meldung, Fokus bleibt auf dem Knopf', async ({ page }) => {
+  // Fehlversuche nie mit dem echten Konto: Die Bremse sperrte es sonst für die anderen Tests.
+  test('falsche Anmeldedaten: Meldung, Fokus bleibt auf dem Knopf', async ({ page }, info) => {
+    const email = `niemand.${info.project.name}.${Date.now()}@werkbank.test`;
     await page.goto('/anmelden');
-    await page.getByLabel('E-Mail').fill(inhaber().email);
+    await page.getByLabel('E-Mail').fill(email);
     await page.getByLabel('Passwort').fill('ganzFalschesPasswort1');
     const knopf = page.getByRole('button', { name: 'Anmelden' });
     await knopf.focus();
@@ -21,7 +23,7 @@ test.describe('Anmeldung', () => {
       'E-Mail oder Passwort stimmt nicht.',
     );
     await expect(knopf).toBeFocused();
-    await expect(page.getByLabel('E-Mail')).toHaveValue(inhaber().email);
+    await expect(page.getByLabel('E-Mail')).toHaveValue(email);
   });
 
   test('richtiges Passwort führt zum Bestellen; die Sitzung liest nur der Server', async ({
@@ -41,7 +43,7 @@ test.describe('Anmeldung', () => {
     expect(await page.evaluate(() => document.cookie)).not.toContain('sb-');
   });
 
-  test('nach fünf Fehlversuchen bremst die Anmeldung, auch bei unbekannter Adresse', async ({
+  test('nach zehn Fehlversuchen bremst die Anmeldung, auch bei unbekannter Adresse', async ({
     page,
   }, info) => {
     test.skip(
@@ -61,7 +63,7 @@ test.describe('Anmeldung', () => {
         page.getByRole('button', { name: 'Anmelden' }).click(),
       ]);
     };
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       await versuchen();
       await expect(meldung).toHaveText('E-Mail oder Passwort stimmt nicht.');
     }
