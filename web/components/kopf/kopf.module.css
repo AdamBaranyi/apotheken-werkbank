@@ -1,6 +1,12 @@
+/* App-Leiste: dunkel, damit Navigation und Arbeitsfläche klar getrennt sind. */
 .kopf {
-  border-bottom: 1px solid var(--linie);
-  background: var(--papier);
+  background: var(--kopf-grund);
+  color: var(--kopf-tinte);
+}
+
+.zeile :focus-visible {
+  outline-color: var(--kopf-tinte);
+  box-shadow: 0 0 0 3px var(--kopf-grund);
 }
 
 .sprung {
@@ -36,7 +42,7 @@
 .bereiche {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 1.5rem;
+  gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -44,20 +50,24 @@
 
 .bereiche a {
   display: inline-block;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
   font-weight: 600;
   text-decoration: none;
+  transition: background-color 120ms ease-out;
 }
 
 .bereiche a:hover {
-  text-decoration: underline;
+  background: rgb(255 255 255 / 0.1);
 }
 
-/* Der aktuelle Bereich: dick unterstrichen, nicht nur andersfarbig. */
+/* Der aktuelle Bereich: hinterlegt und dick unterstrichen, nicht nur andersfarbig. */
 .bereiche a[aria-current='page'] {
   font-weight: 750;
+  background: rgb(255 255 255 / 0.14);
   text-decoration: underline;
   text-decoration-thickness: 3px;
+  text-underline-offset: 0.35em;
 }
 
 .konto {
@@ -73,21 +83,22 @@
 }
 
 .email {
-  color: var(--tinte-leise);
+  color: var(--kopf-leise);
 }
 
 .abmelden {
   min-height: 2.75rem;
   padding: 0.25rem 1rem;
-  border: 1px solid var(--linie-feld);
+  border: 1px solid rgb(255 255 255 / 0.45);
   border-radius: var(--radius);
-  background: var(--papier);
+  background: transparent;
+  color: var(--kopf-tinte);
   cursor: pointer;
   transition: background-color 120ms ease-out;
 }
 
 .abmelden:hover {
-  background: var(--flaeche);
+  background: rgb(255 255 255 / 0.1);
 }
 
 @media (max-width: 40rem) {

@@ -1,7 +1,19 @@
 .seite {
-  max-width: 28rem;
-  margin: 0 auto;
-  padding: 4rem 1rem 3rem;
+  max-width: 30rem;
+  margin: 4rem auto 3rem;
+  padding: 2.5rem 2rem 2rem;
+  background: var(--papier);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-gross);
+}
+
+@media (max-width: 34rem) {
+  .seite {
+    margin: 0;
+    padding: 3rem 1rem 2rem;
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
 }
 
 .marke {

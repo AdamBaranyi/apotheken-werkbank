@@ -1,0 +1,88 @@
+/* Knopf in der dunklen App-Leiste, wie «Abmelden». */
+.knopf {
+  min-height: 2.75rem;
+  padding: 0.25rem 1rem;
+  border: 1px solid rgb(255 255 255 / 0.45);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--kopf-tinte);
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.knopf:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+/* Die Karte sitzt unten, damit das erklärte Element sichtbar bleibt. */
+.dialog {
+  inset-block: auto 1.5rem;
+  margin-block: 0;
+  width: min(34rem, calc(100% - 2rem));
+  padding: 1.25rem 1.5rem 1.5rem;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-gross);
+  background: var(--papier);
+  color: var(--tinte);
+  box-shadow: 0 12px 32px rgb(20 33 43 / 0.18);
+}
+
+.dialog::backdrop {
+  background: rgb(20 33 43 / 0.12);
+}
+
+.dialog.dialog :focus-visible {
+  outline-color: var(--tinte);
+  box-shadow: 0 0 0 3px var(--fokus-innen);
+}
+
+.zaehler {
+  margin: 0 0 0.25rem;
+  color: var(--tinte-leise);
+  font-variant-numeric: tabular-nums;
+}
+
+.titel {
+  margin: 0 0 0.5rem;
+  font-size: 1.375rem;
+}
+
+.text {
+  margin: 0 0 1.25rem;
+}
+
+.knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.zweit,
+.haupt {
+  min-height: 2.75rem;
+  padding: 0.25rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.zweit {
+  border: 1px solid var(--linie-feld);
+  background: var(--papier);
+  color: var(--tinte);
+}
+
+.zweit:hover {
+  background: var(--flaeche);
+}
+
+.haupt {
+  border: 0;
+  background: var(--tinte);
+  color: var(--papier);
+}
+
+.haupt:hover {
+  background: var(--tinte-hover);
+}

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Rundgang } from '@/components/rundgang/Rundgang';
 import { Bereiche } from './Bereiche';
 import styles from './kopf.module.css';
 
@@ -18,6 +19,7 @@ export function Kopf({ apotheke, email }: { apotheke: string; email: string }) {
         <div className={styles.konto}>
           <span className={styles.apotheke}>{apotheke}</span>
           <span className={styles.email}>{email}</span>
+          <Rundgang />
           <form action="/abmelden" method="post">
             <button type="submit" className={styles.abmelden}>
               Abmelden
