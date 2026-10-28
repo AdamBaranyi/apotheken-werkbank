@@ -71,25 +71,26 @@ function tls(url: string): false | { ca: string; rejectUnauthorized: true } {
   return { ca: SUPABASE_ROOT_CA, rejectUnauthorized: true };
 }
 
-let pool: pg.Pool | undefined;
-
-/** Wenige Verbindungen je Instanz, im Leerlauf nach 10 s geschlossen. */
-function verbindung(url: string): pg.Pool {
-  if (!pool) {
-    pool = new pg.Pool({
-      connectionString: url,
-      ssl: tls(url),
-      max: 3,
-      idleTimeoutMillis: 10_000,
-      connectionTimeoutMillis: 3000,
-      query_timeout: 3000,
-    });
-    // Reisst eine ruhende Verbindung ab, darf das den Server nicht beenden.
-    pool.on('error', (fehler: Error & { code?: string }) => {
-      console.error('Bremse: Verbindung abgerissen', fehler.code ?? fehler.name);
-    });
+/**
+ * Eine Verbindung je Aufruf. Auf Vercel ruht eine Instanz zwischen Anfragen;
+ * eine gemerkte Verbindung wäre danach oft tot, und eine tote Verbindung hiesse
+ * bei der Anmeldung «gestört».
+ */
+async function mitVerbindung<T>(url: string, arbeit: (c: pg.Client) => Promise<T>): Promise<T> {
+  const client = new pg.Client({
+    connectionString: url,
+    ssl: tls(url),
+    connectionTimeoutMillis: 3000,
+    query_timeout: 3000,
+  });
+  // Ein Abriss der Verbindung darf den Server nicht beenden; die Anfrage scheitert ohnehin.
+  client.on('error', () => undefined);
+  try {
+    await client.connect();
+    return await arbeit(client);
+  } finally {
+    await client.end().catch(() => undefined);
   }
-  return pool;
 }
 
 function protokoll(fehler: unknown): void {
@@ -108,9 +109,12 @@ export async function bremseVersuch(
   const url = umgebung().BREMSE_DATENBANK_URL;
   if (!url) return { stand: 'aus' };
   try {
-    const { rows } = await verbindung(url).query<{ ids: string[] | null }>(
-      'select privat.bremse_versuchen($1, $2, $3) as ids',
-      [eintraege.map((e) => e.schluessel), eintraege.map((e) => e.grenze), fensterSekunden],
+    const { rows } = await mitVerbindung(url, (c) =>
+      c.query<{ ids: string[] | null }>('select privat.bremse_versuchen($1, $2, $3) as ids', [
+        eintraege.map((e) => e.schluessel),
+        eintraege.map((e) => e.grenze),
+        fensterSekunden,
+      ]),
     );
     const ids = rows[0]?.ids;
     return ids ? { stand: 'frei', ids } : { stand: 'gebremst' };
@@ -125,7 +129,7 @@ export async function bremseFreigeben(ids: string[]): Promise<void> {
   const url = umgebung().BREMSE_DATENBANK_URL;
   if (!url || ids.length === 0) return;
   try {
-    await verbindung(url).query('select privat.bremse_freigeben($1::bigint[])', [ids]);
+    await mitVerbindung(url, (c) => c.query('select privat.bremse_freigeben($1::bigint[])', [ids]));
   } catch (fehler) {
     protokoll(fehler);
   }

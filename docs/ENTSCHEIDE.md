@@ -204,9 +204,10 @@ Anmeldeversuch zählt vor der Prüfung des Passworts, ein gelungener gibt seine 
 (`privat.bremse_freigeben`). Antwortet die Datenbank nicht, sperrt die Anmeldung: Liesse sie
 durch, könnte jemand die Bremse mit vielen Verbindungen überlasten (die Rolle hat höchstens 20)
 und danach unbegrenzt raten. Beim Grosshändler geht Bestellen weiter vor. Die Seite Bestellen
-fragt die Vertragsdaten je Zugang höchstens alle fünf Minuten ab, und jede Anfrage zählt. Die
-App hält je Instanz bis zu drei Verbindungen offen statt einer neuen je Versuch. Preis: Ist nur
-der Pooler gestört, kommt niemand herein, obwohl Supabase die Anmeldung annähme.
+fragt die Vertragsdaten je Zugang höchstens alle fünf Minuten ab, und jede Anfrage zählt. Je
+Versuch bleibt es bei einer eigenen Verbindung: Auf Vercel ruht eine Instanz zwischen Anfragen,
+eine gemerkte Verbindung wäre danach oft tot und hiesse bei der Anmeldung «gestört». Preis: Ist
+nur der Pooler gestört, kommt niemand herein, obwohl Supabase die Anmeldung annähme.
 
 ## E24 — Beleg als PDF ohne Bibliothek
 
