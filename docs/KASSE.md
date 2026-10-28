@@ -7,12 +7,15 @@ Apothekenkasse in Deutschland fehlen würde.
 ## Ablauf
 
 1. **Erfassen:** PZN eintippen oder scannen. Die Prüfziffer (Modulo 11 über die ersten sieben
-   Stellen, Gewichte 1 bis 7) fängt einen Tippfehler, bevor gesucht wird.
+   Stellen, Gewichte 1 bis 7) fängt einen Tippfehler, bevor gesucht wird. Enter in einem
+   Mengenfeld führt zurück zur Erfassung und bucht nicht.
 2. **Rezept:** Ein rezeptpflichtiger Artikel braucht das Häkchen «Rezept liegt vor»; ohne lehnt
    die Datenbank den Verkauf ab (WK002).
 3. **Zahlung:** bar mit gegebenem Betrag und Rückgeld, oder Karte als reine Buchung.
 4. **Buchen:** Die Datenbank setzt Preise, Steuersätze, Belegnummer und Summen. Die ID des
-   Belegs stammt aus dem Seitenaufbau; ein zweiter Klick trifft denselben Beleg.
+   Belegs stammt aus dem Seitenaufbau; ein zweiter Klick trifft denselben Beleg. Kommt dieselbe
+   ID mit anderem Inhalt (etwa nach einem Abbruch den Bon geändert), lehnt die Datenbank ab
+   (WK011) und nennt den vorhandenen Beleg.
 5. **Beleg:** im Browser als Tabelle, als PDF für eine 80-mm-Rolle.
 6. **Storno:** nur durch die Inhaberin oder den Inhaber, als Gegenbeleg mit den Preisen des
    Originals. Der Beleg selbst bleibt unverändert und zeigt auf das Storno.
@@ -29,8 +32,10 @@ am Tag des Verkaufs in der Zeit der Apotheke gilt.
 | Deutschland | 19 %         | 7 %                                   | 19 %                      |
 | Schweiz     | 2,6 %        | 2,6 %                                 | 8,1 %                     |
 
-- Deutschland: Arzneimittel tragen den Regelsatz. Eine Senkung auf 7 % wird seit Jahren
-  gefordert; beschlossen ist sie nicht (Stand der Recherche). Die Senkung für Speisen in der
+- Deutschland: Regelsatz 19 % (§ 12 Abs. 1 UStG); 7 % nur für Gegenstände aus Anlage 2
+  (§ 12 Abs. 2 Nr. 1 UStG), etwa Lebensmittel. Arzneimittel stehen nicht darin. Eine Senkung für
+  Arzneimittel wird seit Jahren gefordert; beschlossen war sie bei der Recherche am 27.10.2026
+  nicht. Vor einem echten Einsatz gehört der Stand erneut geprüft. Die Senkung für Speisen in der
   Gastronomie ab 1.1.2026 betrifft Apotheken nicht.
 - Schweiz: Sätze seit 1.1.2024, Medikamente zum reduzierten Satz (Art. 49 MWSTV); Quelle:
   Eidgenössische Steuerverwaltung, «Aktuell geltende Mehrwertsteuersätze». Eine weitere Erhöhung
@@ -71,6 +76,8 @@ ein abgebrochener Verkauf rollt die Nummer mit zurück. Die Gründe stehen in E2
   Bestellung mit der Liefervorgabe «MaxVerbund» (E25).
 - Die Bestellung steht vor dem Senden in der Datenbank. Bricht die Verbindung ab, heisst sie
   «unklar», und die Statusabfrage beim Grosshändler klärt, ob sie angekommen ist – nie ein
-  zweites Senden mit neuer ID.
+  zweites Senden mit neuer ID. Die Abfrage gibt es erst eine Minute nach dem Abbruch: Vorher
+  verarbeitet der Grosshändler die Bestellung vielleicht noch (E25).
 - Höchstens 60 Aufrufe beim Grosshändler je Minute und Apotheke (E23): Ein Skript in einer
-  Schleife soll nicht dazu führen, dass der Grosshändler den Zugang sperrt.
+  Schleife soll nicht dazu führen, dass der Grosshändler den Zugang sperrt. Die Vertragsdaten
+  (Bestellfenster, Touren) fragt die Seite je Zugang höchstens alle fünf Minuten ab.

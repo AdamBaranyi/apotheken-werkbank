@@ -176,6 +176,12 @@ an Land und Steuergruppe, nicht am Artikel (ein Arzneimittel trägt in Deutschla
 Schweiz 2,6 %). Stornieren darf nur, wer die Apotheke führt; den Tag schliesst jedes Mitglied
 ab. Preis: mehr SQL, und Trigger sind schwerer zu lesen als eine einzelne Funktion.
 
+_Nachtrag 28.10.2026._ Derselbe Schlüssel heisst nur dann derselbe Beleg, wenn auch der Inhalt
+gleich ist: Zahlung und Positionen, beim Storno das Original. Sonst meldet die Datenbank WK011
+mit der Nummer des vorhandenen Belegs. Vorher lieferte sie still den alten Beleg, etwa wenn nach
+einem Abbruch der Bon geändert und erneut gebucht wurde. Gefunden in der Durchsicht vor dem
+Merge.
+
 ## E23 — Bremse über eine eigene Datenbankrolle
 
 _27.10.2026._ Vor der Anmeldung gibt es keine Sitzung, Supabase sieht nur die IP des Servers, den
@@ -190,6 +196,17 @@ Grosshändler 60 Aufrufe je Minute und Apotheke. Die IP gilt nur auf Vercel, wo 
 Gemessen: «5 je Konto» allein sperrte im Test das echte Konto – jeder könnte die Apotheke so
 aussperren. Preis: ein weiteres Geheimnis (`BREMSE_DATENBANK_URL`) und eine
 Datenbankverbindung je Anmeldung.
+
+_Nachtrag 28.10.2026._ Prüfen und Zählen geschehen in einem Aufruf (`privat.bremse_versuchen`)
+unter einer Sperre je Schlüssel (`pg_advisory_xact_lock`, in fester Reihenfolge). Vorher sahen
+gleichzeitige Versuche denselben alten Stand und kamen zusammen über die Grenze. Jeder
+Anmeldeversuch zählt vor der Prüfung des Passworts, ein gelungener gibt seine Zählung frei
+(`privat.bremse_freigeben`). Antwortet die Datenbank nicht, sperrt die Anmeldung: Liesse sie
+durch, könnte jemand die Bremse mit vielen Verbindungen überlasten (die Rolle hat höchstens 20)
+und danach unbegrenzt raten. Beim Grosshändler geht Bestellen weiter vor. Die Seite Bestellen
+fragt die Vertragsdaten je Zugang höchstens alle fünf Minuten ab, und jede Anfrage zählt. Die
+App hält je Instanz bis zu drei Verbindungen offen statt einer neuen je Versuch. Preis: Ist nur
+der Pooler gestört, kommt niemand herein, obwohl Supabase die Anmeldung annähme.
 
 ## E24 — Beleg als PDF ohne Bibliothek
 
@@ -211,6 +228,12 @@ in der Datenbank, ihre ID ist die Bestell-ID beim Grosshändler. Der Status folg
 Antworten (Pflichtenheft Kap. 2.3.6): Exception des Servers heisst «abgelehnt», Abbruch oder
 unlesbare Antwort «unklar», dann klärt die Statusabfrage. Preis: Wer Nachlieferung will, bestellt
 sie heute nicht aus der Werkbank.
+
+_Nachtrag 28.10.2026._ Die Statusabfrage gibt es erst eine Minute nach der letzten Änderung:
+Gleich nach einem Abbruch verarbeitet der Grosshändler die Bestellung vielleicht noch, und
+«nicht angekommen» lüde zum zweiten Bestellen ein. Ein Fault ohne MSV3-Angaben (etwa von einem
+Proxy) heisst «unklar», nicht «abgelehnt»; ebenso «Antwort verfügbar» ohne Antwort. Derselbe
+Schlüssel mit anderen Mengen meldet WB004 statt still die alte Bestellung.
 
 ## E26 — Lighthouse: hart, was nicht vom Rechner abhängt
 

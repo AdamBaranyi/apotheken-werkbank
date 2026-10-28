@@ -58,7 +58,8 @@ Umgesetzt (Abend 2):
   auch für direkte Aufrufe der REST-Schnittstelle (E22, `supabase/tests/kasse.test.ts`).
 - Bestellungen: ID vor dem Senden, Status nur entlang der Antworten des Grosshändlers (E25).
 - Bremse für Anmeldung und Grosshändler über eine eigene Datenbankrolle, nur HMAC-Werte, TLS
-  gegen die CA von Supabase (E23).
+  gegen die CA von Supabase (E23). Prüfen und Zählen in einem Aufruf unter Sperre; ist sie
+  gestört, sperrt die Anmeldung.
 - Sitzungs-Cookies `httpOnly`, `SameSite=Lax`, im Produktionsbuild `Secure`; die Browser-Tests
   prüfen, dass kein Skript sie lesen kann.
 - Dazu `Cross-Origin-Resource-Policy: same-origin` und eine längere `Permissions-Policy`;
@@ -72,23 +73,31 @@ Vorgesehen:
 
 ## Bewusst offen
 
-| Meldung                                       | Wo                                                                    | Grund                                                                                                                                                                                                 |
-| --------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Advisor 0029 (SECURITY DEFINER, aufrufbar)    | `public.zugang_fuer_bestellung`                                       | Der Server holt damit im Namen der angemeldeten Person den Geheimtext eines Zugangs der eigenen Apotheke (E17). Ohne den Schlüssel des Servers ist er nutzlos; anon darf die Funktion nicht aufrufen. |
-| Advisor 0005 (Index unbenutzt)                | alle Indizes für Fremdschlüssel und Regeln (Stand 28.10.2026: sieben) | Frische Datenbank ohne Last; die Indizes tragen die Regeln je Apotheke, die Fremdschlüssel und die Zähler der Bremse.                                                                                 |
-| Lighthouse über `npx`                         | CI, `scripts/lighthouse.mjs`                                          | Feste, über sieben Tage alte Fassung; ihre Unterpakete stehen in keinem Lockfile. Der Lauf hat keine Geheimnisse und nur Leserechte (E26).                                                            |
-| CA von Supabase aus der Kette übernommen      | `web/lib/supabase-ca.ts`                                              | Gleicher Fingerabdruck an zwei Pooler-Adressen; der Abgleich mit dem Download im Dashboard steht noch aus.                                                                                            |
-| Bremse lässt bei Datenbankausfall durch       | `web/lib/bremse.ts`                                                   | Ein Ausfall soll die Apotheke nicht aussperren; Supabase begrenzt Anmeldungen zusätzlich, der Ausfall steht im Protokoll.                                                                             |
-| Status einer Bestellung schreibt das Mitglied | `public.bestellungen`                                                 | Kopie der Antwort des Grosshändlers, nur entlang erlaubter Wechsel; massgeblich bleibt der Grosshändler (Statusabfrage).                                                                              |
+| Meldung                                          | Wo                                                                   | Grund                                                                                                                                                                                                 |
+| ------------------------------------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Advisor 0029 (SECURITY DEFINER, aufrufbar)       | `public.zugang_fuer_bestellung`                                      | Der Server holt damit im Namen der angemeldeten Person den Geheimtext eines Zugangs der eigenen Apotheke (E17). Ohne den Schlüssel des Servers ist er nutzlos; anon darf die Funktion nicht aufrufen. |
+| Advisor 0005 (Index unbenutzt)                   | alle Indizes für Fremdschlüssel und Regeln (Stand 28.10.2026: sechs) | Frische Datenbank ohne Last; die Indizes tragen die Regeln je Apotheke, die Fremdschlüssel und die Zähler der Bremse.                                                                                 |
+| Lighthouse über `npx`                            | CI, `scripts/lighthouse.mjs`                                         | Feste, über sieben Tage alte Fassung; ihre Unterpakete stehen in keinem Lockfile. Der Lauf hat keine Geheimnisse und nur Leserechte (E26).                                                            |
+| CA von Supabase aus der Kette übernommen         | `web/lib/supabase-ca.ts`                                             | Gleicher Fingerabdruck an zwei Pooler-Adressen; der Abgleich mit dem Download im Dashboard steht noch aus.                                                                                            |
+| Bremse beim Grosshändler lässt bei Ausfall durch | `web/lib/bremse.ts`                                                  | Bestellen geht vor; der Ausfall steht im Protokoll. Die Anmeldung sperrt dagegen (E23).                                                                                                               |
+| Ohne `BREMSE_DATENBANK_URL` keine eigene Bremse  | Umgebung auf Vercel                                                  | Vorschauen haben keine Rolle für die Bremse; dann begrenzt nur Supabase. In der Produktion gehört sie gesetzt (BETRIEB.md, Schritt 8).                                                                |
+| Status einer Bestellung schreibt das Mitglied    | `public.bestellungen`                                                | Kopie der Antwort des Grosshändlers, nur entlang erlaubter Wechsel; massgeblich bleibt der Grosshändler (Statusabfrage). Vorgesehen: Statuswechsel nur über eine eigene Rolle des Servers.            |
 
 ## Behobene Befunde
 
-| Datum      | Befund                                                                        | Behebung                                                                            |
-| ---------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| 26.10.2026 | Ein Zugang mit falschem Schlüssel liess die Seite Bestellen abstürzen         | Meldung statt Absturz, Test und Sabotage                                            |
-| 26.10.2026 | AES-GCM nahm in Node 24 einen auf 4 Byte gekürzten Prüfwert an                | `authTagLength: 16`, Test und Sabotage                                              |
-| 26.10.2026 | Abmelden mit Origin «null» gab einen Fehler 500                               | Herkunft geprüft ohne Absturz, 403; Test und Sabotage                               |
-| 26.10.2026 | Advisor 0029: Hilfsfunktionen der Regeln über `/rest/v1/rpc` aufrufbar        | Umzug ins Schema `privat`, Test wie der Advisor, Sabotage                           |
-| 27.10.2026 | Abgelaufene Sitzung: Senden eines Formulars endete auf einer Fehlerseite (#1) | `proxy.ts` leitet Server-Aktionen nicht um, die Aktion selbst schon; Test, Sabotage |
-| 27.10.2026 | Fünf Fehlversuche je Konto sperrten das echte Konto (Aussperren als Angriff)  | Grenzen je Konto und IP, je Konto höher (E23); im Browser-Test gemessen             |
-| 27.10.2026 | Die Sabotage-Runde verfälschte Ersatztexte mit `$$` (Dollar-Quoting)          | Ersatz per Funktion statt als Zeichenkette                                          |
+| Datum      | Befund                                                                                        | Behebung                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 26.10.2026 | Ein Zugang mit falschem Schlüssel liess die Seite Bestellen abstürzen                         | Meldung statt Absturz, Test und Sabotage                                               |
+| 26.10.2026 | AES-GCM nahm in Node 24 einen auf 4 Byte gekürzten Prüfwert an                                | `authTagLength: 16`, Test und Sabotage                                                 |
+| 26.10.2026 | Abmelden mit Origin «null» gab einen Fehler 500                                               | Herkunft geprüft ohne Absturz, 403; Test und Sabotage                                  |
+| 26.10.2026 | Advisor 0029: Hilfsfunktionen der Regeln über `/rest/v1/rpc` aufrufbar                        | Umzug ins Schema `privat`, Test wie der Advisor, Sabotage                              |
+| 27.10.2026 | Abgelaufene Sitzung: Senden eines Formulars endete auf einer Fehlerseite (#1)                 | `proxy.ts` leitet Server-Aktionen nicht um, die Aktion selbst schon; Test, Sabotage    |
+| 27.10.2026 | Fünf Fehlversuche je Konto sperrten das echte Konto (Aussperren als Angriff)                  | Grenzen je Konto und IP, je Konto höher (E23); im Browser-Test gemessen                |
+| 27.10.2026 | Die Sabotage-Runde verfälschte Ersatztexte mit `$$` (Dollar-Quoting)                          | Ersatz per Funktion statt als Zeichenkette                                             |
+| 28.10.2026 | Gleicher Schlüssel mit anderem Inhalt lieferte still den alten Beleg oder die alte Bestellung | Inhalt verglichen, WK011 und WB004 mit der Nummer des Vorhandenen; Tests, Sabotagen    |
+| 28.10.2026 | Bremse prüfte und zählte in zwei Schritten: gleichzeitige Versuche kamen über die Grenze      | Ein Aufruf unter Sperre je Schlüssel; Test mit zwei Verbindungen, Sabotage             |
+| 28.10.2026 | Anmeldung liess bei gestörter Bremse durch (erst überlasten, dann raten)                      | Anmeldung sperrt bei Störung; Test, Sabotage                                           |
+| 28.10.2026 | Statusabfrage gleich nach einem Abbruch konnte zum zweiten Bestellen einladen                 | Abfrage erst eine Minute nach der letzten Änderung, auch in der Aktion; Test, Sabotage |
+| 28.10.2026 | Fault ohne MSV3-Angaben und «Antwort verfügbar» ohne Antwort galten als erledigt              | beide «unklar»; Tests, Sabotagen                                                       |
+| 28.10.2026 | Seite Bestellen fragte bei jedem Aufruf ungebremst beim Grosshändler nach                     | Vertragsdaten fünf Minuten gemerkt, jede Anfrage in der Bremse; Test, Sabotagen        |
+| 28.10.2026 | Enter im Mengenfeld der Kasse buchte sofort                                                   | Enter führt zurück zur Erfassung; Browser-Test                                         |

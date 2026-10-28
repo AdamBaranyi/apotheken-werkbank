@@ -64,3 +64,8 @@ Ergänzt an jedem Abend. Format: Vorschlag, Entscheid, Grund.
 | 27.10.2026 | Bestellen mit Liefervorgabe «Normal»                           | verworfen | im Test gemessen: liefert weniger, als die Verfügbarkeit zeigte (E25)                                           |
 | 27.10.2026 | Mengen still runden (2,5 → 2)                                  | verworfen | bei einer verbindlichen Bestellung eine Meldung statt einer stillen Änderung                                    |
 | 27.10.2026 | Lighthouse als Abhängigkeit im Lockfile                        | verworfen | brächte Fehler-Client und Puppeteer in jede Installation; `npx` mit fester Fassung (E26)                        |
+| 28.10.2026 | Gleicher Schlüssel liefert immer den vorhandenen Beleg         | verworfen | Durchsicht vor dem Merge: Ein geänderter Bon erschiene still als der alte; Inhalt verglichen, WK011 (E22)       |
+| 28.10.2026 | Bremse prüft und zählt in zwei Aufrufen                        | verworfen | Durchsicht: gleichzeitige Versuche kamen zusammen über die Grenze; ein Aufruf unter Sperre (E23)                |
+| 28.10.2026 | Anmeldung bei gestörter Bremse durchlassen                     | verworfen | Durchsicht: erst überlasten, dann unbegrenzt raten; die Anmeldung sperrt jetzt (E23)                            |
+| 28.10.2026 | Statusabfrage gleich nach dem Abbruch                          | verworfen | Durchsicht: «nicht angekommen» zu früh lädt zum zweiten Bestellen ein (E25)                                     |
+| 28.10.2026 | Fault ohne MSV3-Angaben als ServerException                    | verworfen | Durchsicht: Ob ausgeführt, weiss niemand; jetzt «unklar» (E25)                                                  |
