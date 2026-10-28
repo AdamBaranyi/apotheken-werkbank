@@ -178,3 +178,6 @@ enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
   ein Zertifikat einer eigenen CA, die man mitliefern muss, statt die Prüfung abzuschalten.
 - Eine Sperre nur je Konto ist selbst ein Angriffspunkt: Fünf falsche Passwörter von irgendwem
   sperren die Apotheke aus. Gemessen im eigenen Test, als das Testkonto gesperrt war.
+- Eine Bremse muss prüfen und zählen in einem Schritt, sonst kommen gleichzeitige Versuche
+  gemeinsam durch; und lässt sie bei Störung durch, lässt sie sich abschalten: erst überlasten,
+  dann raten. Beides fand die Durchsicht vor dem Merge, nicht die Tests.

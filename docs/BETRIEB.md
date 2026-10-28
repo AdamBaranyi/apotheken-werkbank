@@ -70,6 +70,10 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
   (`tests/produktion-zugaenge.test.ts`).
 - **Passwort der Bremse wechseln:** Schritt 8 noch einmal; die alte Adresse gilt danach nicht
   mehr.
+- **Anmeldung meldet «gerade gestört»:** Die Bremse erreicht die Datenbank nicht (Protokoll in
+  Vercel: «Bremse nicht erreichbar» mit Code). Status des Poolers bei Supabase prüfen; scheitert
+  die Anmeldung der Rolle (`28P01`), Schritt 8. Absichtlich: Bei gestörter Bremse kommt niemand
+  herein (E23).
 - **Datenbank:** Migrationen aus `supabase/migrations/`; in der Cloud tragen sie dieselben
   Versionen wie die Dateinamen. Danach die Advisors ansehen; bewusst Offenes steht in
   `docs/SECURITY.md`.
