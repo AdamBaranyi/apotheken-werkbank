@@ -120,12 +120,30 @@ Describe 'Bildschirm-Simulation der Kasse' {
     $sim.Fokus | Should -Be 'pzn'
   }
 
-  It 'lässt eine Feldangabe aus, die die OCR nicht liest (Befund in Kasse Nord)' {
+  It 'lässt eine Feldangabe aus, die die OCR dreifach nicht liest, vierfach aber schon (Befund in Kasse Nord)' {
     $sim = New-KassenSimulation -Layout $script:Mini -Ursprung @(40, 60) -Chaos @{ Unlesbar = @('1') }
     Send-InsFeld $sim '1'
     $bild = Get-SimulationsBild -Simulation $sim
     Get-Wort $bild '1' | Should -BeNullOrEmpty
     $bild.Woerter.Count | Should -BeGreaterThan 0
+    Get-Wort (Get-SimulationsBild -Simulation $sim -AndereGroesse) '1' | Should -Not -BeNullOrEmpty
+  }
+
+  It 'lässt eine unsichtbare Angabe in jeder Grösse aus' {
+    $sim = New-KassenSimulation -Layout $script:Mini -Ursprung @(40, 60) -Chaos @{ Unsichtbar = @('1') }
+    Send-InsFeld $sim '1'
+    Get-Wort (Get-SimulationsBild -Simulation $sim) '1' | Should -BeNullOrEmpty
+    Get-Wort (Get-SimulationsBild -Simulation $sim -AndereGroesse) '1' | Should -BeNullOrEmpty
+  }
+
+  It 'lässt eine flackernde Anzeige in jedem zweiten Bild aus, beim zweiten Blick wie im Bild davor' {
+    $sim = New-KassenSimulation -Layout $script:Mini -Ursprung @(40, 60) -Chaos @{ Flackern = 'Neuer' }
+    $erstes = Get-SimulationsBild -Simulation $sim
+    $zweites = Get-SimulationsBild -Simulation $sim
+    # Where-Object statt .Where(): In Pester sieht .Where({ $_ }) das Element nicht.
+    @(@($erstes, $zweites) | Where-Object { Get-Wort $_ 'Neuer' }).Count | Should -Be 1
+    $nochmals = Get-SimulationsBild -Simulation $sim -AndereGroesse
+    [bool](Get-Wort $nochmals 'Neuer') | Should -Be ([bool](Get-Wort $zweites 'Neuer'))
   }
 
   It 'löscht das alte Suchergebnis, sobald jemand in die Suche tippt' {

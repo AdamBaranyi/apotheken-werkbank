@@ -49,7 +49,7 @@ try {
   $erwartet = @('PZN', '99100008', 'Probatin', '400', 'mg', 'Filmtabletten', 'Hinzufügen', 'Menge',
     'Rückgeld', '12,85', '€', 'Größe', 'Summe', '15,34', 'EUR', 'Rezept', 'liegt', 'vor?', 'Feld:', 'Buchen')
   $skalen = [ordered]@{}
-  foreach ($s in 1, 2, 3) {
+  foreach ($s in 1, 2, 3, 4) {
     $basis = Join-Path $ordner "skala-$s"
     $start = Get-Date
     $dateien = Save-Bildschirmfoto -Fenster $fenster -Basis $basis -Skalierung $s

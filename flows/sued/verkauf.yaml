@@ -41,6 +41,12 @@ schritte:
       text: 'Referenz ${kennung}: Beleg'
       genau: true
       status: bereits-gebucht
+  # Verkauft wird nur, wenn «unbekannt» sicher dasteht. Fehlt die Zeile
+  # «Beleg» nur in diesem Bild (OCR, halb gezeichnet), bricht der Lauf ab,
+  # statt ein zweites Mal zu buchen (E39).
+  - pruefe:
+      text: 'Referenz ${kennung}: unbekannt'
+      genau: true
 
   - fuer-jede: positionen
     als: pos

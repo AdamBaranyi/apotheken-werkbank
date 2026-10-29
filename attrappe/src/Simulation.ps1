@@ -33,11 +33,14 @@ function New-KassenSimulation {
       Verlesen      = [bool]$Chaos['Verlesen']
       Schreibmarke  = [bool]$Chaos['Schreibmarke']
       Unlesbar      = @($Chaos['Unlesbar'] | Where-Object { $_ })
+      Unsichtbar    = @($Chaos['Unsichtbar'] | Where-Object { $_ })
+      Flackern      = [string]$Chaos['Flackern']
       DialogNach    = [int]$Chaos['DialogNach']
       UnbekanntNach = [int]$Chaos['UnbekanntNach']
     }
     Gezeigt    = @{ preisliste = $false; unbekannt = $false }
     Aktionen   = 0
+    Bilder     = 0
     Ausstehend = $null
   }
 }
@@ -58,9 +61,19 @@ function Get-SimMitteY([int[]] $Lage) { [int]($Lage[1] + $Lage[3] / 2 - $script:
 
 function Get-SimulationsBild {
   [CmdletBinding()]
-  param([Parameter(Mandatory)] [hashtable] $Simulation)
+  param(
+    [Parameter(Mandatory)] [hashtable] $Simulation,
+    # Zweiter Blick: dasselbe Bild in anderer Grösse gelesen. Die Zeit läuft
+    # nicht weiter, und was nur dreifach unlesbar ist, steht da.
+    [switch] $AndereGroesse
+  )
   $s = $Simulation
-  Step-SimAusstehend $s
+  if (-not $AndereGroesse) {
+    Step-SimAusstehend $s
+    $s.Bilder++
+  }
+  # Flackern: Eine Anzeige fehlt in jedem zweiten Bild, als wäre sie halb neu gezeichnet.
+  $flackerAus = $s.Chaos.Flackern -and $s.Bilder % 2 -eq 0
   $zb = $s.Layout.Schrift.Zeichenbreite
   $anzeige = Get-KassenAnzeige -Kasse $s.Kasse
   if ($s.Ausstehend) { $anzeige.Status = 'Bitte warten …' }
@@ -70,13 +83,20 @@ function Get-SimulationsBild {
     $lage = @($e.Lage)
     switch ($e.Art) {
       'beschriftung' { Add-SimWorte $woerter $e.Text $lage[0] (Get-SimMitteY $lage) $zb ([ref]$zeile) }
-      'anzeige' { Add-SimWorte $woerter $anzeige[$e.Name] $lage[0] (Get-SimMitteY $lage) $zb ([ref]$zeile) }
+      'anzeige' {
+        $text = [string]$anzeige[$e.Name]
+        if (-not ($flackerAus -and $text.Contains($s.Chaos.Flackern))) {
+          Add-SimWorte $woerter $text $lage[0] (Get-SimMitteY $lage) $zb ([ref]$zeile)
+        }
+      }
       'feld' {
         # Die Schreibmarke klebt am letzten Zeichen, wie im echten Fenster.
         $text = [string]$s.Felder[$e.Name]
         if ($s.Chaos.Schreibmarke -and $s.Fokus -eq $e.Name -and -not $s.Dialog) { $text += '|' }
-        # Unlesbar: eine Angabe, die die OCR im Feld nicht findet (Kasse Nord: «1» hinter «Menge»).
-        if ($s.Chaos.Unlesbar -notcontains $text) {
+        # Unlesbar: eine Angabe, die die OCR dreifach nicht findet (Kasse Nord: «1» hinter
+        # «Menge»), vierfach aber schon. Unsichtbar: in keiner Grösse.
+        $weg = $s.Chaos.Unsichtbar -contains $text -or (-not $AndereGroesse -and $s.Chaos.Unlesbar -contains $text)
+        if (-not $weg) {
           Add-SimWorte $woerter $text ($lage[0] + 3) (Get-SimMitteY $lage) $zb ([ref]$zeile)
         }
       }

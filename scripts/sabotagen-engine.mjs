@@ -151,6 +151,20 @@ export const SABOTAGEN_ENGINE = [
     tests: [`${T}/Lauf.Tests.ps1`],
   },
   {
+    name: 'Verkauf läuft weiter, ohne dass «unbekannt» dasteht',
+    datei: 'flows/nord/verkauf.yaml',
+    suche: "  - pruefe:\n      text: 'Referenz ${kennung}: unbekannt'\n      genau: true\n",
+    ersatz: '',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Kein zweiter Blick vor «nicht erschienen»',
+    datei: `${S}/Warten.ps1`,
+    suche: '  $zweit = Get-ZweiterBlick $Lauf $bild\n',
+    ersatz: '  $zweit = $null\n',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
     name: 'Prototyp bucht ein abgelaufenes Rezept',
     datei: 'prototypen/rezept-zur-kasse/Rezept.ps1',
     suche: 'if ($bis.Date -lt $Heute.Date) {',

@@ -104,7 +104,22 @@ function Wait-Suche {
     }
     if (-not (Wait-Pause $Lauf $bis)) { break }
   }
+  $zweit = Get-ZweiterBlick $Lauf $bild
+  foreach ($t in $s.Texte) {
+    if (-not $zweit) { break }
+    $f = Find-Text -Bild $zweit -Text $t -Genau:$s.Genau -Schwelle $s.Schwelle -Bereich $Bereich
+    if ($f) { return @{ Ok = $true; Wert = $f.Wert; Text = $t; ZweiterBlick = $true } }
+  }
   @{ Ok = $false; Meldung = "Nicht erschienen nach ${Zeit} s: $($s.Texte -join ' | ')" }
+}
+
+function Get-ZweiterBlick {
+  # Bevor die Engine «nicht erschienen» meldet, liest sie das letzte Bild noch
+  # einmal eine Stufe grösser. Dreifach übersah die OCR eine einzelne «1»
+  # neben einer Beschriftung, vierfach las sie sie (E38).
+  param([hashtable] $Lauf, $Bild)
+  if ($null -eq $Bild -or $Lauf.Treiber.PSObject.Methods.Name -notcontains 'Nochmals') { return $null }
+  $Lauf.Treiber.Nochmals($Bild)
 }
 
 function ConvertFrom-OcrZiffern {

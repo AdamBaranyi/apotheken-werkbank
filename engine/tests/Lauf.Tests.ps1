@@ -156,8 +156,28 @@ Describe 'Invoke-Flow mit dem Fake-Treiber' {
     ($bericht.schritte | Where-Object ziel -EQ 'Belegsuche').versuche | Should -Be 1
   }
 
-  It 'nennt bei einer unsichtbaren Eingabe, was die OCR dort las, und hält den Bildschirm als Text fest' {
+  It 'liest eine Ziffer, die die OCR dreifach übersieht, beim zweiten Blick vierfach (Befund Kasse Nord)' {
     $t = New-FakeTreiber -Variante nord -Chaos @{ Unlesbar = @('1') }
+    $bericht = Invoke-Testlauf $t
+    $bericht.status | Should -Be 'ok'
+    $t.Simulation.Kasse.Journal.Count | Should -Be 1
+    # Jede Menge beim ersten Versuch: Der zweite Blick ersetzt keine Wiederholung.
+    ($bericht.schritte | Where-Object ziel -EQ 'Menge' | Measure-Object versuche -Maximum).Maximum | Should -Be 1
+  }
+
+  It 'bucht kein zweites Mal, wenn die Zeile «Beleg» nach der Suche flackert' {
+    $t = New-FakeTreiber -Variante nord
+    (Invoke-Testlauf $t).status | Should -Be 'ok'
+    # Die Suche fand den Beleg; im nächsten Bild fehlt die Zeile. Verkauft
+    # wird nur, wenn «unbekannt» sicher dasteht.
+    $t.Simulation.Chaos.Flackern = 'Referenz K7-QX4M: Beleg'
+    $bericht = Invoke-Testlauf $t
+    $bericht.status | Should -Be 'abgebrochen'
+    $t.Simulation.Kasse.Journal.Count | Should -Be 1
+  }
+
+  It 'nennt bei einer unsichtbaren Eingabe, was die OCR dort las, und hält den Bildschirm als Text fest' {
+    $t = New-FakeTreiber -Variante nord -Chaos @{ Unsichtbar = @('1') }
     $bericht = Invoke-Testlauf $t
     $bericht.status | Should -Be 'abgebrochen'
     $bericht.fehler.meldung | Should -Match "Eingabe nicht sichtbar: '1' bei Menge; gelesen: «Menge», «Hinzufügen»"

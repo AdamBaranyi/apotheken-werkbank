@@ -36,20 +36,26 @@ function Save-Bildschirmfoto {
     $g = [System.Drawing.Graphics]::FromImage($bild)
     try { $g.CopyFromScreen($Fenster.X, $Fenster.Y, 0, 0, $bild.Size) } finally { $g.Dispose() }
     $bild.Save($roh, [System.Drawing.Imaging.ImageFormat]::Png)
-    $hoch = [System.Drawing.Bitmap]::new($bild.Width * $Skalierung, $bild.Height * $Skalierung)
-    try {
-      $g2 = [System.Drawing.Graphics]::FromImage($hoch)
-      try {
-        $g2.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-        $g2.DrawImage($bild, 0, 0, $hoch.Width, $hoch.Height)
-      }
-      finally { $g2.Dispose() }
-      $hoch.Save($gross, [System.Drawing.Imaging.ImageFormat]::Png)
-    }
-    finally { $hoch.Dispose() }
+    Save-Vergroessert -Bild $bild -Ziel $gross -Skalierung $Skalierung
   }
   finally { $bild.Dispose() }
   @{ Roh = $roh; Gross = $gross }
+}
+
+function Save-Vergroessert {
+  # Vergrössert ein Bild für die OCR, die kleine Kassenschrift so besser liest.
+  param([System.Drawing.Image] $Bild, [string] $Ziel, [int] $Skalierung)
+  $hoch = [System.Drawing.Bitmap]::new($Bild.Width * $Skalierung, $Bild.Height * $Skalierung)
+  try {
+    $g = [System.Drawing.Graphics]::FromImage($hoch)
+    try {
+      $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+      $g.DrawImage($Bild, 0, 0, $hoch.Width, $hoch.Height)
+    }
+    finally { $g.Dispose() }
+    $hoch.Save($Ziel, [System.Drawing.Imaging.ImageFormat]::Png)
+  }
+  finally { $hoch.Dispose() }
 }
 
 function Read-OcrWoerter {
@@ -79,7 +85,7 @@ function New-WindowsTreiber {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory)] [string] $Arbeitsordner,
-    [ValidateRange(1, 4)] [int] $Skalierung = 2,
+    [ValidateRange(1, 4)] [int] $Skalierung = 3,
     [string] $Sprache = 'de-DE'
   )
   if (-not $IsWindows) { throw 'Der Windows-Treiber läuft nur unter Windows.' }
@@ -120,6 +126,26 @@ function New-WindowsTreiber {
       Sprache    = $ocr.Sprache
       Verfuegbar = $ocr.Verfuegbar
       DauerMs    = [int]((Get-Date) - $start).TotalMilliseconds
+    }
+  }
+  $treiber | Add-Member -MemberType ScriptMethod -Name Nochmals -Value {
+    # Zweiter Blick: dasselbe Foto eine Stufe grösser lesen. Dreifach übersah
+    # die OCR eine einzelne «1» neben einer Beschriftung, vierfach las sie sie (E38).
+    param($Bild)
+    $skalierung = $this.Skalierung + 1
+    $basis = $Bild.Pfad -replace '\.png$', '-nochmals'
+    $roh = [System.Drawing.Bitmap]::new($Bild.Pfad)
+    try { Save-Vergroessert -Bild $roh -Ziel "$basis-x$skalierung.png" -Skalierung $skalierung }
+    finally { $roh.Dispose() }
+    $ocr = Read-OcrWoerter -Skript $this.Ocr -Bild "$basis-x$skalierung.png" -Json "$basis.json" `
+      -Sprache $this.Sprache -Skalierung $skalierung
+    [pscustomobject]@{
+      Fenster    = $Bild.Fenster
+      Woerter    = $ocr.Woerter
+      Pfad       = $Bild.Pfad
+      Sprache    = $ocr.Sprache
+      Verfuegbar = $ocr.Verfuegbar
+      DauerMs    = 0
     }
   }
   $treiber | Add-Member -MemberType ScriptMethod -Name Vordergrund -Value {

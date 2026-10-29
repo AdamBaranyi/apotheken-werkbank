@@ -110,8 +110,8 @@ function Invoke-Eingeben {
   $null = $Lauf.Treiber.Taste('Escape')
   if ($text -eq '') { return @{ Ok = $true; Gesendet = $true } }
   $null = $Lauf.Treiber.Tippen($text)
-  # Die Schreibmarke klebt am letzten Zeichen; die OCR las im ersten
-  # Windows-Lauf «1» als «1|» und eine Kennung erst beim dritten Bild. Darum:
+  # Die Schreibmarke klebt am letzten Zeichen; im ersten Windows-Lauf
+  # stimmten Kennungen darum erst beim dritten Bild oder gar nicht. Darum:
   # Feld mit Tab verlassen, prüfen, mit Umschalt+Tab zurück, damit ein Enter
   # danach wieder in diesem Feld wirkt.
   $null = $Lauf.Treiber.Taste('Tab')

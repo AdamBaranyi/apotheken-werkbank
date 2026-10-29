@@ -38,6 +38,13 @@ function New-FakeTreiber {
     $this.Bilder++
     Get-SimulationsBild -Simulation $this.Simulation
   }
+  $treiber | Add-Member -MemberType ScriptMethod -Name Nochmals -Value {
+    # Zweiter Blick: dasselbe Bild in anderer Grösse. Chaos «Unlesbar» gilt
+    # dort nicht, «Unsichtbar» schon (E38).
+    param($Bild)
+    $null = $Bild # Die Simulation zeigt noch dasselbe Bild.
+    Get-SimulationsBild -Simulation $this.Simulation -AndereGroesse
+  }
   $treiber | Add-Member -MemberType ScriptMethod -Name Vordergrund -Value {
     param($Fenster)
     $null = $Fenster # Die Simulation ist immer vorne.
