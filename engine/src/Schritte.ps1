@@ -119,8 +119,18 @@ function Invoke-Eingeben {
   $w = Wait-Suche $Lauf @{ text = $text; genau = [bool]$e['genau'] } $script:StandardZeit.eingabe $bereich
   $w.Gesendet = $true
   if ($w.Ok) { $null = $Lauf.Treiber.Taste('ShiftTab') }
-  if (-not $w.Ok -and -not $w['KasseFehler']) { $w.Meldung = "Eingabe nicht sichtbar: '$text' bei $ankerText" }
+  if (-not $w.Ok -and -not $w['KasseFehler']) {
+    $w.Meldung = "Eingabe nicht sichtbar: '$text' bei $ankerText; gelesen: $(Get-Gelesen $Lauf.Bild $bereich)"
+  }
   $w
+}
+
+function Get-Gelesen {
+  # Was die OCR im Bereich las, für die Meldung: «Menge», «Hinzufügen».
+  param($Bild, [hashtable] $Bereich)
+  $woerter = @($Bild.Woerter | Where-Object { Test-ImBereich $_ $Bereich } | Sort-Object Zeile, X)
+  if ($woerter.Count -eq 0) { return 'nichts' }
+  ($woerter | ForEach-Object { "«$($_.Text)»" }) -join ', '
 }
 
 function Invoke-Lesen {

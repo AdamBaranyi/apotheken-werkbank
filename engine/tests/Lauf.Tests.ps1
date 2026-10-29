@@ -156,6 +156,17 @@ Describe 'Invoke-Flow mit dem Fake-Treiber' {
     ($bericht.schritte | Where-Object ziel -EQ 'Belegsuche').versuche | Should -Be 1
   }
 
+  It 'nennt bei einer unsichtbaren Eingabe, was die OCR dort las, und hält den Bildschirm als Text fest' {
+    $t = New-FakeTreiber -Variante nord -Chaos @{ Unlesbar = @('1') }
+    $bericht = Invoke-Testlauf $t
+    $bericht.status | Should -Be 'abgebrochen'
+    $bericht.fehler.meldung | Should -Match "Eingabe nicht sichtbar: '1' bei Menge; gelesen: «Menge», «Hinzufügen»"
+    # Der Bildschirm beim Abbruch: erste Position drin, zweite PZN getippt.
+    $bericht.fehler.bildtext | Should -Match 'Hinzugefügt: 99100008'
+    $bericht.fehler.bildtext | Should -Match '99104118'
+    $t.Simulation.Kasse.Journal.Count | Should -Be 0
+  }
+
   It 'versteht die Kasse auch, wenn die OCR Nullen als O liest' {
     $t = New-FakeTreiber -Variante nord -Chaos @{ Verlesen = $true }
     $bericht = Invoke-Testlauf $t

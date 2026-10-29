@@ -53,6 +53,18 @@ function Save-Foto {
   $Lauf.Treiber.Foto($Lauf.Bild, $basis)
 }
 
+function New-Fehlerangabe {
+  # Abbruch im Bericht: Schritt, Meldung, Bildschirmfoto und der Bildschirm als
+  # Text, so wie die OCR ihn las. Der Text zeigt, warum ein Ziel fehlte.
+  param([hashtable] $Lauf, $Schritt, [string] $Meldung)
+  [pscustomobject]@{
+    schritt  = $Schritt
+    meldung  = $Meldung
+    foto     = (Save-Foto $Lauf 'fehler')
+    bildtext = $(if ($Lauf.Bild) { Get-Bildtext $Lauf.Bild } else { $null })
+  }
+}
+
 function Complete-Laufbericht {
   param([hashtable] $Lauf, [string] $Status)
   $b = $Lauf.Bericht

@@ -120,6 +120,14 @@ Describe 'Bildschirm-Simulation der Kasse' {
     $sim.Fokus | Should -Be 'pzn'
   }
 
+  It 'lässt eine Feldangabe aus, die die OCR nicht liest (Befund in Kasse Nord)' {
+    $sim = New-KassenSimulation -Layout $script:Mini -Ursprung @(40, 60) -Chaos @{ Unlesbar = @('1') }
+    Send-InsFeld $sim '1'
+    $bild = Get-SimulationsBild -Simulation $sim
+    Get-Wort $bild '1' | Should -BeNullOrEmpty
+    $bild.Woerter.Count | Should -BeGreaterThan 0
+  }
+
   It 'löscht das alte Suchergebnis, sobald jemand in die Suche tippt' {
     $layout = $script:Mini.Clone()
     $layout.Elemente = @($script:Mini.Elemente) + @(

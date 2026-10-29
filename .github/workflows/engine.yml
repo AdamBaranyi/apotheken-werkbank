@@ -94,6 +94,11 @@ jobs:
         shell: pwsh
         run: ./engine/probe/probe.ps1 -Ausgabe ausgabe/probe
 
+      # Was liest die OCR von einer einzelnen Ziffer neben einer Beschriftung?
+      - name: Probe einer einzelnen Ziffer
+        shell: pwsh
+        run: ./engine/probe/ziffer.ps1 -Ausgabe ausgabe/ziffer
+
       - name: Pester ohne Bildschirm
         shell: pwsh
         run: ./engine/tests/pester.ps1

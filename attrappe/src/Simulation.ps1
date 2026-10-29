@@ -32,6 +32,7 @@ function New-KassenSimulation {
       Wandern       = $Chaos['Wandern']
       Verlesen      = [bool]$Chaos['Verlesen']
       Schreibmarke  = [bool]$Chaos['Schreibmarke']
+      Unlesbar      = @($Chaos['Unlesbar'] | Where-Object { $_ })
       DialogNach    = [int]$Chaos['DialogNach']
       UnbekanntNach = [int]$Chaos['UnbekanntNach']
     }
@@ -74,7 +75,10 @@ function Get-SimulationsBild {
         # Die Schreibmarke klebt am letzten Zeichen, wie im echten Fenster.
         $text = [string]$s.Felder[$e.Name]
         if ($s.Chaos.Schreibmarke -and $s.Fokus -eq $e.Name -and -not $s.Dialog) { $text += '|' }
-        Add-SimWorte $woerter $text ($lage[0] + 3) (Get-SimMitteY $lage) $zb ([ref]$zeile)
+        # Unlesbar: eine Angabe, die die OCR im Feld nicht findet (Kasse Nord: «1» hinter «Menge»).
+        if ($s.Chaos.Unlesbar -notcontains $text) {
+          Add-SimWorte $woerter $text ($lage[0] + 3) (Get-SimMitteY $lage) $zb ([ref]$zeile)
+        }
       }
       'knopf' {
         $x = [int]($lage[0] + ($lage[2] - $zb * $e.Text.Length) / 2)

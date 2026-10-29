@@ -191,15 +191,13 @@ function Invoke-Flow {
       $ende = Invoke-Schrittliste $lauf @($Flow.Schritte) ''
       if ($ende) {
         $status = $ende.Status
-        if ($ende['Meldung']) {
-          $lauf.Bericht.fehler = [pscustomobject]@{ schritt = $ende.Nr; meldung = $ende.Meldung; foto = (Save-Foto $lauf 'fehler') }
-        }
+        if ($ende['Meldung']) { $lauf.Bericht.fehler = New-Fehlerangabe $lauf $ende.Nr $ende.Meldung }
       }
     }
   }
   catch {
     $status = if ($lauf.KritischGesendet) { 'unklar' } else { 'abgebrochen' }
-    $lauf.Bericht.fehler = [pscustomobject]@{ schritt = $null; meldung = $_.Exception.Message; foto = (Save-Foto $lauf 'fehler') }
+    $lauf.Bericht.fehler = New-Fehlerangabe $lauf $null $_.Exception.Message
   }
   Complete-Laufbericht -Lauf $lauf -Status $status
 }

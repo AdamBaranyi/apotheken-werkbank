@@ -35,7 +35,10 @@ Describe 'Engine gegen die echte Kassen-Attrappe' -Tag 'Windows' {
         Ausgabe = (Join-Path $script:Ausgabe 'laeufe'); Bildfolge = $true
       }
       Write-Host "  Lauf $($bericht.lauf): $($bericht.status), $($bericht.dauerMs) ms, OCR $($bericht.ocr)"
-      if ($bericht.fehler) { Write-Host "  Fehler: $($bericht.fehler.meldung)" }
+      if ($bericht.fehler) {
+        Write-Host "  Fehler: $($bericht.fehler.meldung)"
+        if ($bericht.fehler.bildtext) { Write-Host "  Bildschirm, wie die OCR ihn las:`n$($bericht.fehler.bildtext)" }
+      }
       $bericht
     }
     # 3 x 3,95 + 1 x 12,90 = 24,75 €.
