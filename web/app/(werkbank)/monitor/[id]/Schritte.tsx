@@ -30,9 +30,11 @@ export function Schritte({ schritte }: { schritte: Laufbericht['schritte'] }) {
                 {schrittText(s)}
               </td>
               <td data-titel="Ergebnis">
-                {s.ergebnis === 'ok' ? 'erledigt' : 'gescheitert'}
-                {s.versuche > 1 ? `, ${s.versuche} Versuche` : null}
-                {s.meldung ? <span className={styles.schrittmeldung}>{s.meldung}</span> : null}
+                <span>
+                  {s.ergebnis === 'ok' ? 'erledigt' : 'gescheitert'}
+                  {s.versuche > 1 ? `, ${s.versuche} Versuche` : null}
+                  {s.meldung ? <span className={styles.schrittmeldung}>{s.meldung}</span> : null}
+                </span>
               </td>
               <td data-titel="Dauer" className={`${listen.zahl} ziffern`}>
                 {dauerText(s.dauerMs)}

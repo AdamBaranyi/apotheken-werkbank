@@ -71,19 +71,23 @@ export default async function Monitor() {
                   {zeitText(l.beginn, platz.apotheke.land)}
                 </td>
                 <td data-titel="Ablauf">
-                  {flowText(l.flow)}, Kasse {kasseText(l.kasse)}
-                  {l.kennung ? (
-                    <span className={`${styles.kennung} ziffern`}> {l.kennung}</span>
-                  ) : null}
-                  {l.treiber === 'fake' ? (
-                    <span className={`${listen.marke} ${styles.abstand}`}>Test</span>
-                  ) : null}
+                  <span>
+                    {flowText(l.flow)}, Kasse {kasseText(l.kasse)}
+                    {l.kennung ? (
+                      <span className={`${styles.kennung} ziffern`}> {l.kennung}</span>
+                    ) : null}
+                    {l.treiber === 'fake' ? (
+                      <span className={`${listen.marke} ${styles.abstand}`}>Test</span>
+                    ) : null}
+                  </span>
                 </td>
                 <td data-titel="Status">
-                  <span className={styles.status} data-status={l.status}>
-                    {STATUS_TEXT[l.status]}
+                  <span>
+                    <span className={styles.status} data-status={l.status}>
+                      {STATUS_TEXT[l.status]}
+                    </span>
+                    {l.heilungen > 0 ? <span className={listen.marke}>geheilt</span> : null}
                   </span>
-                  {l.heilungen > 0 ? <span className={listen.marke}>geheilt</span> : null}
                 </td>
                 <td data-titel="Dauer" className={`${listen.zahl} ziffern`}>
                   {dauerText(l.dauer_ms)}

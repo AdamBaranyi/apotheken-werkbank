@@ -73,4 +73,19 @@ test.describe('Flow-Monitor', () => {
     await expect(page.getByText(/Denselben Auftrag noch einmal laufen lassen/)).toBeVisible();
     await bildschirmPruefen(page);
   });
+
+  test('Marken sind so breit wie ihr Wort, auch schmal', async ({ page }) => {
+    await page.goto('/monitor');
+    const zeile = page
+      .getByRole('table', { name: 'Läufe der Engine' })
+      .getByRole('row')
+      .filter({ hasText: 'Tagesabschluss' })
+      .first();
+    const rahmen = await zeile.boundingBox();
+    for (const wort of ['Test', 'Erledigt']) {
+      const marke = await zeile.getByText(wort, { exact: true }).boundingBox();
+      // Schmal wäre eine gestreckte Marke breiter als die halbe Zeile und sähe aus wie ein Feld.
+      expect(marke && rahmen && marke.width / rahmen.width).toBeLessThan(0.4);
+    }
+  });
 });

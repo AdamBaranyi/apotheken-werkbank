@@ -62,9 +62,13 @@
     border-bottom: 1px solid var(--linie);
   }
 
+  /* Jedes Kind der Zelle wird ein Rasterfeld: Zellen mit mehreren Teilen
+     (Text, Kennung, Marke) fassen sie in eine Hülle. Nicht strecken, sonst
+     sieht eine Marke aus wie ein Eingabefeld. */
   .tabelle td {
     display: grid;
     grid-template-columns: 7rem minmax(0, 1fr);
+    justify-items: start;
     gap: 0.5rem;
     padding: 0.25rem 0;
     border: 0;
