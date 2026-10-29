@@ -18,8 +18,8 @@ und ohne eigenen Windows-Rechner?
 | Flows                   | 4: Verkauf und Tagesabschluss für zwei Apotheken mit verschiedenem Layout; ein Verkauf hat 16 oder 17 Schritte                                          |
 | Echte Läufe auf Windows | 8 Tests gegen das WinForms-Fenster auf `windows-2025`, alle grün; ein Verkauf mit zwei Positionen 27 bis 39 s, «bereits gebucht» 7 s, ein Abschluss 6 s |
 | OCR                     | 20 von 20 Prüfwörtern dreifach hochskaliert, 18 von 20 in echter Grösse; etwa 1 bis 1,5 s je Bild                                                       |
-| Tests                   | Pester 139 ohne Bildschirm, Unit 157, Datenbank 79, Browser 121 (drei Breiten und dunkel)                                                               |
-| Sabotagen               | 76, alle gefangen: 32 an Engine und Kassen-Attrappe, 21 an der Datenbank, 23 im Code der Web-App                                                        |
+| Tests                   | Pester 141 ohne Bildschirm, Unit 157, Datenbank 79, Browser 121 (drei Breiten und dunkel)                                                               |
+| Sabotagen               | 77, alle gefangen: 33 an Engine und Kassen-Attrappe, 21 an der Datenbank, 23 im Code der Web-App                                                        |
 | Selbstheilung           | Claude Haiku 5.5, etwa 0,0002 $ je Vorschlag; ausgeführt werden nur Ziele aus der Liste des Flows                                                       |
 | Prototyp                | 10 erfundene Rezeptdatensätze: 5 gebucht, 1 Doppel erkannt, 4 mit Grund für einen Menschen                                                              |
 
@@ -77,7 +77,11 @@ hiess, ein Trockenlauf, der Dialoge wegklickte, und eine Selbstheilung, die nach
 Modells auf einem alten Bild klickte. Alle neun sind behoben, jeder mit einem Test, der vorher rot
 war (E40, E41, [SECURITY.md](SECURITY.md)). Einer dieser Tests war zuerst aus dem falschen Grund
 grün: Ihm fehlte ein Import, der Lauf brach an diesem Fehler ab, und der Test sah den erwarteten
-Abbruch. Erst mit dem Import wurde er rot, wie er sollte.
+Abbruch. Erst mit dem Import wurde er rot, wie er sollte. Zwei der Fixes brauchten auf Windows eine
+zweite Runde: Die Zahlenregel war zu streng, weil Süd «Im» als «1m» las, und ohne eine zufällige
+Pause der alten Vordergrund-Logik klickte die Engine einen Dialog zweimal, weil er im nächsten Bild
+noch dastand. Beides fand der echte Lauf, nicht die Simulation; jetzt kennt die Simulation das
+Nachbild eines Dialogs.
 
 **Warten wiederholt.** Die erste Fassung wiederholte auch reine Warteschritte. Im Test
 verdreifachte das die Frist, und ein Lauf, der «unklar» melden sollte, meldete «ok». Warten wird

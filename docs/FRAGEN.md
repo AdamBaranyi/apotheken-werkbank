@@ -28,8 +28,8 @@ statt neu senden. (E25, E33)
 
 **5. Wie sicher liest die OCR?** Gemessen auf Segoe UI 9 pt: 18 von 20 Prüfwörtern in echter
 Grösse, 20 von 20 dreifach hochskaliert. Da `Windows.Media.Ocr` keine Sicherheit je Wort liefert,
-vergleicht die Engine selbst mit Schwelle, Kurzwörter und Kennungen genau, und gleicht O/0, I/l/1
-und ähnliche Verwechslungen aus. (E32)
+vergleicht die Engine selbst: Wörter mit Schwelle, Zahlen, Kurzwörter und Kennungen genau, und
+gleicht O/0, I/l/1 und ähnliche Verwechslungen aus. (E32, E40)
 
 **6. Was war der überraschendste Fehler?** Zwei, beide erst im echten Lauf auf Windows gefunden.
 Die blinkende Schreibmarke klebt am letzten Zeichen eines Feldes; Kennungen stimmten darum erst beim

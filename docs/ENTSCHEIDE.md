@@ -399,9 +399,12 @@ der Test die fehlende Prüfung findet. Preis: Ein Lauf, der die Zeile in keinem 
 _29.10.2026._ Befund der Durchsicht vor dem Merge: Die Engine verglich ganze Suchtexte unscharf
 (Levenshtein, Schwelle 0,85), Zahlen eingeschlossen. «Positionen 1» galt als «Positionen 2» (0,917),
 und ein Enter, das ein Dialog schluckte, fiel nicht auf: Der Lauf meldete «ok», auf dem Beleg fehlte
-eine Position. Ebenso galt «1234,60» als «1234,50» (0,857). Jetzt müssen die Ziffern eines Suchtexts
-genau stimmen, nach Ausgleich der OCR-Verwechslungen (O/0, l/1 …), Punkt wie Komma und ohne
-Leerzeichen dazwischen; Buchstaben bleiben unscharf. Ein Test spielt das geschluckte Enter nach, eine
+eine Position. Ebenso galt «1234,60» als «1234,50» (0,857). Jetzt muss jede Zahl des Suchtexts genau
+so im gelesenen Text stehen: als eigenes Wort, aus zwei Nachbarwörtern («1 5,34» für «15,34») oder am
+Ende eines Worts («Vorgang1»), nach Ausgleich der OCR-Verwechslungen (O/0, l/1 …) und mit Punkt wie
+Komma. Buchstaben bleiben unscharf. Die erste Fassung verlangte dieselbe Folge aller Ziffern und war
+zu streng: Der echte Lauf in Süd las «Im Vorgang 1» als «1m Vorgang 1», das «1m» zählte als Zahl,
+und kein Verkauf ging mehr durch. Tests spielen das geschluckte Enter und das «1m» nach, eine
 Sabotage hält die Regel fest. Preis: Liest die OCR eine Ziffer falsch, die sie nicht verwechseln
 darf, scheitert die Prüfung, statt durchzugehen; dafür gibt es den zweiten Blick (E38).
 

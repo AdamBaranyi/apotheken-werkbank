@@ -118,15 +118,17 @@ sechs gelten weiter (E41).
 6. **Mehrdeutig heisst nicht klicken.** Steht ein Ziel an zwei gleich guten Stellen, bricht der
    Schritt ab. Die Layouts sind so gebaut, dass kein Knopftext zweimal vorkommt (`Test-KassenLayout`).
 7. **Bekannte Dialoge** aus dem Flow klickt die Engine vor jedem Bild weg (Stufe 1), den Knopf
-   gesucht nur rund um den Text des Dialogs und nur, wenn er dort eindeutig ist; der Trockenlauf
-   klickt nichts. Ein unbekannter Dialog führt zum Abbruch mit Bildschirmfoto, oder zur
-   Selbstheilung (Stufe 2).
+   gesucht nur rund um den Text des Dialogs und nur, wenn er dort eindeutig ist. Nach dem Klick
+   wartet sie, bis der Dialog verschwunden ist; zeigte ihn das nächste Bild noch, ginge ein zweiter
+   Klick ins Fenster dahinter. Der Trockenlauf klickt nichts. Ein unbekannter Dialog führt zum
+   Abbruch mit Bildschirmfoto, oder zur Selbstheilung (Stufe 2).
 8. **Vor «nicht erschienen» ein zweiter Blick.** Findet die Engine einen Text bis zum Ende der
    Frist nicht, liest sie das letzte Bild noch einmal eine Stufe grösser (vierfach statt dreifach).
    Erst dann meldet sie den Fehler, mit den Wörtern, die die OCR im Feld las (E38).
-9. **Zahlen genau.** Ein Suchtext mit Ziffern trifft nur dieselben Ziffern, nach Ausgleich der
-   OCR-Verwechslungen; Buchstaben vergleicht die Engine weiter unscharf. Sonst galt «Positionen 1»
-   als «Positionen 2» (E40).
+9. **Zahlen genau.** Ein Suchtext mit Ziffern trifft nur, wenn jede seiner Zahlen genau so dasteht,
+   nach Ausgleich der OCR-Verwechslungen; Buchstaben vergleicht die Engine weiter unscharf, und ein
+   Buchstabe, den die OCR als Ziffer las («1m» für «Im»), stört nicht. Sonst galt «Positionen 1» als
+   «Positionen 2» (E40).
 10. **Nur senden, wenn die Kasse vorne ist.** Vorne zählt das Kassenfenster oder ein Dialog derselben
     Anwendung. Ist es ein anderes Programm, oder steht die Kasse zweimal offen, bricht der Lauf vor
     der nächsten Eingabe ab.
@@ -219,7 +221,9 @@ Lauf, der schon gemeldet ist, gilt als erledigt.
 
 - **Pester ohne Bildschirm** (Mac, Linux, Windows): Textabgleich, Flows und `lint`, Aufträge,
   Kassenlogik, Layouts, Simulation, Läufe mit dem Fake-Treiber samt Chaos (springendes und
-  wanderndes Fenster, langsame Kasse, Nullen als O, Dialoge), Kommandozeile.
+  wanderndes Fenster, langsame Kasse, Nullen als O, Dialoge, Schreibmarke, unlesbare und
+  unsichtbare Angaben, flackernde Anzeige, Nachbild eines Dialogs, geschlucktes Enter),
+  Kommandozeile.
 - **Echte Läufe** (`engine/tests/Windows.Tests.ps1`, nur Windows): beide Apotheken, Bar und Karte,
   nie doppelt, Abschluss, Chaos im echten Fenster. Was gebucht wurde, prüfen die Tests am Journal,
   das die Attrappe schreibt, nicht an der OCR.
