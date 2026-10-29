@@ -5,7 +5,7 @@
   margin-bottom: 2rem;
   padding: 1.25rem 1rem;
   border: 1px solid var(--linie);
-  border-top: 4px solid var(--tinte);
+  background: var(--flaeche);
   border-radius: var(--radius);
 }
 
@@ -17,8 +17,8 @@
 .marke {
   display: inline-block;
   padding: 0 0.5rem;
-  border: 2px solid var(--tinte);
-  border-radius: 2px;
+  border: 1px solid var(--linie-feld);
+  border-radius: 4px;
 }
 
 .meldung {
@@ -98,7 +98,7 @@
   text-align: left;
   font-weight: 650;
   padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid var(--tinte);
+  border-bottom: 1px solid var(--linie-stark);
 }
 
 .tabelle td {

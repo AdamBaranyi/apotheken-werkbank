@@ -20,7 +20,7 @@
   text-align: left;
   font-weight: 650;
   padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid var(--tinte);
+  border-bottom: 1px solid var(--linie-stark);
 }
 
 .tabelle td {
@@ -43,7 +43,7 @@
   display: inline-block;
   padding: 0 0.375rem;
   border: 1px solid var(--tinte);
-  border-radius: 2px;
+  border-radius: 4px;
   font-weight: 650;
 }
 

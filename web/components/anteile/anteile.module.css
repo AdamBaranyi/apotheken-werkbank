@@ -7,7 +7,7 @@
   display: flex;
   height: 1rem;
   border: 1px solid var(--tinte);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
@@ -67,7 +67,7 @@
   flex: none;
   width: 0.875rem;
   height: 0.875rem;
-  border-radius: 2px;
+  border-radius: 4px;
   transform: translateY(0.1em);
 }
 

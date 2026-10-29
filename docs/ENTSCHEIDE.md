@@ -251,3 +251,21 @@ in keinem Lockfile (docs/SECURITY.md).
 _27.10.2026._ Hell bleibt die Vorgabe; wünscht das System dunkel, tauschen dieselben Variablen
 ihre Werte. Text hält dort mindestens 4,5 : 1, Feldränder 3 : 1. Die Browser-Tests laufen
 zusätzlich dunkel in 390 px, und axe prüft die Kontraste auch dort.
+
+## E28 — Rundgang auf Knopfdruck
+
+_28.10.2026._ Adams Wunsch: ein Rundgang wie in seinen anderen Apps, der zeigt, wie man die
+Werkbank benutzt und was schon fertig ist. Der Knopf «Rundgang» steht in der Leiste; er öffnet
+einen echten modalen Dialog (Fokusfalle und Escape vom Browser), Schritt für Schritt, mit eigenen
+Schritten für «Bestellen» und «Kasse» und einem kurzen Rundgang auf den übrigen Seiten. Das
+erklärte Element wird hervorgehoben; fehlt es gerade (leerer Bon), bleibt nur der Text. Anders als
+in Evidarium öffnet er sich beim ersten Besuch noch nicht von selbst: Dafür müssten alle
+Browser-Tests als Besucher beginnen, die ihn schon kennen. Das folgt mit dem lokalen Speicher.
+
+## E29 — Auffrischung der Gestaltung
+
+_28.10.2026._ Die Werkzeug-Oberfläche aus E15 bleibt, aber ruhiger und zeitgemässer: getönte
+Leinwand mit einer hellen Arbeitsfläche, dunkle App-Leiste, feine Linien statt schwarzer Rahmen,
+etwas grössere Rundungen. Schrift, Datenfarben mit Wort und Muster und die Regeln zu Grösse und
+Kontrast bleiben. Die Jetzt-Marke im Tourenband steht nur noch im Fortschrittsstreifen; vorher lief
+sie zu manchen Uhrzeiten mitten durch den Text der laufenden Tour.

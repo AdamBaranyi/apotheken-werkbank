@@ -24,8 +24,8 @@
   margin: 0.75rem 0 0;
   padding: 0;
   list-style: none;
-  border: 2px solid var(--tinte);
-  border-radius: var(--radius);
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-gross);
   overflow: hidden;
 }
 
@@ -79,12 +79,14 @@
   font-weight: 650;
 }
 
+/* Die Jetzt-Marke steht nur im Fortschrittsstreifen unten, nie im Text. */
 .jetzt {
   position: absolute;
-  top: 0;
   bottom: 0;
+  height: 0.875rem;
   width: 3px;
   margin-left: -1.5px;
+  border-radius: 2px 2px 0 0;
   background: var(--tinte);
 }
 

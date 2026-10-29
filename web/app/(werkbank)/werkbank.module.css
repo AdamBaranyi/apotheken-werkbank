@@ -1,5 +1,24 @@
+/* Der Arbeitsbereich: eine helle Fläche auf der getönten Leinwand. */
 .inhalt {
   max-width: var(--breite);
-  margin: 0 auto;
-  padding: 2rem 1rem 4rem;
+  margin: 1.5rem auto 3rem;
+  padding: 2rem 2rem 3rem;
+  background: var(--papier);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-gross);
+}
+
+@media (max-width: 76rem) {
+  .inhalt {
+    margin: 1.5rem 1rem 3rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .inhalt {
+    margin: 0;
+    padding: 1.5rem 1rem 3rem;
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
 }

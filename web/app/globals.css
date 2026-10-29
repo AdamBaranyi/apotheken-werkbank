@@ -4,10 +4,16 @@
  * und Muster. Schrift nie unter 16 px. Hell ist die Vorgabe.
  */
 :root {
+  --leinwand: #edf1f2;
   --papier: #ffffff;
-  --flaeche: #f1f4f5;
-  --linie: #c7d0d5;
+  --flaeche: #f2f5f6;
+  --linie: #d6dee2;
+  --linie-stark: #9fb0b8;
   --linie-feld: #6f7f89;
+  --kopf-grund: #14212b;
+  --kopf-tinte: #ffffff;
+  --kopf-leise: #b9c6ce;
+  --radius-gross: 12px;
   --tinte: #14212b;
   --tinte-hover: #26394a;
   --tinte-leise: #4a5964;
@@ -17,7 +23,7 @@
   --daten-dispo: #56636f;
   --daten-defekt: #b42318;
   --fokus-innen: #ffffff;
-  --radius: 4px;
+  --radius: 6px;
   --breite: 72rem;
   color-scheme: light;
   accent-color: var(--tinte);
@@ -29,10 +35,15 @@
  */
 @media (prefers-color-scheme: dark) {
   :root {
+    --leinwand: #090f13;
     --papier: #10181e;
     --flaeche: #1a252d;
-    --linie: #34444f;
+    --linie: #2c3a44;
+    --linie-stark: #4d606c;
     --linie-feld: #8a9aa5;
+    --kopf-grund: #050a0d;
+    --kopf-tinte: #e8eef2;
+    --kopf-leise: #9fb0bb;
     --tinte: #e8eef2;
     --tinte-hover: #cfd9df;
     --tinte-leise: #aab7c0;
@@ -59,7 +70,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--papier);
+  background: var(--leinwand);
   color: var(--tinte);
   font-family: var(--schrift), system-ui, sans-serif;
   font-size: 1rem;
@@ -115,6 +126,13 @@ select {
 
 [hidden] {
   display: none !important;
+}
+
+/* Das Element, das der Rundgang gerade erklärt. */
+[data-rundgang-ziel] {
+  outline: 3px solid var(--tinte);
+  outline-offset: 6px;
+  border-radius: var(--radius);
 }
 
 .unsichtbar {
