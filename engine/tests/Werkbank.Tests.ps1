@@ -47,6 +47,29 @@ Describe 'werkbank.ps1' {
     $r.Text | Should -Not -Match 'bei <ScriptBlock>|at <ScriptBlock>'
   }
 
+  It 'run -Melden nennt fehlende Zugangsdaten, bevor es die Kasse anfasst' {
+    $alt = $env:WERKBANK_MONITOR_URL
+    try {
+      $env:WERKBANK_MONITOR_URL = $null
+      $r = Invoke-Werkbank @('run', '-Apotheke', 'nord', '-Flow', 'verkauf', '-Auftrag', $script:Beispiel, '-Treiber', 'fake', '-Melden')
+      $r.Code | Should -Be 1
+      $r.Text | Should -Match 'Für -Melden fehlen: WERKBANK_MONITOR_URL'
+      $r.Text | Should -Not -Match 'Status:'
+    }
+    finally { $env:WERKBANK_MONITOR_URL = $alt }
+  }
+
+  It 'run -Heilung modell verlangt den Schlüssel des Modells' {
+    $alt = $env:ANTHROPIC_API_KEY
+    try {
+      $env:ANTHROPIC_API_KEY = $null
+      $r = Invoke-Werkbank @('run', '-Apotheke', 'nord', '-Flow', 'verkauf', '-Auftrag', $script:Beispiel, '-Treiber', 'fake', '-Heilung', 'modell')
+      $r.Code | Should -Be 1
+      $r.Text | Should -Match 'ANTHROPIC_API_KEY'
+    }
+    finally { $env:ANTHROPIC_API_KEY = $alt }
+  }
+
   It 'kennung liefert eine neue Kennung' {
     $r = Invoke-Werkbank @('kennung')
     $r.Code | Should -Be 0
