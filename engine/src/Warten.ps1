@@ -26,8 +26,23 @@ function Get-Stand {
     if (-not $knopf) { return $bild }
     $null = $Lauf.Treiber.Klick($f.X + $knopf.MitteX, $f.Y + $knopf.MitteY)
     $Lauf.Bericht.dialoge.Add([pscustomobject]@{ text = $knopf.Dialog; klick = $knopf.Text; zeit = (Get-Date).ToString('o') })
+    Wait-DialogWeg $Lauf $knopf.Dialog
   }
   $bild
+}
+
+function Wait-DialogWeg {
+  # Ein Dialog schliesst nicht im Augenblick des Klicks. Zeigte ihn das nächste
+  # Bild noch, ginge ein zweiter Klick ins Fenster dahinter (Befund Windows).
+  # Darum warten, bis sein Text verschwunden ist, höchstens drei Sekunden.
+  param([hashtable] $Lauf, [string] $Text)
+  $bis = (Get-Date).AddSeconds(3)
+  for ($i = 0; $i -lt (Get-Bilderzahl $Lauf 3); $i++) {
+    $f = $Lauf.Treiber.Fenster($Lauf.Flow.Fenster)
+    if ($null -eq $f) { return }
+    if (-not (Find-Text -Bild ($Lauf.Treiber.Bildschirm($f)) -Text $Text)) { return }
+    if (-not (Wait-Pause $Lauf $bis)) { return }
+  }
 }
 
 function Assert-Vorne {

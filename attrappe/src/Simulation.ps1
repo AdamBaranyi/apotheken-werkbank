@@ -35,12 +35,14 @@ function New-KassenSimulation {
       Unlesbar      = @($Chaos['Unlesbar'] | Where-Object { $_ })
       Unsichtbar    = @($Chaos['Unsichtbar'] | Where-Object { $_ })
       Flackern      = [string]$Chaos['Flackern']
+      Nachbild      = [bool]$Chaos['Nachbild']
       DialogNach    = [int]$Chaos['DialogNach']
       UnbekanntNach = [int]$Chaos['UnbekanntNach']
     }
     Gezeigt    = @{ preisliste = $false; unbekannt = $false }
     Aktionen   = 0
     Bilder     = 0
+    Nachbild   = $null
     Ausstehend = $null
   }
 }
@@ -115,12 +117,15 @@ function Get-SimulationsBild {
     }
   }
   $breite, $hoehe = $s.Layout.Groesse
-  if ($s.Dialog) {
-    $d = Get-DialogLage -Dialog $s.Dialog -Breite $breite -Hoehe $hoehe
+  # Ein Nachbild zeigt den eben geschlossenen Dialog noch in diesem einen Bild.
+  $gezeigt = if ($s.Dialog) { $s.Dialog } else { $s.Nachbild }
+  if (-not $AndereGroesse) { $s.Nachbild = $null }
+  if ($gezeigt) {
+    $d = Get-DialogLage -Dialog $gezeigt -Breite $breite -Hoehe $hoehe
     $sichtbar = @($woerter | Where-Object { -not (Test-SimInLage ($_.X + $_.B / 2) ($_.Y + $_.H / 2) $d.Lage) })
     $woerter = [System.Collections.Generic.List[object]]::new()
     foreach ($w in $sichtbar) { $woerter.Add($w) }
-    Add-SimWorte $woerter $s.Dialog.Text ($d.Lage[0] + 16) ($d.Lage[1] + 20) $zb ([ref]$zeile)
+    Add-SimWorte $woerter $gezeigt.Text ($d.Lage[0] + 16) ($d.Lage[1] + 20) $zb ([ref]$zeile)
     foreach ($k in $d.Knoepfe) {
       $x = [int]($k.Lage[0] + ($k.Lage[2] - $zb * $k.Knopf.Text.Length) / 2)
       Add-SimWorte $woerter $k.Knopf.Text $x (Get-SimMitteY $k.Lage) $zb ([ref]$zeile)
@@ -151,7 +156,12 @@ function Send-SimulationsKlick {
     $breite, $hoehe = $s.Layout.Groesse
     $d = Get-DialogLage -Dialog $s.Dialog -Breite $breite -Hoehe $hoehe
     $knopf = $d.Knoepfe | Where-Object { Test-SimInLage $cx $cy $_.Lage } | Select-Object -First 1
-    if ($knopf) { Resolve-SimDialog $s $knopf.Knopf.Antwort }
+    if ($knopf) {
+      # Nachbild: Wie im echten Fenster steht der Dialog nach dem Klick noch
+      # ein Bild lang da; ein Klick darauf trifft schon das Fenster dahinter.
+      if ($s.Chaos.Nachbild) { $s.Nachbild = $s.Dialog }
+      Resolve-SimDialog $s $knopf.Knopf.Antwort
+    }
     return
   }
   $element = $s.Layout.Elemente | Where-Object { $_.Art -in 'feld', 'knopf' -and (Test-SimInLage $cx $cy @($_.Lage)) } |

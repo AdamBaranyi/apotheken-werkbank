@@ -110,8 +110,8 @@ export const SABOTAGEN_ENGINE = [
   {
     name: 'Dialog sperrt das Fenster der Simulation nicht',
     datei: `${A}/src/Simulation.ps1`,
-    suche: 'if ($knopf) { Resolve-SimDialog $s $knopf.Knopf.Antwort }\n    return',
-    ersatz: 'if ($knopf) { Resolve-SimDialog $s $knopf.Knopf.Antwort; return }',
+    suche: '      Resolve-SimDialog $s $knopf.Knopf.Antwort\n    }\n    return\n',
+    ersatz: '      Resolve-SimDialog $s $knopf.Knopf.Antwort\n      return\n    }\n',
     tests: [`${A}/tests/Simulation.Tests.ps1`],
   },
   {
@@ -167,7 +167,7 @@ export const SABOTAGEN_ENGINE = [
   {
     name: 'Zahlen im Suchtext werden unscharf verglichen',
     datei: `${S}/Text.ps1`,
-    suche: '  if ((Get-Zahlenfolge $Kandidat) -ne (Get-Zahlenfolge $Ziel)) { return 0.0 }\n',
+    suche: '  if (-not (Test-ZahlenGleich -Kandidat $Kandidat -Ziel $Ziel)) { return 0.0 }\n',
     ersatz: '',
     tests: [`${T}/Text.Tests.ps1`],
   },
@@ -182,6 +182,13 @@ export const SABOTAGEN_ENGINE = [
     name: 'Trockenlauf klickt bekannte Dialoge weg',
     datei: `${S}/Warten.ps1`,
     suche: '    if ($Lauf.Optionen.DryRun) { return $bild }\n',
+    ersatz: '',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Dialog wird ein zweites Mal geklickt, solange er nachleuchtet',
+    datei: `${S}/Warten.ps1`,
+    suche: '    Wait-DialogWeg $Lauf $knopf.Dialog\n',
     ersatz: '',
     tests: [`${T}/Lauf.Tests.ps1`],
   },

@@ -54,24 +54,50 @@ function Get-Kandidatenwert {
     [Werkbank.TextAbgleich]::Ziffern($Kandidat) -eq [Werkbank.TextAbgleich]::Ziffern($Ziel)
     return [double]$gleich
   }
-  # Zahlen tragen die Bedeutung (Menge, Betrag, Zähler): Ihre Ziffern müssen
-  # genau stimmen. Sonst galt «Positionen 1» als «Positionen 2» (0,917).
-  if ((Get-Zahlenfolge $Kandidat) -ne (Get-Zahlenfolge $Ziel)) { return 0.0 }
+  # Zahlen tragen die Bedeutung (Menge, Betrag, Zähler): Sie müssen genau so
+  # dastehen. Sonst galt «Positionen 1» als «Positionen 2» (0,917, E40).
+  if (-not (Test-ZahlenGleich -Kandidat $Kandidat -Ziel $Ziel)) { return 0.0 }
   Get-Aehnlichkeit -A $Kandidat -B $Ziel
 }
 
-function Get-Zahlenfolge {
-  # Die Ziffern aller Zahlwörter eines Textes, OCR-Verwechslungen ausgeglichen
-  # (O/0, l/1 …), Punkt wie Komma, Leerzeichen dazwischen ohne Bedeutung: so
-  # ergeben «15,34» und «1 5.34» dasselbe. Ein Zahlwort enthält eine Ziffer
-  # oder besteht aus höchstens zwei Zeichen, die die OCR mit Ziffern verwechselt.
-  param([string] $Text)
-  $teile = foreach ($wort in ($Text -split ' ')) {
-    if ($wort -match '\d' -or $wort -match '^[oil|!sbz]{1,2}$') {
-      [Werkbank.TextAbgleich]::Ziffern($wort) -replace '\.', ',' -replace '[^\d,]', ''
+function Get-Zahlform {
+  # Ein Wort als Zahl, nach Ausgleich der OCR-Verwechslungen (O/0, l/1 …) und
+  # mit Komma statt Punkt; leer, wenn es keine Zahl ist. Ohne Ziffer zählen nur
+  # ein bis zwei Zeichen, die die OCR mit Ziffern verwechselt («l» für «1»).
+  param([string] $Wort)
+  $z = [Werkbank.TextAbgleich]::Ziffern($Wort) -replace '\.', ','
+  if (($Wort -match '\d' -or $Wort -match '^[oil|!sbz]{1,2}$') -and $z -match '^[\d,]+$') { return $z }
+  ''
+}
+
+function Test-ZahlenGleich {
+  # Jede Zahl des Ziels steht genau so im Kandidaten: als eigenes Wort, aus zwei
+  # Nachbarwörtern («1 5,34» für «15,34») oder am Ende eines Worts («Vorgang1»).
+  # In einem Bezeichner («K7-QX4M») zählen seine Ziffern als Ganzes. Ein
+  # Buchstabe, den die OCR als Ziffer las («1m» für «Im»), stört so nicht.
+  param([string] $Kandidat, [string] $Ziel)
+  $verlangt = @(foreach ($w in ($Ziel -split ' ')) {
+      if ($w -notmatch '\d') { continue }
+      $f = Get-Zahlform $w
+      if ($f) { $f } else { 'id:' + ([Werkbank.TextAbgleich]::Ziffern($w) -replace '\D', '') }
+    })
+  if ($verlangt.Count -eq 0) { return $true }
+  $woerter = @($Kandidat -split ' ' | Where-Object { $_ })
+  $da = [System.Collections.Generic.HashSet[string]]::new()
+  for ($i = 0; $i -lt $woerter.Count; $i++) {
+    $f = Get-Zahlform $woerter[$i]
+    if ($f) {
+      $null = $da.Add($f)
+      if ($i + 1 -lt $woerter.Count -and ($g = Get-Zahlform $woerter[$i + 1])) { $null = $da.Add($f + $g) }
+      continue
     }
+    if ($woerter[$i] -notmatch '\d') { continue }
+    $z = [Werkbank.TextAbgleich]::Ziffern($woerter[$i]) -replace '\.', ','
+    $null = $da.Add('id:' + ($z -replace '\D', ''))
+    $ende = [regex]::Match($z, '[\d,]+$').Value
+    if ($ende) { $null = $da.Add($ende) }
   }
-  $teile -join ''
+  @($verlangt | Where-Object { -not $da.Contains($_) }).Count -eq 0
 }
 
 function New-Fundstelle {

@@ -92,6 +92,16 @@ Describe 'Find-Text' {
     Find-Text -Bild (New-TestBild @(@{ X = 16; Y = 20; Text = '123,50' })) -Text '1234,50' | Should -BeNullOrEmpty
   }
 
+  It 'stört sich nicht an einem Buchstaben, den die OCR als Ziffer las («1m» für «Im», Befund Süd)' {
+    $b = New-TestBild @(
+      @{ X = 16; Y = 70; Text = '1m Vorgang 1' }
+      @{ X = 16; Y = 100; Text = '1m Vorgang 2' }
+    )
+    (Find-Text -Bild $b -Text 'Im Vorgang 1').Y | Should -Be 70
+    (Find-Text -Bild $b -Text 'Im Vorgang 2').Y | Should -Be 100
+    (Find-Text -Bild (New-TestBild @(@{ X = 16; Y = 70; Text = 'Im Vorgang1' })) -Text 'Im Vorgang 1').Y | Should -Be 70
+  }
+
   It 'gleicht in Zahlen weiter Verwechslungen, Punkt statt Komma und geteilte Wörter aus' {
     $b = New-TestBild @(
       @{ X = 16; Y = 20; Text = 'Positionen l' }

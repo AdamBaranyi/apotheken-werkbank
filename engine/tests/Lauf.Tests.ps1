@@ -285,6 +285,14 @@ Describe 'Invoke-Flow mit dem Fake-Treiber' {
     $t.Simulation.Dialog | Should -Not -BeNullOrEmpty
   }
 
+  It 'klickt einen Dialog einmal, auch wenn er nach dem Klick noch ein Bild lang dasteht (Befund Windows)' {
+    $t = New-FakeTreiber -Variante nord -Chaos @{ DialogNach = 3; Nachbild = $true }
+    $bericht = Invoke-Testlauf $t
+    $bericht.status | Should -Be 'ok'
+    # Ein zweiter Klick ginge auf das Nachbild, also ins Fenster dahinter.
+    @($bericht.dialoge).Count | Should -Be 1
+  }
+
   It 'klickt den Knopf eines bekannten Dialogs nur im Dialog (Durchsicht 29.10.)' {
     $t = New-FakeTreiber -Variante nord
     # Dasselbe Wort steht weiter oben im Fenster, ausserhalb des Dialogs.
