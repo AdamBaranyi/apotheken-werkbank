@@ -11,5 +11,10 @@
     # aktualisieren ein Fenster; sie ändern keinen Zustand des Systems, den
     # -WhatIf schützen müsste.
     'PSUseShouldProcessForStateChangingFunctions'
+    # Ruft intern Test-ModuleManifest auf und stürzte auf dem Linux-Läufer
+    # zweimal ab («Value cannot be null (Parameter 'name')»), bei derselben
+    # Datei einmal nicht. Unsere Manifeste sind neu geschrieben, ohne veraltete
+    # Felder; ihre Gültigkeit prüft engine/tests/Manifest.Tests.ps1.
+    'PSAvoidUsingDeprecatedManifestFields'
   )
 }
