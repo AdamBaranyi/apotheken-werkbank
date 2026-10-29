@@ -181,3 +181,20 @@ enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
 - Eine Bremse muss prüfen und zählen in einem Schritt, sonst kommen gleichzeitige Versuche
   gemeinsam durch; und lässt sie bei Störung durch, lässt sie sich abschalten: erst überlasten,
   dann raten. Beides fand die Durchsicht vor dem Merge, nicht die Tests.
+
+### Abend 3, Engine
+
+- Ein Windows-Läufer von GitHub hat eine echte Sitzung mit Bildschirm: Fenster, Bildschirmfoto,
+  Klick und Eingabe funktionieren dort wie an einem Arbeitsplatz. Nur Deutsch fehlt der OCR, und
+  es nachzuinstallieren dauerte länger als zwölf Minuten. Englisch liest Umlaute trotzdem.
+- Kassenschrift ist klein. Dreifach hochskaliert las die OCR alle 20 Prüfwörter, in echter Grösse
+  18; doppelt wurde «15,34» zu «1 5,34».
+- Eine Oberfläche ohne Schnittstelle zu bedienen heisst vor allem wissen, wann man etwas nicht
+  weiss: kein Klick auf ein Ziel, das an zwei Stellen steht, kein zweiter buchender Klick, und
+  «unklar» statt raten. Danach klärt die Kennung auf dem Beleg, ob gebucht wurde.
+- Die heikelsten Fehler steckten im Lesen alter Zustände: ein Suchergebnis von vorhin, eine
+  Meldung, die schon dastand. Die Regel: Nach einer Aktion zählt nur, was vorher nicht da war.
+- Wie eine Kasse gestaltet ist, entscheidet, wie gut sie sich automatisieren lässt. Ein Haken statt
+  eines Textes, dasselbe Wort auf Knopf und Beschriftung, «Karte» im Status neben dem Knopf
+  «Karte»: Die Attrappe vermeidet das. Eine echte Kasse lässt sich nicht ändern; dort muss der
+  Flow mit Bereich und genauem Vergleich arbeiten.
