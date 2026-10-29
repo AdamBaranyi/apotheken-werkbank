@@ -18,6 +18,11 @@ $script:Laufvorgaben = @{
   Ausgabe        = ''
   Bildfolge      = $false
   DryRun         = $false
+  # Stufe 2: Heiler (New-Heiler) und seine Deckel.
+  Heiler          = $null
+  HeilungenJeLauf = 3
+  HeilungenJeTag  = 20
+  Zaehlerordner   = ''
 }
 
 function Test-Bedingung {
@@ -37,8 +42,21 @@ function Invoke-SchrittMitWiederholung {
     $ergebnis = if ($r.Ok) { 'ok' } else { 'fehler' }
     Add-Schrittbericht -Lauf $Lauf -Nr $Nr -Art (Get-Aktion $Schritt) -Ziel (Get-Zielname $Schritt) -Ergebnis $ergebnis `
       -Versuche $versuch -DauerMs ([int]((Get-Date) - $start).TotalMilliseconds) -Meldung ([string]$r['Meldung']) -Wert $r['Wert']
-    if ($r.Ok -or $r['Endgueltig']) { return $r }
-    if ($versuch -gt $Lauf.Optionen.Wiederholungen -or -not (Test-Wiederholbar $Schritt $r)) { return $r }
+    if ($r.Ok) {
+      Set-Heilungsausgang $Lauf $Nr 'geholfen'
+      return $r
+    }
+    if ($r['Endgueltig']) {
+      Set-Heilungsausgang $Lauf $Nr 'nicht geholfen'
+      return $r
+    }
+    $nochmal = $versuch -le $Lauf.Optionen.Wiederholungen -and (Test-Wiederholbar $Schritt $r)
+    if (-not $nochmal) {
+      # Stufe 2: Ein Vorschlag, der schon ausgeführt ist, hat nicht geholfen.
+      Set-Heilungsausgang $Lauf $Nr 'nicht geholfen'
+      $nochmal = Invoke-Heilung $Lauf $Schritt $Nr $r
+    }
+    if (-not $nochmal) { return $r }
     # Nur der letzte Versuch eines Schritts bleibt im Bericht stehen.
     $Lauf.Bericht.schritte.RemoveAt($Lauf.Bericht.schritte.Count - 1)
   }
@@ -126,7 +144,8 @@ function Invoke-Flow {
     .SYNOPSIS
     Führt einen Flow mit einem Treiber und einem Auftrag aus und liefert den
     Laufbericht. Optionen: Takt, Schlafen, Wiederholungen, Zeit, Ausgabe,
-    Bildfolge, DryRun.
+    Bildfolge, DryRun; für die Selbstheilung Heiler, HeilungenJeLauf,
+    HeilungenJeTag, Zaehlerordner.
   #>
   [CmdletBinding()]
   param(
@@ -153,6 +172,7 @@ function Invoke-Flow {
     Fenster          = $null
     KritischGesendet = $false
     FehlerVorher     = @()
+    Heilungen        = 0
     Start            = Get-Date
   }
   $status = 'ok'

@@ -3,7 +3,9 @@
   Ohne Windows bleiben die Tests mit dem Tag «Windows» aussen vor: Sie brauchen
   einen echten Bildschirm, echte OCR und echte Eingabe.
 
-  Aufruf:  pwsh engine/tests/pester.ps1 [-Pfad <Datei oder Ordner> ...] [-NurWindows]
+  Aufruf:  pwsh engine/tests/pester.ps1 [-Pfad <Datei oder Ordner> ...] [-NurWindows] [-NurModell]
+  Tests mit dem Tag «Modell» rufen das echte Modell auf (kostet, braucht
+  ANTHROPIC_API_KEY) und laufen nur mit -NurModell.
   Exit-Code 0 nur, wenn alles grün ist.
 #>
 param(
@@ -12,6 +14,7 @@ param(
     (Join-Path $PSScriptRoot '../../attrappe/tests')
   ),
   [switch] $NurWindows,
+  [switch] $NurModell,
   [string] $Bericht
 )
 $ErrorActionPreference = 'Stop'
@@ -24,11 +27,15 @@ $konfig.Output.Verbosity = 'Detailed'
 $konfig.Output.StackTraceVerbosity = 'FirstLine'
 $konfig.Output.RenderMode = 'Plaintext'
 $konfig.Should.ErrorAction = 'Stop'
-if ($NurWindows) {
+if ($NurModell) {
+  $konfig.Filter.Tag = @('Modell')
+}
+elseif ($NurWindows) {
   $konfig.Filter.Tag = @('Windows')
+  $konfig.Filter.ExcludeTag = @('Modell')
 }
 else {
-  $konfig.Filter.ExcludeTag = @('Windows')
+  $konfig.Filter.ExcludeTag = @('Windows', 'Modell')
 }
 if ($Bericht) {
   $konfig.TestResult.Enabled = $true

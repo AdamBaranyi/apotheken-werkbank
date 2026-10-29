@@ -4,7 +4,8 @@ name: Engine
 # Linux prüft schnell, was ohne Bildschirm geht (Pester mit dem Fake-Treiber,
 # Analyse, Flows, Sabotagen). Erst wenn das grün ist, läuft Windows (E4): echte
 # Läufe gegen das WinForms-Fenster der Kassen-Attrappe, mit Bildfolge als
-# Artefakt.
+# Artefakt. Die Selbstheilung mit dem echten Modell läuft nur von Hand oder
+# auf main (E5), sonst nutzen die Tests eine Attrappe des Modells.
 
 on:
   push:
@@ -89,3 +90,40 @@ jobs:
           name: engine-windows
           path: ausgabe
           retention-days: 14
+
+  modell:
+    name: Selbstheilung mit echtem Modell
+    needs: windows
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: PowerShell-Module in festen Fassungen
+        shell: pwsh
+        run: ./engine/werkzeuge.ps1
+
+      # Ohne Secret kein Aufruf: Der Schritt meldet das und endet grün.
+      - name: Unbekannter Dialog, geheilt von Claude Haiku 5.5
+        shell: pwsh
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WERKBANK_AUSGABE: ${{ github.workspace }}/ausgabe/modell
+        run: |
+          if (-not $env:ANTHROPIC_API_KEY) {
+            Write-Output '::notice::Kein Secret ANTHROPIC_API_KEY: Lauf mit echtem Modell übersprungen.'
+            exit 0
+          }
+          ./engine/tests/pester.ps1 -NurModell
+
+      - name: Laufbericht und Bildfolge
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: engine-modell
+          path: ausgabe
+          retention-days: 14
+          if-no-files-found: ignore
