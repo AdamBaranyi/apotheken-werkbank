@@ -1,0 +1,57 @@
+name: Engine
+
+# Die Engine bedient eine Windows-Kasse über Bildschirmfoto, OCR und Eingabe.
+# Das geht nur auf einem echten Windows mit Bildschirm: hier auf den Läufern
+# von GitHub (E4). Während des Aufbaus läuft der Workflow auch bei Pushes auf
+# Branches von Abend 3, damit die Probe ohne Pull Request Ergebnisse liefert.
+
+on:
+  push:
+    branches: [main, 'abend-3/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Engine auf Windows
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Probe vor der Sprachinstallation
+        shell: pwsh
+        run: ./engine/probe/probe.ps1 -Ausgabe probe/vorher
+
+      # Gate von Abend 3: Gibt es Deutsch für Windows.Media.Ocr auf dem Läufer?
+      - name: Deutsche OCR-Sprache nachinstallieren
+        shell: pwsh
+        timeout-minutes: 12
+        continue-on-error: true
+        run: |
+          $name = 'Language.OCR~~~de-DE~0.0.1.0'
+          Get-WindowsCapability -Online -Name $name | Format-List Name, State
+          $dauer = Measure-Command { Add-WindowsCapability -Online -Name $name | Format-List }
+          "Dauer: $([int]$dauer.TotalSeconds) s"
+          Get-WindowsCapability -Online -Name $name | Format-List Name, State
+
+      - name: Probe nach der Sprachinstallation
+        shell: pwsh
+        run: ./engine/probe/probe.ps1 -Ausgabe probe/nachher
+
+      - name: Bilder und Befunde
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: engine-probe
+          path: probe
+          retention-days: 7
