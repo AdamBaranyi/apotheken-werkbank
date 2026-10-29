@@ -150,4 +150,20 @@ export const SABOTAGEN_ENGINE = [
     ersatz: '',
     tests: [`${T}/Lauf.Tests.ps1`],
   },
+  {
+    name: 'Prototyp bucht ein abgelaufenes Rezept',
+    datei: 'prototypen/rezept-zur-kasse/Rezept.ps1',
+    suche: 'if ($bis.Date -lt $Heute.Date) {',
+    ersatz: 'if ($false) {',
+    tests: ['prototypen/rezept-zur-kasse/tests/Rezept.Tests.ps1'],
+  },
+  {
+    name: 'Prototyp leitet die Kennung je Lauf neu ab',
+    datei: 'prototypen/rezept-zur-kasse/Rezept.ps1',
+    suche:
+      '$hash = [System.Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($RezeptId))',
+    ersatz:
+      '$hash = [System.Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($RezeptId + [guid]::NewGuid()))',
+    tests: ['prototypen/rezept-zur-kasse/tests/Rezept.Tests.ps1'],
+  },
 ].map((s) => ({ ...s, pester: true }));

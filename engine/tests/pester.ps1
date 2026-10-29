@@ -1,5 +1,5 @@
 <#
-  Führt die Pester-Tests der Engine und der Kassen-Attrappe aus.
+  Führt die Pester-Tests der Engine, der Kassen-Attrappe und der Prototypen aus.
   Ohne Windows bleiben die Tests mit dem Tag «Windows» aussen vor: Sie brauchen
   einen echten Bildschirm, echte OCR und echte Eingabe.
 
@@ -11,7 +11,8 @@
 param(
   [string[]] $Pfad = @(
     (Join-Path $PSScriptRoot '.'),
-    (Join-Path $PSScriptRoot '../../attrappe/tests')
+    (Join-Path $PSScriptRoot '../../attrappe/tests'),
+    (Join-Path $PSScriptRoot '../../prototypen')
   ),
   [switch] $NurWindows,
   [switch] $NurModell,

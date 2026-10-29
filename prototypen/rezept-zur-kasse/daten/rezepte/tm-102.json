@@ -1,0 +1,21 @@
+{
+  "rezeptId": "TM-2026-000102",
+  "quelle": "Telemedizin-Attrappe (erfunden)",
+  "ausgestellt": "2026-10-28",
+  "gueltigBis": "2026-11-25",
+  "arzt": "Dr. med. Erfunden, Telemedizin-Attrappe",
+  "patient": "Pseudonym P-1002",
+  "zahlung": "karte",
+  "positionen": [
+    {
+      "pzn": "99106850",
+      "menge": 1,
+      "dosierung": "2-mal täglich 1 Tropfen"
+    },
+    {
+      "pzn": "99102740",
+      "menge": 2,
+      "dosierung": "bei Bedarf"
+    }
+  ]
+}

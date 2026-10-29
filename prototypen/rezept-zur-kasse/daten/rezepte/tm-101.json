@@ -1,0 +1,16 @@
+{
+  "rezeptId": "TM-2026-000101",
+  "quelle": "Telemedizin-Attrappe (erfunden)",
+  "ausgestellt": "2026-10-28",
+  "gueltigBis": "2026-11-25",
+  "arzt": "Dr. med. Erfunden, Telemedizin-Attrappe",
+  "patient": "Pseudonym P-1001",
+  "zahlung": "karte",
+  "positionen": [
+    {
+      "pzn": "99104118",
+      "menge": 1,
+      "dosierung": "3-mal täglich 5 ml"
+    }
+  ]
+}
