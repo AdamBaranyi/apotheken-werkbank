@@ -198,3 +198,17 @@ enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
   eines Textes, dasselbe Wort auf Knopf und Beschriftung, «Karte» im Status neben dem Knopf
   «Karte»: Die Attrappe vermeidet das. Eine echte Kasse lässt sich nicht ändern; dort muss der
   Flow mit Bereich und genauem Vergleich arbeiten.
+
+### Abend 4, Selbstheilung und Flow-Monitor
+
+- Der erste echte Lauf auf Windows fand, was keine Simulation zeigte: Die blinkende Schreibmarke
+  klebt am letzten Zeichen eines Feldes, und die OCR liest «1» als «1|». Ob ein Test grün ist, hing
+  davon ab, ob die Marke beim Bildschirmfoto gerade an war. Danach zeigt die Simulation sie auch.
+- Bei der Selbstheilung liegt die Sicherheit nicht im Modell, sondern in der Liste dessen, was es
+  vorschlagen darf. Ein Text auf dem Bildschirm kann ein Modell beeinflussen; er kann aber keinen
+  Knopf freischalten, den der Flow nicht erlaubt.
+- Ein Konto für eine Maschine sollte weniger dürfen als ein Mensch, nicht gleich viel. Weil die
+  Engine-Konten nicht in `mitglieder` stehen, sehen sie ohne eine einzige geänderte Regel nichts
+  von der Apotheke ausser ihren eigenen Meldungen.
+- Grenzen der Plattform zählen auch in Tests: 30 Anmeldungen in fünf Minuten je IP hätten die CI
+  unberechenbar gemacht, wenn die Engine sich für jeden Lauf neu angemeldet hätte.

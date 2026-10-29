@@ -329,3 +329,38 @@ erste Fassung merkte vor jeder Aktion alle sichtbaren Meldungen als alt. Gemesse
 «Ohne Rezept nicht abgegeben» lief ein Verkauf weiter und buchte eine von zwei Positionen. Preis:
 Meldet die Kasse einen Fehler, den der Flow nicht kennt, merkt die Engine es erst, wenn der
 erwartete Zustand ausbleibt.
+
+## E35 — Selbstheilung: das Modell schlägt vor, die Liste entscheidet
+
+_29.10.2026._ Scheitert ein Schritt, fragt die Engine einen Heiler nach genau einer Aktion. Das
+Modell (Claude Haiku 5.5, E5) bekommt Bildschirmfoto, erkannten Text, den gescheiterten Schritt und
+die Klickziele aus `heilung.klickbar` des Flows; die Antwort legt ein JSON-Schema über
+`output_config.format` fest, mit `effort: low`. Ausgeführt wird nur ein Ziel aus der Liste, das
+eindeutig sichtbar ist, dazu Escape oder Warten; danach ein neuer Versuch, aber nie für einen
+gesendeten buchenden Schritt. So hängt die Sicherheit nicht am Modell: Ein Bildschirmtext, der dem
+Modell etwas einflüstert, erreicht höchstens einen Knopf, den der Flow ohnehin erlaubt. Deckel: drei
+Fragen je Lauf, eine Zahl je Tag, dazu das Monatslimit im Konto des Anbieters. Gemessen in den
+Tests: Ein Vorschlag «Karte» wird abgelehnt, ein unsichtbares «Schliessen» auch. Preis: Was nicht
+auf der Liste steht, heilt die Engine nicht, selbst wenn das Modell richtig läge.
+
+## E36 — Flow-Monitor über Engine-Konten, die keine Mitglieder sind
+
+_29.10.2026._ Die Engine meldet ihre Läufe mit einem eigenen Supabase-Konto, das in
+`engine_konten` steht und nicht in `mitglieder`. Alle bestehenden Regeln fragen `mitglieder`; ein
+Engine-Konto sieht darum ohne eine geänderte Regel weder Belege noch Bestellungen noch Zugänge. Es
+darf Läufe und Fotos seiner Apotheke schreiben; die Apotheke setzt die Datenbank, ein Foto hängt
+über einen zusammengesetzten Fremdschlüssel an einem Lauf derselben Apotheke, und nichts wird
+geändert. Verworfen: eine Route der Web-App mit eigenem Gerätetoken (bräuchte eine weitere
+Datenbankrolle und ein Geheimnis in Vercel) und eine Rolle «engine» in `mitglieder` (jede Regel und
+`zugang_fuer_bestellung` hätten sie ausschliessen müssen). Fotos liegen als `bytea` in der Datenbank,
+nicht im Speicher von Supabase, der in der CI nicht läuft. Preis: je Apotheke ein Konto mehr, das die
+Einrichtung anlegt; in der Produktion legt Adam es an (E21).
+
+## E37 — Eingaben ohne Schreibmarke prüfen
+
+_29.10.2026._ Befund des ersten Laufs auf Windows: Die blinkende Schreibmarke klebt am letzten
+Zeichen des Feldes mit dem Fokus. Die OCR las die Menge «1» als «1|», und eine Kennung stimmte erst
+beim dritten Bild. `eingeben` verlässt das Feld nach dem Tippen mit Tab, prüft den Text und kehrt mit
+Umschalt+Tab zurück, damit ein Enter danach wieder im richtigen Feld wirkt. Die Simulation zeigt die
+Marke als Chaos, ein Test und eine Sabotage halten den Fehler fest. Preis: Eine echte Kasse könnte
+beim Verlassen eines Feldes etwas prüfen oder auslösen; dann braucht ihr Flow einen anderen Weg.

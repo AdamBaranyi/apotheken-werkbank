@@ -34,6 +34,9 @@ node scripts/sabotage.mjs engine                # jede Schutzfunktion einmal kap
 
 Unter Windows mit Bildschirm läuft `run` ohne `-Treiber fake` gegen das echte Fenster
 (`pwsh attrappe/start.ps1 -Variante nord`). Exit-Codes: 0 erledigt, 1 abgebrochen, 2 unklar.
+`-Heilung modell` schaltet die Selbstheilung mit Claude ein, `-Melden` schickt den Bericht an den
+Flow-Monitor; Zugangsdaten kommen nur aus der Umgebung (siehe `engine/werkbank.ps1`).
+`pwsh engine/monitor-fuellen.ps1` füllt den Monitor lokal mit Läufen jeder Art.
 
 ## Ein Flow
 
@@ -135,6 +138,52 @@ Journal der Kasse.
   «Eingabe nicht sichtbar» auf und wurde wiederholt.
 - **Felder leeren:** Die Attrappe leert ein Feld mit Escape. Ohne Leeren hängt ein zweiter Versuch
   den Text an den ersten («99100008» wird «9910000899100008»).
+- **Schreibmarke:** Befund des ersten echten Laufs. Im Feld mit dem Fokus klebt die blinkende
+  Schreibmarke am letzten Zeichen; die OCR las die Menge «1» als «1|» und eine Kennung erst beim
+  dritten Bild, je nachdem, ob die Marke gerade an war. `eingeben` verlässt das Feld darum mit Tab,
+  prüft und kehrt mit Umschalt+Tab zurück. Die Simulation zeigt die Marke als Chaos und hält den
+  Fehler im Test fest.
+
+## Selbstheilung (Stufe 2)
+
+Scheitert ein Schritt auch nach den Wiederholungen, fragt die Engine einen **Heiler** nach genau
+einer Aktion: `klicke` einen Text, `taste` Escape, `warten` oder `abbrechen`. Die Engine prüft
+jeden Vorschlag, bevor sie ihn ausführt:
+
+- Ein Klickziel muss in `heilung.klickbar` des Flows stehen (etwa OK, Später, Schliessen) **und**
+  eindeutig auf dem Bildschirm zu sehen sein. «Bar», «Karte» oder ein «Ja» stehen nie in der Liste.
+- Taste nur Escape; `abbrechen` beendet die Heilung.
+- Nach einer Aktion versucht die Engine den Schritt noch einmal, aber nur, wo das sicher ist: nie
+  einen buchenden Schritt, der schon gesendet ist, und nie gegen eine ausdrückliche Ablehnung der
+  Kasse.
+- Deckel: höchstens drei Fragen je Lauf und eine Zahl je Tag über alle Läufe (Zähler in einer
+  Datei). Jede Frage zählt, auch eine, die scheitert.
+
+Heiler gibt es zwei: die **Attrappe** mit festen Vorschlägen (Tests, Pull Requests) und das
+**Modell** Claude Haiku 5.5 über die Messages API (`anthropic-version: 2026-10-21`). Es bekommt das
+Bildschirmfoto (PNG), den erkannten Text Zeile für Zeile, den gescheiterten Schritt und die Liste
+der Klickziele; die Antwort ist durch ein JSON-Schema (`output_config.format`) auf genau eine Aktion
+festgelegt, mit `effort: low` und `max_tokens: 1024`. Neu versucht wird nur bei 429, 529, 5xx,
+Netzfehler oder Zeitlimit; bei 401 und anderen Fehlern endet die Heilung. Kosten stehen je Vorschlag
+im Bericht (0,10 $ je Million Token Eingabe, 0,50 $ Ausgabe; ein Vorschlag mit Bild kostet etwa
+0,0002 $).
+
+**Text auf dem Bildschirm ist Daten, keine Anweisung.** Bei einer echten Kasse könnte ein
+Artikelname oder eine Meldung dem Modell etwas einflüstern. Darum entscheidet nicht das Modell,
+was erlaubt ist, sondern die Liste im Flow; ein Vorschlag ausserhalb der Liste wird nie
+ausgeführt (getestet und mit Sabotage geprüft). Und bei einer echten Kasse zeigt jedes
+Bildschirmfoto Gesundheitsdaten: Ein Modell darf dort nur laufen, wo die Daten bleiben dürfen. Dieses
+Repo schickt nur Bilder der Attrappe mit erfundenen Daten.
+
+## Flow-Monitor
+
+Mit `-Melden` schickt die Engine jeden Bericht an die Web-App (`/monitor`). Sie meldet sich dafür
+mit einem **eigenen Engine-Konto** bei Supabase an, das kein Mitglied der Apotheke ist: Es darf
+Läufe und Bildschirmfotos seiner Apotheke schreiben und sonst nichts, nicht einmal die eigenen
+Läufe lesen. Welche Apotheke, setzt die Datenbank; ein Foto hängt über einen zusammengesetzten
+Fremdschlüssel nur an einem Lauf derselben Apotheke. Die Sitzung merkt sich die Engine je Konto
+(Supabase begrenzt Anmeldungen auf 30 in fünf Minuten je IP) und meldet sich bei 401 neu an. Ein
+Lauf, der schon gemeldet ist, gilt als erledigt.
 
 ## Eine neue Apotheke ausrollen
 
