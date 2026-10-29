@@ -112,10 +112,15 @@ Journal der Kasse.
    Status «unklar» (Exit-Code 2). Ein neuer Lauf mit derselben Kennung findet den Beleg über die
    Referenz und endet mit «bereits gebucht». Dasselbe Muster wie beim Bestellen über MSV3: Die ID
    steht vor dem Senden fest, und nach einem Abbruch fragt man nach, statt neu zu senden.
+   Verkauft wird nur, wenn nach der Suche «Referenz …: unbekannt» sicher dasteht; fehlt die Zeile
+   «Beleg» nur in einem Bild, bricht der Lauf ab, statt ein zweites Mal zu buchen (E39).
 6. **Mehrdeutig heisst nicht klicken.** Steht ein Ziel an zwei gleich guten Stellen, bricht der
    Schritt ab. Die Layouts sind so gebaut, dass kein Knopftext zweimal vorkommt (`Test-KassenLayout`).
 7. **Bekannte Dialoge** aus dem Flow klickt die Engine vor jedem Bild weg (Stufe 1). Ein unbekannter
    Dialog führt zum Abbruch mit Bildschirmfoto, oder zur Selbstheilung (Stufe 2).
+8. **Vor «nicht erschienen» ein zweiter Blick.** Findet die Engine einen Text bis zum Ende der
+   Frist nicht, liest sie das letzte Bild noch einmal eine Stufe grösser (vierfach statt dreifach).
+   Erst dann meldet sie den Fehler, mit den Wörtern, die die OCR im Feld las (E38).
 
 ## Fallstricke, gemessen
 
@@ -139,10 +144,15 @@ Journal der Kasse.
 - **Felder leeren:** Die Attrappe leert ein Feld mit Escape. Ohne Leeren hängt ein zweiter Versuch
   den Text an den ersten («99100008» wird «9910000899100008»).
 - **Schreibmarke:** Befund des ersten echten Laufs. Im Feld mit dem Fokus klebt die blinkende
-  Schreibmarke am letzten Zeichen; die OCR las die Menge «1» als «1|» und eine Kennung erst beim
-  dritten Bild, je nachdem, ob die Marke gerade an war. `eingeben` verlässt das Feld darum mit Tab,
-  prüft und kehrt mit Umschalt+Tab zurück. Die Simulation zeigt die Marke als Chaos und hält den
-  Fehler im Test fest.
+  Schreibmarke am letzten Zeichen; Kennungen im Suchfeld stimmten erst beim zweiten oder dritten
+  Bild oder gar nicht, je nachdem, ob die Marke gerade an war. `eingeben` verlässt das Feld darum mit
+  Tab, prüft und kehrt mit Umschalt+Tab zurück; seither stimmt jede Kennung beim ersten Versuch. Die
+  Simulation zeigt die Marke als Chaos und hält den Fehler im Test fest.
+- **Eine einzelne Ziffer neben einer Beschriftung:** In Nord las die OCR die Menge «1» hinter
+  «Menge» in keinem Lauf, die «3» schon; in Süd (Beschriftung über dem Feld) las sie die «1» immer.
+  Die Probe `engine/probe/ziffer.ps1` misst dieselbe Zeile in drei Grössen: zweifach und vierfach
+  steht die «1» da, dreifach fehlt sie. Darum der zweite Blick vierfach, bevor eine Prüfung
+  scheitert (E38).
 
 ## Selbstheilung (Stufe 2)
 

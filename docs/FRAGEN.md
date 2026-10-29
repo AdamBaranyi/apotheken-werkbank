@@ -17,8 +17,9 @@ zu prüfen und freizugeben. ([ENGINE.md](ENGINE.md))
 
 **3. Wie verhindert die Engine eine doppelte Buchung?** Jeder Auftrag hat eine Kennung, die als
 Referenz auf dem Beleg steht. Bevor ein Verkauf beginnt, sucht der Flow die Kennung im Journal der
-Kasse; gibt es einen Beleg, endet der Lauf mit «bereits gebucht». Ein buchender Klick wird nie
-wiederholt. (E33)
+Kasse; gibt es einen Beleg, endet der Lauf mit «bereits gebucht». Verkauft wird nur, wenn die
+Kasse die Kennung sicher als «unbekannt» meldet; liest die Engine weder das eine noch das andere,
+bricht sie ab. Ein buchender Klick wird nie wiederholt. (E33, E39)
 
 **4. Was heisst «unklar»?** Ein buchender Schritt ist gesendet, aber die Bestätigung kam nicht.
 Die Engine rät nicht und klickt nicht noch einmal. Ein neuer Lauf mit derselben Kennung klärt es
@@ -30,10 +31,13 @@ Grösse, 20 von 20 dreifach hochskaliert. Da `Windows.Media.Ocr` keine Sicherhei
 vergleicht die Engine selbst mit Schwelle, Kurzwörter und Kennungen genau, und gleicht O/0, I/l/1
 und ähnliche Verwechslungen aus. (E32)
 
-**6. Was war der überraschendste Fehler?** Die blinkende Schreibmarke im Feld. Die OCR las die
-Menge «1» als «1|», und ob ein Lauf gelang, hing davon ab, ob die Marke beim Bildschirmfoto gerade
-an war. Gefunden hat es erst der echte Lauf auf Windows; jetzt verlässt die Engine das Feld vor der
-Prüfung, und die Simulation zeigt die Marke auch. (E37)
+**6. Was war der überraschendste Fehler?** Zwei, beide erst im echten Lauf auf Windows gefunden.
+Die blinkende Schreibmarke klebt am letzten Zeichen eines Feldes; Kennungen stimmten darum erst beim
+dritten Bild oder gar nicht. Und eine einzelne «1» hinter dem Wort «Menge» las die OCR in keinem
+Lauf, dieselbe «1» unter einer Beschriftung in jedem. Gemessen: Dreifach vergrössert übersah die
+OCR sie, zwei- und vierfach las sie sie; jetzt liest die Engine vor einem Fehlschlag das Bild noch
+einmal vierfach. Die Lehre daraus: Eine Erklärung aus
+einem Bildschirmfoto ist noch keine Messung; zuerst festhalten, was die OCR wirklich las. (E37, E38)
 
 **7. Wie testet man eine Bildschirm-Automatisierung ohne Windows?** Mit einem Fake-Treiber, der
 dieselbe Kasse als Wörter mit Lage zeigt, wie eine OCR sie liefert, gebaut auf demselben Layout und

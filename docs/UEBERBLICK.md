@@ -202,8 +202,16 @@ enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
 ### Abend 4, Selbstheilung und Flow-Monitor
 
 - Der erste echte Lauf auf Windows fand, was keine Simulation zeigte: Die blinkende Schreibmarke
-  klebt am letzten Zeichen eines Feldes, und die OCR liest «1» als «1|». Ob ein Test grün ist, hing
-  davon ab, ob die Marke beim Bildschirmfoto gerade an war. Danach zeigt die Simulation sie auch.
+  klebt am letzten Zeichen eines Feldes, und eine Kennung stimmte erst beim dritten Bild oder gar
+  nicht, je nachdem, ob die Marke beim Bildschirmfoto gerade an war. Danach zeigt die Simulation sie
+  auch.
+- Eine Erklärung aus einem Bildschirmfoto ist noch keine Messung. Dass die OCR eine «1» wegen der
+  Schreibmarke nicht las, stand schon in der Doku; ohne Marke scheiterte sie genauso. Erst die
+  Wörter, die die OCR wirklich las, und eine Probe in drei Grössen zeigten die Ursache: Dreifach
+  vergrössert fehlt die «1», zwei- und vierfach steht sie da.
+- Gegen doppeltes Buchen zählt, was sicher dasteht, nicht was fehlt. Ein Flow, der weiterverkaufte,
+  weil er «Beleg» in einem Bild nicht las, hätte zweimal gebucht. Jetzt braucht der Verkauf ein
+  gelesenes «unbekannt».
 - Bei der Selbstheilung liegt die Sicherheit nicht im Modell, sondern in der Liste dessen, was es
   vorschlagen darf. Ein Text auf dem Bildschirm kann ein Modell beeinflussen; er kann aber keinen
   Knopf freischalten, den der Flow nicht erlaubt.

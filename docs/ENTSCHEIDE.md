@@ -358,8 +358,35 @@ Einrichtung anlegt; in der Produktion legt Adam es an (E21).
 ## E37 — Eingaben ohne Schreibmarke prüfen
 
 _29.10.2026._ Befund des ersten Laufs auf Windows: Die blinkende Schreibmarke klebt am letzten
-Zeichen des Feldes mit dem Fokus. Die OCR las die Menge «1» als «1|», und eine Kennung stimmte erst
-beim dritten Bild. `eingeben` verlässt das Feld nach dem Tippen mit Tab, prüft den Text und kehrt mit
-Umschalt+Tab zurück, damit ein Enter danach wieder im richtigen Feld wirkt. Die Simulation zeigt die
-Marke als Chaos, ein Test und eine Sabotage halten den Fehler fest. Preis: Eine echte Kasse könnte
+Zeichen des Feldes mit dem Fokus. Kennungen im Suchfeld stimmten darum erst beim zweiten oder
+dritten Bild, in Süd gar nicht (Abbruch nach drei Versuchen). `eingeben` verlässt das Feld nach dem
+Tippen mit Tab, prüft den Text und kehrt mit Umschalt+Tab zurück, damit ein Enter danach wieder im
+richtigen Feld wirkt. Gemessen im nächsten Lauf: jede Kennung beim ersten Versuch. Die Simulation
+zeigt die Marke als Chaos, ein Test und eine Sabotage halten den Fehler fest. Zuerst stand hier, die
+OCR habe die Menge «1» als «1|» gelesen. Das war aus dem Bildschirmfoto geschlossen, nicht gemessen:
+Ohne Marke scheiterte dieselbe «1» genau gleich (E38). Preis: Eine echte Kasse könnte
 beim Verlassen eines Feldes etwas prüfen oder auslösen; dann braucht ihr Flow einen anderen Weg.
+
+## E38 — Eine einzelne Ziffer neben einer Beschriftung
+
+_29.10.2026._ Befund der echten Läufe: In der Kasse Nord fand die Engine die Menge «1» im Feld
+neben «Menge» in keinem Lauf, die «3» davor in jedem. Süd, wo die Beschriftung über dem Feld steht,
+las dieselbe «1» in jedem Lauf. Die Schreibmarke war es nicht: Der Lauf ohne Marke scheiterte genau
+gleich. Damit sich das klären liess, nennt eine nicht sichtbare Eingabe seither die Wörter, die die
+OCR im Feld las, und ein Abbruch hält den Bildschirm als Text im Bericht fest. Die Probe
+`engine/probe/ziffer.ps1` las dieselbe Zeile zweifach und vierfach mit «1», dreifach ohne. Die
+Skalierung bleibt dreifach (20 von 20 Prüfwörtern, E32); findet die Engine einen Text bis zum Ende
+der Frist nicht, liest sie das letzte Bild noch einmal vierfach, bevor sie scheitert. Verworfen:
+immer vierfach (fast doppelt so viele Bildpunkte je Bild, und ob vierfach die 20 Prüfwörter auch
+liest, misst die Probe erst jetzt). Preis: Ein Fehlschlag dauert ein Bild länger.
+
+## E39 — Verkaufen nur, wenn «unbekannt» dasteht
+
+_29.10.2026._ Gefunden bei der Arbeit an E38: Der Verkaufs-Flow wartete nach der Suche auf eine der
+Zeilen «Referenz …: unbekannt» oder «… Beleg» und beendete den Lauf, wenn er im nächsten Bild «Beleg»
+las. Fehlte die Zeile in diesem Bild (die OCR übersieht etwas, das Fenster ist halb gezeichnet),
+verkaufte er ein zweites Mal. Ein Test mit dem Chaos «Flackern» (die Zeile fehlt in jedem zweiten
+Bild) zeigte genau das: zwei Belege für eine Kennung. Jetzt prüft der Flow nach «beenden-wenn», dass
+«unbekannt» sicher dasteht; sonst bricht der Lauf ab und bucht nichts. Eine Sabotage hält fest, dass
+der Test die fehlende Prüfung findet. Preis: Ein Lauf, der die Zeile in keinem Bild liest, endet mit
+«abgebrochen» statt zu verkaufen; ein Mensch oder ein neuer Lauf klärt ihn.

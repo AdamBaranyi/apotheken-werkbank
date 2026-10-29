@@ -56,7 +56,7 @@ jobs:
     needs: linux
     runs-on: ubuntu-24.04
     # Jeder Eintrag startet ein frisches pwsh mit Pester. Gemessen auf dem
-    # Läufer: bis 100 s je Eintrag mit den Lauf-Tests, alle 22 gut 20 Minuten.
+    # Läufer: bis 100 s je Eintrag mit den Lauf-Tests; 22 Einträge brauchten 19 Minuten.
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
