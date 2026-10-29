@@ -18,6 +18,8 @@
     'Invoke-Flow'
     'New-FakeTreiber'
     'New-WindowsTreiber'
+    'New-Heiler'
+    'Send-Laufbericht'
   )
   CmdletsToExport   = @()
   VariablesToExport = @()

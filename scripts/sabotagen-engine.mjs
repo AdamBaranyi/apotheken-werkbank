@@ -114,4 +114,40 @@ export const SABOTAGEN_ENGINE = [
     ersatz: 'if ($knopf) { Resolve-SimDialog $s $knopf.Knopf.Antwort; return }',
     tests: [`${A}/tests/Simulation.Tests.ps1`],
   },
+  {
+    name: 'Heilung klickt ein Ziel ausserhalb der erlaubten Liste',
+    datei: `${S}/Heilung.ps1`,
+    suche: 'if (-not ($Lauf.Flow.Klickbar | Where-Object { $_ -ieq $ziel })) {',
+    ersatz: 'if ($false) {',
+    tests: [`${T}/Heilung.Tests.ps1`],
+  },
+  {
+    name: 'Heilung fragt ohne Deckel je Lauf',
+    datei: `${S}/Heilung.ps1`,
+    suche: 'if ($Lauf.Heilungen -ge $o.HeilungenJeLauf) { return $false }',
+    ersatz: 'if ($false) { return $false }',
+    tests: [`${T}/Heilung.Tests.ps1`],
+  },
+  {
+    name: 'Heilung fragt ohne Tagesdeckel',
+    datei: `${S}/Heilung.ps1`,
+    suche: 'if ($heute -ge $o.HeilungenJeTag) {',
+    ersatz: 'if ($false) {',
+    tests: [`${T}/Heilung.Tests.ps1`],
+  },
+  {
+    name: 'Heilung klickt ein Ziel, das nicht sichtbar ist',
+    datei: `${S}/Heilung.ps1`,
+    suche:
+      'if ($null -eq $z) { return @{ Ok = $false; Grund = "Ziel nicht sichtbar: \'$ziel\'" } }',
+    ersatz: '',
+    tests: [`${T}/Heilung.Tests.ps1`],
+  },
+  {
+    name: 'Eingabe wird mit der Schreibmarke im Feld geprüft',
+    datei: `${S}/Schritte.ps1`,
+    suche: "  $null = $Lauf.Treiber.Taste('Tab')\n",
+    ersatz: '',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
 ].map((s) => ({ ...s, pester: true }));
