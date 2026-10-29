@@ -261,7 +261,7 @@ zusätzlich dunkel in 390 px, und axe prüft die Kontraste auch dort.
 
 _28.10.2026._ Adams Wunsch: ein Rundgang wie in seinen anderen Apps, der zeigt, wie man die
 Werkbank benutzt und was schon fertig ist. Der Knopf «Rundgang» steht in der Leiste; er öffnet
-einen echten modalen Dialog (Fokusfalle und Escape vom Browser), Schritt für Schritt einmal durch die ganze Werkbank: 13 Schritte über Bestellen, Bestellungen, Kasse, Belege und Tagesabschluss; er wechselt selbst die Seite, die Leiste und mit ihr der Dialog bleiben stehen. Das
+einen echten modalen Dialog (Fokusfalle und Escape vom Browser), Schritt für Schritt einmal durch die ganze Werkbank: 14 Schritte über Bestellen, Bestellungen, Kasse, Belege, Tagesabschluss und Flow-Monitor; er wechselt selbst die Seite, die Leiste und mit ihr der Dialog bleiben stehen. Das
 erklärte Element wird hervorgehoben; fehlt es gerade (leerer Bon), bleibt nur der Text. Anders als
 in Evidarium öffnet er sich beim ersten Besuch noch nicht von selbst: Dafür müssten alle
 Browser-Tests als Besucher beginnen, die ihn schon kennen. Das folgt mit dem lokalen Speicher.
