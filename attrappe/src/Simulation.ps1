@@ -31,6 +31,7 @@ function New-KassenSimulation {
       Langsam       = [int]$Chaos['Langsam']
       Wandern       = $Chaos['Wandern']
       Verlesen      = [bool]$Chaos['Verlesen']
+      Schreibmarke  = [bool]$Chaos['Schreibmarke']
       DialogNach    = [int]$Chaos['DialogNach']
       UnbekanntNach = [int]$Chaos['UnbekanntNach']
     }
@@ -69,7 +70,12 @@ function Get-SimulationsBild {
     switch ($e.Art) {
       'beschriftung' { Add-SimWorte $woerter $e.Text $lage[0] (Get-SimMitteY $lage) $zb ([ref]$zeile) }
       'anzeige' { Add-SimWorte $woerter $anzeige[$e.Name] $lage[0] (Get-SimMitteY $lage) $zb ([ref]$zeile) }
-      'feld' { Add-SimWorte $woerter $s.Felder[$e.Name] ($lage[0] + 3) (Get-SimMitteY $lage) $zb ([ref]$zeile) }
+      'feld' {
+        # Die Schreibmarke klebt am letzten Zeichen, wie im echten Fenster.
+        $text = [string]$s.Felder[$e.Name]
+        if ($s.Chaos.Schreibmarke -and $s.Fokus -eq $e.Name -and -not $s.Dialog) { $text += '|' }
+        Add-SimWorte $woerter $text ($lage[0] + 3) (Get-SimMitteY $lage) $zb ([ref]$zeile)
+      }
       'knopf' {
         $x = [int]($lage[0] + ($lage[2] - $zb * $e.Text.Length) / 2)
         Add-SimWorte $woerter $e.Text $x (Get-SimMitteY $lage) $zb ([ref]$zeile)
@@ -140,7 +146,7 @@ function Send-SimulationsText {
 
 function Send-SimulationsTaste {
   [CmdletBinding()]
-  param([Parameter(Mandatory)] [hashtable] $Simulation, [Parameter(Mandatory)] [ValidateSet('Enter', 'Escape', 'Tab', 'Backspace')] [string] $Name)
+  param([Parameter(Mandatory)] [hashtable] $Simulation, [Parameter(Mandatory)] [ValidateSet('Enter', 'Escape', 'Tab', 'ShiftTab', 'Backspace')] [string] $Name)
   $s = $Simulation
   if ($s.Ausstehend) { return }
   if ($s.Dialog) {
@@ -158,9 +164,10 @@ function Send-SimulationsTaste {
       if ($s.Fokus -eq 'suche') { $s.Kasse.Treffer = '' }
     }
     'Backspace' { $t = $s.Felder[$s.Fokus]; if ($t.Length -gt 0) { $s.Felder[$s.Fokus] = $t.Substring(0, $t.Length - 1) } }
-    'Tab' {
+    { $_ -in 'Tab', 'ShiftTab' } {
       $namen = @($s.Felder.Keys)
-      $s.Fokus = $namen[([array]::IndexOf($namen, $s.Fokus) + 1) % $namen.Count]
+      $schritt = if ($Name -eq 'Tab') { 1 } else { $namen.Count - 1 }
+      $s.Fokus = $namen[([array]::IndexOf($namen, $s.Fokus) + $schritt) % $namen.Count]
     }
     'Enter' {
       $enter = $s.Layout['Enter']

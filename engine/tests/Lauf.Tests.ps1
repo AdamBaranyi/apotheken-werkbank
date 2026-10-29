@@ -149,6 +149,13 @@ Describe 'Invoke-Flow mit dem Fake-Treiber' {
     (Invoke-Testlauf $t).status | Should -Be 'ok'
   }
 
+  It 'liest Eingaben trotz Schreibmarke im Feld (Befund des ersten Windows-Laufs)' {
+    $t = New-FakeTreiber -Variante nord -Chaos @{ Schreibmarke = $true }
+    $bericht = Invoke-Testlauf $t
+    $bericht.status | Should -Be 'ok'
+    ($bericht.schritte | Where-Object ziel -EQ 'Belegsuche').versuche | Should -Be 1
+  }
+
   It 'versteht die Kasse auch, wenn die OCR Nullen als O liest' {
     $t = New-FakeTreiber -Variante nord -Chaos @{ Verlesen = $true }
     $bericht = Invoke-Testlauf $t

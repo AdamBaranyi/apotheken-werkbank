@@ -3,7 +3,7 @@
 #   Fenster(titel)      -> Fensterinfo der Client-Fläche oder $null
 #   Bildschirm(fenster) -> Bild mit Wörtern (Lage relativ zur Client-Fläche)
 #   Vordergrund(fenster), Klick(x, y) in Bildschirmkoordinaten,
-#   Tippen(text), Taste(name), Foto(bild, ziel)
+#   Tippen(text), Taste(name, auch ShiftTab), Foto(bild, basis) -> Pfad mit Endung
 
 $script:WindowsTasten = @{
   Enter     = [uint16]0x0D
@@ -136,12 +136,16 @@ function New-WindowsTreiber {
   }
   $treiber | Add-Member -MemberType ScriptMethod -Name Taste -Value {
     param([string] $Name)
+    if ($Name -eq 'ShiftTab') { return [Werkbank.Win32]::TasteMitUmschalt($script:WindowsTasten.Tab) }
     if (-not $script:WindowsTasten.ContainsKey($Name)) { throw "Unbekannte Taste: $Name" }
     [Werkbank.Win32]::Taste($script:WindowsTasten[$Name])
   }
   $treiber | Add-Member -MemberType ScriptMethod -Name Foto -Value {
-    param($Bild, [string] $Ziel)
-    Copy-Item -LiteralPath $Bild.Pfad -Destination $Ziel -Force
+    # Der Treiber hängt die Endung an und liefert den Pfad.
+    param($Bild, [string] $Basis)
+    $ziel = "$Basis.png"
+    Copy-Item -LiteralPath $Bild.Pfad -Destination $ziel -Force
+    $ziel
   }
   $treiber
 }

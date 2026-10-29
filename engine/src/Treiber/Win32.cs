@@ -234,6 +234,24 @@ namespace Werkbank
             return Senden(e);
         }
 
+        /// <summary>Drückt eine Taste mit gehaltener Umschalttaste (Umschalt+Tab).</summary>
+        public static bool TasteMitUmschalt(ushort vk)
+        {
+            const ushort VK_SHIFT = 0x10;
+            var e = new INPUT[4];
+            e[0].type = INPUT_KEYBOARD;
+            e[0].u.ki.wVk = VK_SHIFT;
+            e[1].type = INPUT_KEYBOARD;
+            e[1].u.ki.wVk = vk;
+            e[2].type = INPUT_KEYBOARD;
+            e[2].u.ki.wVk = vk;
+            e[2].u.ki.dwFlags = KEYEVENTF_KEYUP;
+            e[3].type = INPUT_KEYBOARD;
+            e[3].u.ki.wVk = VK_SHIFT;
+            e[3].u.ki.dwFlags = KEYEVENTF_KEYUP;
+            return Senden(e);
+        }
+
         private static bool Senden(INPUT[] e)
         {
             return SendInput((uint)e.Length, e, Marshal.SizeOf(typeof(INPUT))) == e.Length;

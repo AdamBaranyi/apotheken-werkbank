@@ -104,9 +104,15 @@ function Invoke-Eingeben {
   $null = $Lauf.Treiber.Taste('Escape')
   if ($text -eq '') { return @{ Ok = $true; Gesendet = $true } }
   $null = $Lauf.Treiber.Tippen($text)
+  # Die Schreibmarke klebt am letzten Zeichen; die OCR las im ersten
+  # Windows-Lauf «1» als «1|» und eine Kennung erst beim dritten Bild. Darum:
+  # Feld mit Tab verlassen, prüfen, mit Umschalt+Tab zurück, damit ein Enter
+  # danach wieder in diesem Feld wirkt.
+  $null = $Lauf.Treiber.Taste('Tab')
   $bereich = @{ X = $x - 60; Y = $y - 14; B = 300; H = 28 }
   $w = Wait-Suche $Lauf @{ text = $text; genau = [bool]$e['genau'] } $script:StandardZeit.eingabe $bereich
   $w.Gesendet = $true
+  if ($w.Ok) { $null = $Lauf.Treiber.Taste('ShiftTab') }
   if (-not $w.Ok -and -not $w['KasseFehler']) { $w.Meldung = "Eingabe nicht sichtbar: '$text' bei $ankerText" }
   $w
 }

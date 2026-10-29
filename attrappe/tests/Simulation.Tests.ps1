@@ -109,6 +109,17 @@ Describe 'Bildschirm-Simulation der Kasse' {
     Get-Zeilen (Get-SimulationsBild -Simulation $sim) | Should -Contain 'Beleg 1001 gebucht, Rückgeld 1,05 €'
   }
 
+  It 'zeigt die Schreibmarke am Text des Feldes mit dem Fokus, wie die echte Kasse' {
+    $sim = New-KassenSimulation -Layout $script:Mini -Ursprung @(40, 60) -Chaos @{ Schreibmarke = $true }
+    Send-InsFeld $sim '1'
+    Get-Wort (Get-SimulationsBild -Simulation $sim) '1|' | Should -Not -BeNullOrEmpty
+    # Tab verlässt das Feld (Schreibmarke weg), Umschalt+Tab kehrt zurück.
+    Send-SimulationsTaste -Simulation $sim -Name Tab
+    Get-Wort (Get-SimulationsBild -Simulation $sim) '1' | Should -Not -BeNullOrEmpty
+    Send-SimulationsTaste -Simulation $sim -Name ShiftTab
+    $sim.Fokus | Should -Be 'pzn'
+  }
+
   It 'löscht das alte Suchergebnis, sobald jemand in die Suche tippt' {
     $layout = $script:Mini.Clone()
     $layout.Elemente = @($script:Mini.Elemente) + @(
