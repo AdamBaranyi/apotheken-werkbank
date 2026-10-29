@@ -15,7 +15,13 @@ function Get-Aktion {
 }
 
 function Get-Zielname {
-  # Kurzer Name des Ziels für den Bericht.
+  # Kurzer Name des Ziels für den Bericht, mit eingesetzten Werten.
+  param([System.Collections.IDictionary] $Schritt, [hashtable] $Kontext = @{})
+  $name = Get-Zielvorlage $Schritt
+  try { Expand-Text -Text $name -Kontext $Kontext } catch { $name }
+}
+
+function Get-Zielvorlage {
   param([System.Collections.IDictionary] $Schritt)
   switch (Get-Aktion $Schritt) {
     'klicke' { return [string]$Schritt.klicke }

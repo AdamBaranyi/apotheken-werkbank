@@ -40,7 +40,7 @@ function Invoke-SchrittMitWiederholung {
     $start = Get-Date
     $r = Invoke-SchrittAktion $Lauf $Schritt
     $ergebnis = if ($r.Ok) { 'ok' } else { 'fehler' }
-    Add-Schrittbericht -Lauf $Lauf -Nr $Nr -Art (Get-Aktion $Schritt) -Ziel (Get-Zielname $Schritt) -Ergebnis $ergebnis `
+    Add-Schrittbericht -Lauf $Lauf -Nr $Nr -Art (Get-Aktion $Schritt) -Ziel (Get-Zielname $Schritt $Lauf.Kontext) -Ergebnis $ergebnis `
       -Versuche $versuch -DauerMs ([int]((Get-Date) - $start).TotalMilliseconds) -Meldung ([string]$r['Meldung']) -Wert $r['Wert']
     if ($r.Ok) {
       Set-Heilungsausgang $Lauf $Nr 'geholfen'

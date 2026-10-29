@@ -198,6 +198,8 @@ Describe 'Invoke-Flow mit dem Fake-Treiber' {
     $json = Get-Content -LiteralPath (Join-Path $ordner 'bericht.json') -Raw | ConvertFrom-Json
     $json.status | Should -Be 'ok'
     $json.kennung | Should -Be 'K7-QX4M'
+    # Im Bericht stehen die eingesetzten Werte, nicht die Vorlage des Flows.
+    ($json.schritte | Where-Object art -EQ 'beenden-wenn').ziel | Should -Be 'Referenz K7-QX4M: Beleg'
     @(Get-ChildItem -LiteralPath (Join-Path $ordner 'bilder')).Count | Should -BeGreaterThan 10
   }
 

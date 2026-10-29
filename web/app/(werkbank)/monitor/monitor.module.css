@@ -9,6 +9,10 @@
   color: var(--tinte-leise);
 }
 
+.abstand {
+  margin-left: 0.5rem;
+}
+
 .status {
   display: inline-block;
   margin-right: 0.5rem;

@@ -75,7 +75,9 @@ export default async function Monitor() {
                   {l.kennung ? (
                     <span className={`${styles.kennung} ziffern`}> {l.kennung}</span>
                   ) : null}
-                  {l.treiber === 'fake' ? <span className={listen.marke}>Test</span> : null}
+                  {l.treiber === 'fake' ? (
+                    <span className={`${listen.marke} ${styles.abstand}`}>Test</span>
+                  ) : null}
                 </td>
                 <td data-titel="Status">
                   <span className={styles.status} data-status={l.status}>

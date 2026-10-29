@@ -101,7 +101,7 @@ function Invoke-Heilung {
   $bild = Get-Stand $Lauf
   $anfrage = @{
     Flow     = "$($Lauf.Flow.Apotheke)/$($Lauf.Flow.Name)"
-    Schritt  = "$(Get-Aktion $Schritt) $(Get-Zielname $Schritt)"
+    Schritt  = "$(Get-Aktion $Schritt) $(Get-Zielname $Schritt $Lauf.Kontext)"
     Meldung  = [string]$Ergebnis['Meldung']
     Bildtext = Get-Bildtext $bild
     Png      = if ($bild.Pfad -and ([string]$bild.Pfad).EndsWith('.png')) { $bild.Pfad } else { $null }
