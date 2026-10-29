@@ -99,6 +99,17 @@ jobs:
       - name: Testdaten einrichten
         run: bun run einrichten
 
+      # Die Engine meldet Läufe des Test-Treibers mit ihren Engine-Konten über
+      # die REST-Schnittstelle: Der Flow-Monitor hat so echte Daten, und der
+      # Weg Engine -> Datenbank -> Web-App ist einmal ganz geprüft.
+      - name: PowerShell-Module für die Engine
+        shell: pwsh
+        run: ./engine/werkzeuge.ps1
+
+      - name: Engine meldet Läufe an den Flow-Monitor
+        shell: pwsh
+        run: ./engine/monitor-fuellen.ps1
+
       - name: Browser für die Tests
         run: cd web && ./node_modules/.bin/playwright install --with-deps chromium
 

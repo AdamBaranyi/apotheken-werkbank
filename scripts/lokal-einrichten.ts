@@ -1,7 +1,8 @@
 /**
  * Richtet die lokale Umgebung ein (auch in der CI): Mandanten der
  * Grosshandel-Attrappe, zwei Testkonten, zwei erfundene Apotheken, je einen
- * verschlüsselten Grosshändler-Zugang und das Passwort der Rolle für die Bremse. Passwörter entstehen bei jedem Lauf neu
+ * verschlüsselten Grosshändler-Zugang, je ein Engine-Konto für den
+ * Flow-Monitor und das Passwort der Rolle für die Bremse. Passwörter entstehen bei jedem Lauf neu
  * und landen nur in .lokal/ (nie im Repo); der Schlüssel für die Zugänge
  * bleibt zwischen Läufen gleich.
  *
@@ -81,6 +82,7 @@ async function main() {
 
   const mandanten = [];
   const konten = [];
+  const engine = [];
   for (const a of DEMO_APOTHEKEN) {
     const ghPasswort = passwortErzeugen();
     mandanten.push({
@@ -112,11 +114,27 @@ async function main() {
         verschluesseln(ghPasswort, Buffer.from(zugangSchluessel, 'base64')),
       ],
     );
+    // Engine-Konto: kein Mitglied, darf nur Läufe dieser Apotheke melden.
+    const enginePasswort = passwortErzeugen();
+    const engineEmail = `engine.${a.kasse}@werkbank.test`;
+    const engineId = await kontoAnlegen(s, engineEmail, enginePasswort);
+    await db.query(
+      'insert into public.engine_konten (user_id, apotheke_id, bezeichnung) values ($1, $2, $3)',
+      [engineId, apothekeId, 'Kasse 1'],
+    );
+    engine.push({
+      kasse: a.kasse,
+      email: engineEmail,
+      passwort: enginePasswort,
+      url: s.API_URL,
+      schluessel: s.PUBLISHABLE_KEY,
+    });
   }
   await db.end();
 
   writeFileSync(`${ORDNER}/mandanten.json`, JSON.stringify(mandanten, null, 2), { mode: 0o600 });
   writeFileSync(`${ORDNER}/konten.json`, JSON.stringify(konten, null, 2), { mode: 0o600 });
+  writeFileSync(`${ORDNER}/engine.json`, JSON.stringify(engine, null, 2), { mode: 0o600 });
   writeFileSync(
     'web/.env.local',
     [
@@ -130,7 +148,7 @@ async function main() {
     { mode: 0o600 },
   );
   console.log(
-    `Eingerichtet: ${konten.length} Konten (.lokal/konten.json), Mandanten (.lokal/mandanten.json), web/.env.local.`,
+    `Eingerichtet: ${konten.length} Konten (.lokal/konten.json), ${engine.length} Engine-Konten (.lokal/engine.json), Mandanten (.lokal/mandanten.json), web/.env.local.`,
   );
 }
 

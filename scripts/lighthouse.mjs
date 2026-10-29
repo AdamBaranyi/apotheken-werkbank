@@ -30,6 +30,7 @@ const SEITEN = [
   { pfad: '/kasse/abschluss', angemeldet: true },
   { pfad: '/bestellen', angemeldet: true },
   { pfad: '/bestellungen', angemeldet: true },
+  { pfad: '/monitor', angemeldet: true },
 ];
 const KATEGORIEN = ['accessibility', 'best-practices', 'performance'];
 
