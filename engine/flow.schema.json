@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AdamBaranyi/apotheken-werkbank/engine/flow.schema.json",
+  "title": "Flow der Werkbank-Engine",
+  "description": "Ein Arbeitsablauf an einer Kasse, je Apotheke. Die Engine führt die Schritte über Bildschirmfoto, OCR und Eingabe aus.",
+  "type": "object",
+  "required": ["flow", "apotheke", "fenster", "schritte"],
+  "additionalProperties": false,
+  "properties": {
+    "flow": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,30}$" },
+    "apotheke": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,30}$" },
+    "beschreibung": { "type": "string" },
+    "fenster": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Teil des Fenstertitels der Kasse"
+    },
+    "eingaben": {
+      "type": "array",
+      "description": "Felder, die ein Auftrag mitbringen muss; mit ? am Ende optional.",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9]*[?]?$" },
+      "uniqueItems": true
+    },
+    "dialoge": {
+      "type": "array",
+      "description": "Bekannte Dialoge: Sieht die Engine den Text, klickt sie den Knopf (Stufe 1).",
+      "items": {
+        "type": "object",
+        "required": ["text", "klicke"],
+        "additionalProperties": false,
+        "properties": {
+          "text": { "type": "string", "minLength": 3 },
+          "klicke": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "fehler": {
+      "type": "array",
+      "description": "Meldungen der Kasse, die sofort abbrechen: Die Kasse hat nichts gebucht.",
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "heilung": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "klickbar": {
+          "type": "array",
+          "description": "Texte, die die Selbstheilung klicken darf; alles andere nie.",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "schritte": { "$ref": "#/$defs/schritte" }
+  },
+  "$defs": {
+    "schritte": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/schritt" } },
+    "suche": {
+      "description": "Text auf dem Bildschirm: einfach als Text, oder mit genau/eins-von.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "text": { "type": "string", "minLength": 1 },
+            "eins-von": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "genau": { "type": "boolean" },
+            "schwelle": { "type": "number", "minimum": 0.5, "maximum": 1 },
+            "zeit": { "type": "number", "exclusiveMinimum": 0, "maximum": 120 }
+          },
+          "oneOf": [{ "required": ["text"] }, { "required": ["eins-von"] }]
+        }
+      ]
+    },
+    "anker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "neben": { "type": "string", "minLength": 1 },
+        "unter": { "type": "string", "minLength": 1 },
+        "dx": { "type": "integer", "minimum": -400, "maximum": 800 },
+        "dy": { "type": "integer", "minimum": -400, "maximum": 800 },
+        "text": { "type": "string" },
+        "genau": { "type": "boolean" }
+      },
+      "oneOf": [{ "required": ["neben"] }, { "required": ["unter"] }]
+    },
+    "schritt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "beschreibung": { "type": "string" },
+        "wenn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["wert", "ist"],
+          "properties": { "wert": { "type": "string" }, "ist": { "type": "string" } }
+        },
+        "wenn-sichtbar": { "type": "string", "minLength": 1 },
+        "danach": { "$ref": "#/$defs/suche" },
+        "wiederholbar": { "type": "boolean" },
+        "kritisch": { "type": "boolean" },
+        "zeit": { "type": "number", "exclusiveMinimum": 0, "maximum": 120 },
+        "klicke": { "type": "string", "minLength": 1 },
+        "eingeben": { "$ref": "#/$defs/anker" },
+        "taste": { "enum": ["Enter", "Escape", "Tab", "Backspace"] },
+        "warte-bis": { "$ref": "#/$defs/suche" },
+        "pruefe": { "$ref": "#/$defs/suche" },
+        "lies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["muster", "als"],
+          "properties": {
+            "muster": { "type": "string", "minLength": 3 },
+            "als": {
+              "oneOf": [
+                { "type": "string", "pattern": "^[a-z][a-z0-9]*$" },
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "string", "pattern": "^[a-z][a-z0-9]*$" }
+                }
+              ]
+            },
+            "zeit": { "type": "number", "exclusiveMinimum": 0, "maximum": 120 }
+          }
+        },
+        "beenden-wenn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["text", "status"],
+          "properties": {
+            "text": { "type": "string", "minLength": 1 },
+            "genau": { "type": "boolean" },
+            "status": { "enum": ["bereits-gebucht", "nichts-offen", "ok"] }
+          }
+        },
+        "fuer-jede": { "type": "string", "pattern": "^[a-z][a-z0-9]*$" },
+        "als": { "type": "string", "pattern": "^[a-z][a-z0-9]*$" },
+        "schritte": { "$ref": "#/$defs/schritte" }
+      },
+      "oneOf": [
+        { "required": ["klicke"] },
+        { "required": ["eingeben"] },
+        { "required": ["taste"] },
+        { "required": ["warte-bis"] },
+        { "required": ["pruefe"] },
+        { "required": ["lies"] },
+        { "required": ["beenden-wenn"] },
+        { "required": ["fuer-jede", "als", "schritte"] }
+      ]
+    }
+  }
+}

@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=../../engine/flow.schema.json
+#
+# Verkauf an der Kasse der Apotheke Süd. Dieselbe Aufgabe wie in Nord, aber
+# eine andere Kasse: Beschriftungen über den Feldern, andere Wörter, und vor
+# dem Abschluss fragt die Kasse nach. Gebucht wird erst mit diesem «Ja».
+flow: verkauf
+apotheke: sued
+beschreibung: Verkauf mit Verordnungs-Rückfrage, Vorgangsnummer und Bestätigung buchen
+fenster: Kassensystem Süd
+eingaben: [kennung, positionen, zahlung, gegeben?]
+
+dialoge:
+  - text: Neue Preisliste verfügbar
+    klicke: Später
+
+fehler:
+  - Gegeben reicht nicht
+  - Betrag ungültig
+  - Bon ist leer
+  - PZN ungültig
+  - Artikel unbekannt
+  - Menge ungültig
+  - Ohne Rezept nicht abgegeben
+  - Abschluss abgebrochen
+
+heilung:
+  klickbar: [OK, Später, Schliessen]
+
+schritte:
+  - klicke: Storno Bon
+    danach: Neuer Bon
+    wiederholbar: true
+
+  - eingeben: { unter: Vorgangssuche, dx: 20, dy: 34, text: '${kennung}', genau: true }
+  - taste: Enter
+    wiederholbar: true
+    danach:
+      eins-von: ['Referenz ${kennung}: unbekannt', 'Referenz ${kennung}: Beleg']
+      genau: true
+  - beenden-wenn:
+      text: 'Referenz ${kennung}: Beleg'
+      genau: true
+      status: bereits-gebucht
+
+  - fuer-jede: positionen
+    als: pos
+    schritte:
+      - eingeben: { unter: Artikelnr., dx: 20, dy: 34, text: '${pos.pzn}' }
+      - eingeben: { unter: Anzahl, dx: 20, dy: 34, text: '${pos.menge}' }
+      - taste: Enter
+        danach:
+          eins-von: ['Im Vorgang ${pos.nr}', 'Verordnung vorhanden?']
+      - wenn: { wert: '${pos.rezept}', ist: 'true' }
+        wenn-sichtbar: Verordnung vorhanden?
+        klicke: Ja
+        danach: 'Im Vorgang ${pos.nr}'
+      - wenn: { wert: '${pos.rezept}', ist: 'false' }
+        wenn-sichtbar: Verordnung vorhanden?
+        klicke: Nein
+
+  - eingeben: { unter: Vorgang-Nr., dx: 20, dy: 34, text: '${kennung}', genau: true }
+  - wenn: { wert: '${zahlung}', ist: bar }
+    eingeben: { unter: Betrag erhalten, dx: 20, dy: 34, text: '${gegeben}' }
+  - wenn: { wert: '${zahlung}', ist: bar }
+    klicke: Bar
+    danach: Verkauf wirklich abschliessen?
+  - wenn: { wert: '${zahlung}', ist: karte }
+    klicke: EC-Karte
+    danach: Verkauf wirklich abschliessen?
+
+  # Erst dieses «Ja» bucht: kein zweiter Klick, auch wenn die Antwort fehlt.
+  - klicke: Ja
+    kritisch: true
+  - lies:
+      muster: 'Vorgang (\d+) abgeschlossen'
+      als: beleg
+      zeit: 15

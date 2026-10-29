@@ -1,0 +1,8 @@
+{
+  "kennung": "M4-TR7C",
+  "positionen": [
+    { "pzn": "99102740", "menge": 1 },
+    { "pzn": "99113703", "menge": 2 }
+  ],
+  "zahlung": "karte"
+}
