@@ -4,6 +4,8 @@
   des Feldes in die Wahrheitsdatei; daran misst die Probe, ob Klick und
   Eingabe wirklich ankamen.
 #>
+# $Wahrheit nutzt der Klick-Handler; das sieht die statische Prüfung nicht.
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Wahrheit')]
 param([Parameter(Mandatory)] [string] $Wahrheit)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing

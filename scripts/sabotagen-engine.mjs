@@ -1,0 +1,117 @@
+/**
+ * Sabotagen an Engine und Kassen-Attrappe (PowerShell). Jede macht eine
+ * Schutzfunktion kaputt; der genannte Pester-Test muss rot werden.
+ * Neue Schutzfunktion, neuer Eintrag – in derselben Änderung.
+ */
+const S = 'engine/src';
+const T = 'engine/tests';
+const A = 'attrappe';
+
+export const SABOTAGEN_ENGINE = [
+  {
+    name: 'Kritischer Schritt wird nach dem Senden wiederholt',
+    datei: `${S}/Schritte.ps1`,
+    suche: "if ($Schritt['kritisch']) { return $false }",
+    ersatz: 'if ($false) { return $false }',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Bereits gebuchte Kennung beendet den Lauf nicht',
+    datei: `${S}/Schritte.ps1`,
+    suche: 'return @{ Ok = $true; Ende = $b.status }',
+    ersatz: 'return @{ Ok = $true }',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Genauer Vergleich wird unscharf',
+    datei: `${S}/Text.ps1`,
+    suche: 'if ($Genau) { return [double]($Kandidat -eq $Ziel) }',
+    ersatz: 'if ($false) { return [double]($Kandidat -eq $Ziel) }',
+    tests: [`${T}/Text.Tests.ps1`],
+  },
+  {
+    name: 'Mehrdeutiges Ziel wird trotzdem geklickt',
+    datei: `${S}/Warten.ps1`,
+    suche: 'if ($gleich.Count -gt 1) {',
+    ersatz: 'if ($false) {',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Neue Fehlermeldung der Kasse wird übersehen',
+    datei: `${S}/Warten.ps1`,
+    suche: 'if ($Lauf.FehlerVorher -notcontains $zeile) { return $zeile }',
+    ersatz: 'if ($false) { return $zeile }',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Alte Fehlermeldung beim Start bricht den Lauf ab',
+    datei: `${S}/Lauf.ps1`,
+    suche: '$lauf.FehlerVorher = @(Get-Fehlerzeilen $lauf $start)',
+    ersatz: '$lauf.FehlerVorher = @()',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Verschwundene alte Meldung bleibt für immer alt',
+    datei: `${S}/Warten.ps1`,
+    suche: '$Lauf.FehlerVorher = @($Lauf.FehlerVorher | Where-Object { $aktuell -contains $_ })',
+    ersatz: '$Lauf.FehlerVorher = @($Lauf.FehlerVorher)',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Warten wird wiederholt und verlängert die Frist',
+    datei: `${S}/Schritte.ps1`,
+    suche: "if ($aktion -notin 'klicke', 'taste') { return $false }",
+    ersatz: "if ($aktion -notin 'klicke', 'taste') { return $true }",
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Eingabe wird nicht im Feld geprüft',
+    datei: `${S}/Schritte.ps1`,
+    suche:
+      "$w = Wait-Suche $Lauf @{ text = $text; genau = [bool]$e['genau'] } $script:StandardZeit.eingabe $bereich",
+    ersatz: '$w = @{ Ok = $true }',
+    tests: [`${T}/Lauf.Tests.ps1`],
+  },
+  {
+    name: 'Kennung darf verwechselbare Zeichen enthalten',
+    datei: `${S}/Auftrag.ps1`,
+    suche: "$script:KennungZeichen = '23456789ACDEFHJKMNPQRTVWXY'",
+    ersatz: "$script:KennungZeichen = '0123456789ACDEFHJKMNOPQRTVWXY'",
+    tests: [`${T}/Auftrag.Tests.ps1`],
+  },
+  {
+    name: 'OCR-Verwechslung von O und 0 wird nicht ausgeglichen',
+    datei: `${S}/TextAbgleich.cs`,
+    suche: "case 'o': zeichen[i] = '0'; break;",
+    ersatz: "case 'o': break;",
+    tests: [`${T}/Text.Tests.ps1`],
+  },
+  {
+    name: 'Lint prüft Variablen nicht',
+    datei: `${S}/Flow.ps1`,
+    suche: 'if (-not $Bekannt.Contains($wurzel)) {',
+    ersatz: 'if ($false) {',
+    tests: [`${T}/Flow.Tests.ps1`],
+  },
+  {
+    name: 'Kasse prüft die Prüfziffer der PZN nicht',
+    datei: `${A}/src/Kasse.ps1`,
+    suche: '$pruef -ne 10 -and $pruef -eq [int]::Parse($Pzn[7])',
+    ersatz: '$true',
+    tests: [`${A}/tests/Kasse.Tests.ps1`],
+  },
+  {
+    name: 'Kasse fragt bei Rx nicht nach dem Rezept',
+    datei: `${A}/src/Kasse.ps1`,
+    suche: 'if ($Kasse.Artikel[$pzn].Rx) {',
+    ersatz: 'if ($false) {',
+    tests: [`${A}/tests/Kasse.Tests.ps1`],
+  },
+  {
+    name: 'Dialog sperrt das Fenster der Simulation nicht',
+    datei: `${A}/src/Simulation.ps1`,
+    suche: 'if ($knopf) { Resolve-SimDialog $s $knopf.Knopf.Antwort }\n    return',
+    ersatz: 'if ($knopf) { Resolve-SimDialog $s $knopf.Knopf.Antwort; return }',
+    tests: [`${A}/tests/Simulation.Tests.ps1`],
+  },
+].map((s) => ({ ...s, pester: true }));
