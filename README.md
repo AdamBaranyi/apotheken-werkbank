@@ -8,14 +8,14 @@ Rezepte und Apotheken sind erfunden.
 
 ## Was drin ist
 
-| Teil                                                     | Was es tut                                                                                                                                            |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Engine](docs/ENGINE.md) (`engine/`, PowerShell 7)       | Bedient eine Windows-Kasse nur über Bildschirmfoto, OCR und Eingabe. Flows je Apotheke als YAML, nie doppelt buchen, Selbstheilung mit Claude Haiku 5.5 |
-| Kassen-Attrappe (`attrappe/`)                            | Ziel der Engine: WinForms-Fenster in zwei Layouts (zwei Apotheken) und dieselbe Kasse als Simulation für Tests                                         |
-| Bestell-Tool (`web/`, `grosshandel-attrappe/`)           | Verfügbarkeit und Bestellung über MSV3 gegen einen eigenen MSV3-Server mit Mandanten ([MSV3.md](docs/MSV3.md))                                         |
-| Kassentool (`web/`)                                      | Kasse mit Beleg als PDF, Storno, Tagesabschluss; Rechte je Apotheke in der Datenbank ([KASSE.md](docs/KASSE.md))                                        |
-| Flow-Monitor (`web/`)                                    | Läufe der Engine mit Schritten, Selbstheilung und Bildschirm beim Abbruch                                                                              |
-| [Prototyp](prototypen/rezept-zur-kasse/README.md)        | Rezeptdatensatz zur Kasse, in zwei Stunden nach [festem Rezept](docs/PROTOTYP-REZEPT.md)                                                               |
+| Teil                                               | Was es tut                                                                                                                                              |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Engine](docs/ENGINE.md) (`engine/`, PowerShell 7) | Bedient eine Windows-Kasse nur über Bildschirmfoto, OCR und Eingabe. Flows je Apotheke als YAML, nie doppelt buchen, Selbstheilung mit Claude Haiku 5.5 |
+| Kassen-Attrappe (`attrappe/`)                      | Ziel der Engine: WinForms-Fenster in zwei Layouts (zwei Apotheken) und dieselbe Kasse als Simulation für Tests                                          |
+| Bestell-Tool (`web/`, `grosshandel-attrappe/`)     | Verfügbarkeit und Bestellung über MSV3 gegen einen eigenen MSV3-Server mit Mandanten ([MSV3.md](docs/MSV3.md))                                          |
+| Kassentool (`web/`)                                | Kasse mit Beleg als PDF, Storno, Tagesabschluss; Rechte je Apotheke in der Datenbank ([KASSE.md](docs/KASSE.md))                                        |
+| Flow-Monitor (`web/`)                              | Läufe der Engine mit Schritten, Selbstheilung und Bildschirm beim Abbruch                                                                               |
+| [Prototyp](prototypen/rezept-zur-kasse/README.md)  | Rezeptdatensatz zur Kasse, in zwei Stunden nach [festem Rezept](docs/PROTOTYP-REZEPT.md)                                                                |
 
 Technik: Next.js 16, React 19, TypeScript, Supabase (Postgres mit RLS), Vercel; PowerShell 7 mit
 Pester, `Windows.Media.Ocr` und `SendInput`; GitHub Actions auf Linux und Windows.

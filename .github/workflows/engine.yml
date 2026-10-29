@@ -2,10 +2,11 @@ name: Engine
 
 # Die Engine bedient eine Windows-Kasse über Bildschirmfoto, OCR und Eingabe.
 # Linux prüft schnell, was ohne Bildschirm geht (Pester mit dem Fake-Treiber,
-# Analyse, Flows, Sabotagen). Erst wenn das grün ist, läuft Windows (E4): echte
-# Läufe gegen das WinForms-Fenster der Kassen-Attrappe, mit Bildfolge als
-# Artefakt. Die Selbstheilung mit dem echten Modell läuft nur von Hand oder
-# auf main (E5), sonst nutzen die Tests eine Attrappe des Modells.
+# Analyse, Flows). Erst wenn das grün ist, laufen zwei Jobs gleichzeitig: die
+# Sabotagen und Windows (E4) mit echten Läufen gegen das WinForms-Fenster der
+# Kassen-Attrappe, Bildfolge als Artefakt. Die Selbstheilung mit dem echten
+# Modell läuft nur von Hand oder auf main (E5), sonst nutzen die Tests eine
+# Attrappe des Modells.
 
 on:
   push:
@@ -22,10 +23,9 @@ concurrency:
 
 jobs:
   linux:
-    name: 'Engine: Pester, Analyse, Flows, Sabotagen'
+    name: 'Engine: Pester, Analyse, Flows'
     runs-on: ubuntu-24.04
-    # Die Sabotagen starten je Eintrag ein frisches pwsh mit Pester: gut 20 s je Eintrag.
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -50,6 +50,26 @@ jobs:
       - name: Pester mit dem Fake-Treiber
         shell: pwsh
         run: ./engine/tests/pester.ps1
+
+  sabotagen:
+    name: 'Engine: Sabotagen'
+    needs: linux
+    runs-on: ubuntu-24.04
+    # Jeder Eintrag startet ein frisches pwsh mit Pester. Gemessen auf dem
+    # Läufer: bis 100 s je Eintrag mit den Lauf-Tests, alle 22 gut 20 Minuten.
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: PowerShell-Module in festen Fassungen
+        shell: pwsh
+        run: ./engine/werkzeuge.ps1
 
       # Jede Schutzfunktion einmal kaputt: Der passende Test muss rot werden.
       - name: Sabotagen an Engine und Attrappe
