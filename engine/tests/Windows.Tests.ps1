@@ -17,7 +17,10 @@ Describe 'Engine gegen die echte Kassen-Attrappe' -Tag 'Windows' {
       $prozess = Start-Process -FilePath pwsh -ArgumentList $argumente -PassThru
       $titel = if ($Variante -eq 'nord') { 'Kasse Nord' } else { 'Kassensystem Süd' }
       $bis = (Get-Date).AddSeconds(60)
-      while ((Get-Date) -lt $bis -and -not ((Test-Path -LiteralPath $journal) -and $script:Treiber.Fenster($titel))) {
+      # Kurz nach dem Beenden der vorigen Attrappe kann ihr Fenster noch
+      # dastehen; zwei gleiche Titel wirft der Treiber, das Warten nicht.
+      $da = { try { [bool]$script:Treiber.Fenster($titel) } catch { $false } }
+      while ((Get-Date) -lt $bis -and -not ((Test-Path -LiteralPath $journal) -and (& $da))) {
         Start-Sleep -Milliseconds 300
       }
       if (-not $script:Treiber.Fenster($titel)) { throw "Die Attrappe $Variante erschien nicht." }

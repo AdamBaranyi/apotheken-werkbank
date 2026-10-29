@@ -80,7 +80,7 @@ function Invoke-Run {
   }
   else { New-WindowsTreiber -Arbeitsordner (Join-Path $Ausgabe 'bilder-ocr') -Skalierung 3 }
   $bericht = Invoke-Flow -Flow $f -Treiber $t -Auftrag $daten -Optionen @{
-    Ausgabe = $Ausgabe; DryRun = $DryRun; Bildfolge = $Bildfolge; Heiler = $heiler; Zaehlerordner = $Ausgabe
+    Ausgabe = $Ausgabe; DryRun = $DryRun; Bildfolge = $Bildfolge; Heiler = $heiler
   }
   Write-Output "Lauf $($bericht.lauf): $($f.Apotheke)/$($f.Name), Treiber $($bericht.treiber), $($bericht.dauerMs) ms"
   Write-Output "Status: $($bericht.status)"

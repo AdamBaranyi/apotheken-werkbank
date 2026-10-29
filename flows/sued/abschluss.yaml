@@ -18,7 +18,10 @@ schritte:
   - klicke: Storno Bon
     danach: Neuer Bon
     wiederholbar: true
+  # Der Abschluss lässt sich nicht zurücknehmen: kein zweiter Klick, und fehlt
+  # die Bestätigung, heisst der Lauf «unklar», nicht «abgebrochen».
   - klicke: Kassenschnitt
+    kritisch: true
     danach:
       eins-von: ['Abschluss', 'keine offenen Belege']
   - beenden-wenn:

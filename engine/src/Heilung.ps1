@@ -11,17 +11,36 @@ function Get-Bildtext {
 }
 
 function Get-Tageszaehlerpfad {
+  # Ein Zähler je Tag und Benutzer der Maschine, nicht je Ausgabeordner: Wer
+  # jedem Lauf einen eigenen Ordner gibt, umginge sonst den Tagesdeckel.
   param([hashtable] $Lauf)
-  $ordner = $Lauf.Optionen.Zaehlerordner
-  if (-not $ordner) { $ordner = Join-Path ([IO.Path]::GetTempPath()) 'werkbank-heilung' }
+  $ordner = $Lauf.Optionen['Zaehlerordner']
+  if (-not $ordner) { $ordner = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'werkbank/heilung' }
   $null = New-Item -ItemType Directory -Force -Path $ordner
   Join-Path $ordner ('heilung-{0}.json' -f (Get-Date).ToString('yyyy-MM-dd'))
 }
 
-function Read-Tageszaehler {
-  param([string] $Pfad)
-  if (-not (Test-Path -LiteralPath $Pfad)) { return 0 }
-  [int](Get-Content -LiteralPath $Pfad -Raw | ConvertFrom-Json).anzahl
+function Step-Tageszaehler {
+  # Liest und erhöht den Zähler in einem Zug, die Datei bleibt dabei gesperrt:
+  # Zwei Läufe auf derselben Maschine kommen so nicht gemeinsam über den Deckel.
+  param([string] $Pfad, [int] $Deckel, [int] $Versuche = 50)
+  $strom = $null
+  for ($i = 0; $i -lt $Versuche -and -not $strom; $i++) {
+    try { $strom = [IO.File]::Open($Pfad, [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None) }
+    catch [IO.IOException] { Start-Sleep -Milliseconds 100 }
+  }
+  if (-not $strom) { throw "Tageszähler gesperrt: $Pfad" }
+  try {
+    $inhalt = [IO.StreamReader]::new($strom, [Text.UTF8Encoding]::new($false), $true, 1024, $true).ReadToEnd()
+    $anzahl = if ($inhalt.Trim()) { [int]($inhalt | ConvertFrom-Json).anzahl } else { 0 }
+    if ($anzahl -ge $Deckel) { return @{ Ok = $false; Anzahl = $anzahl } }
+    $strom.SetLength(0)
+    $schreiber = [IO.StreamWriter]::new($strom, [Text.UTF8Encoding]::new($false), 1024, $true)
+    $schreiber.Write((@{ anzahl = $anzahl + 1 } | ConvertTo-Json -Compress))
+    $schreiber.Flush()
+    @{ Ok = $true; Anzahl = $anzahl + 1 }
+  }
+  finally { $strom.Dispose() }
 }
 
 function Test-Heilbar {
@@ -89,15 +108,13 @@ function Invoke-Heilung {
   $o = $Lauf.Optionen
   if (-not $o.Heiler -or -not (Test-Heilbar $Schritt $Ergebnis)) { return $false }
   if ($Lauf.Heilungen -ge $o.HeilungenJeLauf) { return $false }
-  $zaehler = Get-Tageszaehlerpfad $Lauf
-  $heute = Read-Tageszaehler $zaehler
-  if ($heute -ge $o.HeilungenJeTag) {
+  # Erst zählen, dann fragen: Auch eine Frage, die scheitert, kann kosten.
+  $tag = Step-Tageszaehler -Pfad (Get-Tageszaehlerpfad $Lauf) -Deckel $o.HeilungenJeTag
+  if (-not $tag.Ok) {
     Add-Heilungsbericht -Lauf $Lauf -Nr $Nr -Vorschlag @{} -Erlaubt $false -Grund "Tagesdeckel erreicht ($($o.HeilungenJeTag) je Tag)"
     return $false
   }
-  # Erst zählen, dann fragen: Auch eine Frage, die scheitert, kann kosten.
   $Lauf.Heilungen++
-  Set-Content -LiteralPath $zaehler -Value (@{ anzahl = $heute + 1 } | ConvertTo-Json -Compress) -Encoding utf8
   $bild = Get-Stand $Lauf
   $anfrage = @{
     Flow     = "$($Lauf.Flow.Apotheke)/$($Lauf.Flow.Name)"
@@ -112,6 +129,8 @@ function Invoke-Heilung {
     Add-Heilungsbericht -Lauf $Lauf -Nr $Nr -Vorschlag @{} -Erlaubt $false -Grund "Heiler nicht erreichbar: $($_.Exception.Message)"
     return $false
   }
+  # Die Antwort kann dauern: Geprüft und geklickt wird auf einem frischen Bild.
+  $bild = Get-Stand $Lauf
   $pruefung = Test-Vorschlag -Lauf $Lauf -Vorschlag $vorschlag -Bild $bild
   Add-Heilungsbericht -Lauf $Lauf -Nr $Nr -Vorschlag $vorschlag -Erlaubt $pruefung.Ok -Grund $(if ($pruefung.Ok) { '' } else { $pruefung.Grund })
   if (-not $pruefung.Ok) { return $false }

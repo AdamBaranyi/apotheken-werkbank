@@ -26,11 +26,14 @@ function Test-Rezept {
   $positionen = @($Rezept['positionen'] | Where-Object { $_ })
   if ($positionen.Count -eq 0) { 'Positionen fehlen' }
   if ($positionen.Count -gt 10) { 'Mehr als 10 Positionen' }
-  if ($Rezept['gueltigBis']) {
-    $bis = [datetime]::ParseExact([string]$Rezept.gueltigBis, 'yyyy-MM-dd', $null)
-    if ($bis.Date -lt $Heute.Date) { "Rezept abgelaufen am $($bis.ToString('dd.MM.yyyy', $script:Datum))" }
+  $bis = [datetime]::MinValue
+  if ($Rezept['gueltigBis'] -and -not [datetime]::TryParseExact([string]$Rezept.gueltigBis, 'yyyy-MM-dd', $null, 'None', [ref]$bis)) {
+    "Feld gueltigBis ungültig: $($Rezept.gueltigBis)"
   }
+  elseif ($Rezept['gueltigBis'] -and $bis.Date -lt $Heute.Date) { "Rezept abgelaufen am $($bis.ToString('dd.MM.yyyy', $script:Datum))" }
   if ($Rezept['zahlung'] -and $Rezept.zahlung -ne 'karte') { "Zahlung $($Rezept.zahlung) wird im Prototyp nicht gebucht" }
+  $doppelt = @($positionen | Group-Object { [string]$_['pzn'] } | Where-Object Count -GT 1)
+  foreach ($d in $doppelt) { "PZN $($d.Name) doppelt; die Kasse fasst gleiche Artikel zusammen" }
   foreach ($p in $positionen) {
     $pzn = [string]$p['pzn']
     if (-not (Test-PznPruefziffer $pzn)) { "PZN ${pzn}: Prüfziffer falsch"; continue }
@@ -50,8 +53,8 @@ function Get-RezeptKennung {
   param([Parameter(Mandatory)] [string] $RezeptId)
   $hash = [System.Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($RezeptId))
   $z = $script:KennungZeichen
-  $zeichen = -join (0..5 | ForEach-Object { $z[$hash[$_] % $z.Length] })
-  "$($zeichen.Substring(0, 2))-$($zeichen.Substring(2, 4))"
+  $zeichen = -join (0..7 | ForEach-Object { $z[$hash[$_] % $z.Length] })
+  "$($zeichen.Substring(0, 2))-$($zeichen.Substring(2, 6))"
 }
 
 function ConvertTo-Auftrag {
@@ -80,22 +83,33 @@ function Invoke-RezeptStapel {
   $flow = Import-Flow -Apotheke $Kasse -Flow verkauf -Wurzel (Join-Path $PSScriptRoot '../../flows')
   foreach ($datei in (Get-ChildItem -LiteralPath $Ordner -Filter *.json | Sort-Object Name)) {
     $start = Get-Date
-    $rezept = Get-Content -LiteralPath $datei.FullName -Raw | ConvertFrom-Json -AsHashtable
-    $probleme = @(Test-Rezept -Rezept $rezept -Heute $Heute)
-    $zeile = [ordered]@{ Datei = $datei.Name; RezeptId = [string]$rezept['rezeptId']; Kennung = ''; Ergebnis = ''; Grund = ''; Beleg = ''; DauerMs = 0 }
-    if ($probleme.Count -gt 0) {
+    $zeile = [ordered]@{ Datei = $datei.Name; RezeptId = ''; Kennung = ''; Ergebnis = ''; Grund = ''; Beleg = ''; DauerMs = 0 }
+    # Jeder Datensatz für sich: Ein kaputter hält den Stapel nicht an.
+    try { Invoke-RezeptDatensatz -Datei $datei -Zeile $zeile -Heute $Heute -Flow $flow -Treiber $Treiber -Optionen $Optionen }
+    catch {
       $zeile.Ergebnis = 'abgelehnt'
-      $zeile.Grund = $probleme -join '; '
-    }
-    else {
-      $auftrag = ConvertTo-Auftrag -Rezept $rezept
-      $zeile.Kennung = $auftrag.kennung
-      $bericht = Invoke-Flow -Flow $flow -Treiber $Treiber -Auftrag $auftrag -Optionen $Optionen
-      $zeile.Ergebnis = switch ($bericht.status) { 'ok' { 'gebucht' } 'bereits-gebucht' { 'schon gebucht' } default { $_ } }
-      $zeile.Beleg = [string]$bericht.werte['beleg']
-      if ($bericht.fehler) { $zeile.Grund = $bericht.fehler.meldung }
+      $zeile.Grund = $_.Exception.Message
     }
     $zeile.DauerMs = [int]((Get-Date) - $start).TotalMilliseconds
     [pscustomobject]$zeile
   }
+}
+
+function Invoke-RezeptDatensatz {
+  # Prüft einen Datensatz und bucht ihn, wenn er gut ist; füllt die Zeile.
+  param($Datei, [System.Collections.Specialized.OrderedDictionary] $Zeile, [datetime] $Heute, $Flow, $Treiber, [hashtable] $Optionen)
+  $rezept = Get-Content -LiteralPath $Datei.FullName -Raw | ConvertFrom-Json -AsHashtable
+  $Zeile.RezeptId = [string]$rezept['rezeptId']
+  $probleme = @(Test-Rezept -Rezept $rezept -Heute $Heute)
+  if ($probleme.Count -gt 0) {
+    $Zeile.Ergebnis = 'abgelehnt'
+    $Zeile.Grund = $probleme -join '; '
+    return
+  }
+  $auftrag = ConvertTo-Auftrag -Rezept $rezept
+  $Zeile.Kennung = $auftrag.kennung
+  $bericht = Invoke-Flow -Flow $Flow -Treiber $Treiber -Auftrag $auftrag -Optionen $Optionen
+  $Zeile.Ergebnis = switch ($bericht.status) { 'ok' { 'gebucht' } 'bereits-gebucht' { 'schon gebucht' } default { $_ } }
+  $Zeile.Beleg = [string]$bericht.werte['beleg']
+  if ($bericht.fehler) { $Zeile.Grund = $bericht.fehler.meldung }
 }

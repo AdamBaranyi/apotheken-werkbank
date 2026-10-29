@@ -80,4 +80,26 @@ Describe 'Find-Text' {
   It 'liefert mit -Alle jede Fundstelle' {
     @(Find-Text -Bild $bild -Text '99100008' -Alle).Count | Should -Be 2
   }
+
+  It 'vergleicht Zahlen genau: «Positionen 2» ist nicht «Positionen 1» (Durchsicht 29.10.)' {
+    $b = New-TestBild @(@{ X = 16; Y = 54; Text = 'Positionen 1' })
+    Find-Text -Bild $b -Text 'Positionen 2' | Should -BeNullOrEmpty
+    (Find-Text -Bild $b -Text 'Positionen 1').Y | Should -Be 54
+  }
+
+  It 'nimmt einen Betrag nur mit denselben Ziffern' {
+    Find-Text -Bild (New-TestBild @(@{ X = 16; Y = 20; Text = '1234,60' })) -Text '1234,50' | Should -BeNullOrEmpty
+    Find-Text -Bild (New-TestBild @(@{ X = 16; Y = 20; Text = '123,50' })) -Text '1234,50' | Should -BeNullOrEmpty
+  }
+
+  It 'gleicht in Zahlen weiter Verwechslungen, Punkt statt Komma und geteilte Wörter aus' {
+    $b = New-TestBild @(
+      @{ X = 16; Y = 20; Text = 'Positionen l' }
+      @{ X = 16; Y = 50; Text = 'Summe 1 5.34 EUR' }
+      @{ X = 16; Y = 80; Text = '991O4118' }
+    )
+    (Find-Text -Bild $b -Text 'Positionen 1').Y | Should -Be 20
+    (Find-Text -Bild $b -Text 'Summe 15,34 EUR').Y | Should -Be 50
+    (Find-Text -Bild $b -Text '99104118').Y | Should -Be 80
+  }
 }

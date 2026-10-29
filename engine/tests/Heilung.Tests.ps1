@@ -33,6 +33,23 @@ Describe 'Selbstheilung im Lauf' {
     $h.Anfragen[0].Klickbar | Should -Contain 'OK'
   }
 
+  It 'prüft und klickt nach der Antwort des Modells auf einem frischen Bild (Durchsicht 29.10.)' {
+    $t = New-FakeTreiber -Variante nord -Chaos @{ UnbekanntNach = 3 }
+    $h = New-Heiler -Art attrappe -Vorschlaege @(New-Vorschlag klicke 'OK')
+    $sim = $t.Simulation
+    $h | Add-Member -Force -MemberType ScriptMethod -Name Vorschlag -Value ({
+        param($Anfrage)
+        $this.Anfragen.Add($Anfrage)
+        # Während das Modell antwortet, verschiebt jemand das Kassenfenster.
+        $sim.Ursprung.X += 40
+        $sim.Ursprung.Y += 30
+        @{ aktion = 'klicke'; ziel = 'OK'; taste = ''; begruendung = 'Test' }
+      }.GetNewClosure())
+    $bericht = Invoke-Testlauf $t $h
+    $bericht.heilungen[0].ergebnis | Should -Be 'geholfen'
+    $bericht.status | Should -Be 'ok'
+  }
+
   It 'führt einen Vorschlag ausserhalb der erlaubten Liste nie aus' {
     $t = New-FakeTreiber -Variante nord -Chaos @{ UnbekanntNach = 3 }
     $h = New-Heiler -Art attrappe -Vorschlaege @(New-Vorschlag klicke 'Karte')
@@ -142,5 +159,31 @@ Describe 'Vorschlag des Modells' {
   It 'nimmt eine Ablehnung des Modells als «abbrechen»' {
     Mock -ModuleName Werkbank.Engine Invoke-RestMethod { New-Antwort '' 'refusal' }
     (New-Heiler -Art modell -Schluessel 'sk-test').Vorschlag($script:Anfrage).aktion | Should -Be 'abbrechen'
+  }
+}
+
+Describe 'Tageszähler der Selbstheilung (Durchsicht 29.10.)' {
+  It 'liegt ohne Angabe bei den Daten des Benutzers, nicht im Ausgabeordner eines Laufs' {
+    InModuleScope Werkbank.Engine {
+      $pfad = Get-Tageszaehlerpfad @{ Optionen = @{ Ausgabe = (Join-Path $TestDrive 'lauf-1') } }
+      $pfad | Should -BeLike ((Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'werkbank') + '*')
+    }
+  }
+
+  It 'zählt unter Sperre: Wer die Datei hält, lässt den nächsten warten, und der Deckel hält' {
+    InModuleScope Werkbank.Engine -Parameters @{ Ordner = (Join-Path $TestDrive 'sperre') } {
+      param($Ordner)
+      $null = New-Item -ItemType Directory -Force -Path $Ordner
+      $pfad = Join-Path $Ordner 'heilung.json'
+      (Step-Tageszaehler -Pfad $pfad -Deckel 3).Anzahl | Should -Be 1
+      # Ein zweiter Zugriff hält die Datei offen, ohne selbst zu sperren: Der
+      # Zähler darf dann nicht schreiben, er braucht die Datei für sich allein.
+      $halten = [IO.File]::Open($pfad, 'Open', 'ReadWrite', 'ReadWrite')
+      try { { Step-Tageszaehler -Pfad $pfad -Deckel 3 -Versuche 2 } | Should -Throw '*gesperrt*' }
+      finally { $halten.Dispose() }
+      (Step-Tageszaehler -Pfad $pfad -Deckel 3).Anzahl | Should -Be 2
+      (Step-Tageszaehler -Pfad $pfad -Deckel 3).Ok | Should -BeTrue
+      (Step-Tageszaehler -Pfad $pfad -Deckel 3).Ok | Should -BeFalse
+    }
   }
 }

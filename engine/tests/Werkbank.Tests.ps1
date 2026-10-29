@@ -73,6 +73,6 @@ Describe 'werkbank.ps1' {
   It 'kennung liefert eine neue Kennung' {
     $r = Invoke-Werkbank @('kennung')
     $r.Code | Should -Be 0
-    $r.Text.Trim() | Should -Match '^[2-9ACDEFHJKMNPQRTVWXY]{2}-[2-9ACDEFHJKMNPQRTVWXY]{4}$'
+    $r.Text.Trim() | Should -Match '^[2-9ACDEFHJKMNPQRTVWXY]{2}-[2-9ACDEFHJKMNPQRTVWXY]{6}$'
   }
 }

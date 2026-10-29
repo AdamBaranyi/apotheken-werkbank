@@ -44,7 +44,15 @@ Describe 'Test-Auftrag' {
     { Test-Auftrag -Flow $script:Flow -Auftrag $a } | Should -Throw '*Menge*'
   }
 
-  It 'erzeugt Kennungen nur aus erlaubten Zeichen' {
-    1..50 | ForEach-Object { New-Kennung } | Should -Match '^[2-9ACDEFHJKMNPQRTVWXY]{2}-[2-9ACDEFHJKMNPQRTVWXY]{4}$'
+  It 'erzeugt Kennungen aus acht erlaubten Zeichen (Durchsicht 29.10.: Raum für Millionen Belege)' {
+    1..50 | ForEach-Object { New-Kennung } | Should -Match '^[2-9ACDEFHJKMNPQRTVWXY]{2}-[2-9ACDEFHJKMNPQRTVWXY]{6}$'
+  }
+
+  It 'nimmt ältere Kennungen mit sechs Zeichen weiter an' {
+    $a = New-Auftrag
+    $a.kennung = 'K7-QX4M'
+    (Test-Auftrag -Flow $script:Flow -Auftrag $a).kennung | Should -Be 'K7-QX4M'
+    $a.kennung = 'K7-QX4MP9'
+    (Test-Auftrag -Flow $script:Flow -Auftrag $a).kennung | Should -Be 'K7-QX4MP9'
   }
 }

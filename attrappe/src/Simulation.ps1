@@ -84,8 +84,10 @@ function Get-SimulationsBild {
     switch ($e.Art) {
       'beschriftung' { Add-SimWorte $woerter $e.Text $lage[0] (Get-SimMitteY $lage) $zb ([ref]$zeile) }
       'anzeige' {
+        # Unsichtbar: eine Anzeige mit genau diesem Text, in jeder Grösse.
         $text = [string]$anzeige[$e.Name]
-        if (-not ($flackerAus -and $text.Contains($s.Chaos.Flackern))) {
+        $weg = $s.Chaos.Unsichtbar -contains $text
+        if (-not $weg -and -not ($flackerAus -and $text.Contains($s.Chaos.Flackern))) {
           Add-SimWorte $woerter $text $lage[0] (Get-SimMitteY $lage) $zb ([ref]$zeile)
         }
       }

@@ -80,6 +80,7 @@ namespace Werkbank
         [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr h, int nCmdShow);
         [DllImport("user32.dll")] private static extern bool IsIconic(IntPtr h);
         [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr h, IntPtr pid);
+        [DllImport("user32.dll", EntryPoint = "GetWindowThreadProcessId")] private static extern uint GetWindowProzess(IntPtr h, out uint pid);
         [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
         [DllImport("user32.dll")] private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
         [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
@@ -176,8 +177,8 @@ namespace Werkbank
         public static bool Vordergrund(IntPtr h)
         {
             if (IsIconic(h)) ShowWindow(h, SW_RESTORE);
+            if (VorneGleicheAnwendung(h)) return true;
             IntPtr vorne = GetForegroundWindow();
-            if (vorne == h) return true;
             uint ich = GetCurrentThreadId();
             uint dort = vorne == IntPtr.Zero ? 0 : GetWindowThreadProcessId(vorne, IntPtr.Zero);
             bool verbunden = dort != 0 && dort != ich && AttachThreadInput(ich, dort, true);
@@ -190,7 +191,21 @@ namespace Werkbank
             {
                 if (verbunden) AttachThreadInput(ich, dort, false);
             }
-            return GetForegroundWindow() == h;
+            return VorneGleicheAnwendung(h);
+        }
+
+        /// <summary>Ist das Fenster vorne h selbst oder gehört es zur selben
+        /// Anwendung, etwa ein modaler Dialog der Kasse? Dann gehen Eingaben an
+        /// die Kasse; sonst an ein anderes Programm.</summary>
+        private static bool VorneGleicheAnwendung(IntPtr h)
+        {
+            IntPtr vorne = GetForegroundWindow();
+            if (vorne == IntPtr.Zero) return false;
+            if (vorne == h) return true;
+            uint ich, dort;
+            GetWindowProzess(h, out ich);
+            GetWindowProzess(vorne, out dort);
+            return ich != 0 && ich == dort;
         }
 
         public static bool Klick(int x, int y)

@@ -109,6 +109,8 @@ function New-WindowsTreiber {
     param([string] $Titel)
     $liste = [Werkbank.Win32]::Suchen($Titel)
     if ($liste.Count -eq 0) { return $null }
+    # Zwei Fenster mit diesem Titel: Die Engine rät nicht, welches die Kasse ist.
+    if ($liste.Count -gt 1) { throw "Das Fenster '$Titel' ist $($liste.Count)-mal offen; die Engine wählt keines." }
     ConvertTo-Fensterinfo $liste[0]
   }
   $treiber | Add-Member -MemberType ScriptMethod -Name Bildschirm -Value {

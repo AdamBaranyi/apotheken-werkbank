@@ -37,7 +37,7 @@ Describe 'Kennung und Auftrag' {
   It 'leitet aus derselben Rezept-ID immer dieselbe Kennung ab, im Alphabet der Engine' {
     $a = Get-RezeptKennung 'TM-2026-000101'
     $a | Should -Be (Get-RezeptKennung 'TM-2026-000101')
-    $a | Should -Match '^[2-9ACDEFHJKMNPQRTVWXY]{2}-[2-9ACDEFHJKMNPQRTVWXY]{4}$'
+    $a | Should -Match '^[2-9ACDEFHJKMNPQRTVWXY]{2}-[2-9ACDEFHJKMNPQRTVWXY]{6}$'
     $a | Should -Not -Be (Get-RezeptKennung 'TM-2026-000102')
   }
 
@@ -68,5 +68,29 @@ Describe 'Stapel aus der Telemedizin-Attrappe' {
     $positionen = @($journal | ForEach-Object { $_.Positionen })
     @($positionen | Where-Object { $_.Pzn -in $rx }).Count | Should -Be 5
     @($positionen | Where-Object { $_.Pzn -in $rx -and -not $_.Rezept }).Count | Should -Be 0
+  }
+
+  It 'arbeitet weiter, wenn ein Datensatz kaputt ist, und nennt den Grund (Durchsicht 29.10.)' {
+    $ordner = Join-Path $TestDrive 'stapel-kaputt'
+    $null = New-Item -ItemType Directory -Force -Path $ordner
+    Copy-Item (Join-Path $script:Daten 'tm-101.json') (Join-Path $ordner 'a.json')
+    $doppelt = Get-Rezept 'tm-102.json'
+    $doppelt.rezeptId = 'TM-2026-000902'
+    $doppelt.positionen = @($doppelt.positionen[0], $doppelt.positionen[0])
+    $doppelt | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $ordner 'b-doppelte-pzn.json')
+    $datum = Get-Rezept 'tm-102.json'
+    $datum.rezeptId = 'TM-2026-000903'
+    $datum.gueltigBis = '2026-13-45'
+    $datum | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $ordner 'c-datum.json')
+    Set-Content (Join-Path $ordner 'd-kein-json.json') -Value '{ kaputt'
+    Copy-Item (Join-Path $script:Daten 'tm-103.json') (Join-Path $ordner 'e.json')
+
+    $optionen = @{ Takt = 0.25; Schlafen = $false; Ausgabe = (Join-Path $TestDrive 'laeufe-kaputt') }
+    $ergebnis = @(Invoke-RezeptStapel -Ordner $ordner -Heute $script:Heute -Treiber (New-FakeTreiber -Variante nord) -Optionen $optionen)
+    $ergebnis.Count | Should -Be 5
+    @($ergebnis | Where-Object Ergebnis -EQ 'gebucht').Datei | Should -Be @('a.json', 'e.json')
+    ($ergebnis | Where-Object Datei -EQ 'b-doppelte-pzn.json').Grund | Should -Match 'doppelt'
+    ($ergebnis | Where-Object Datei -EQ 'c-datum.json').Grund | Should -Match 'gueltigBis'
+    ($ergebnis | Where-Object Datei -EQ 'd-kein-json.json').Ergebnis | Should -Be 'abgelehnt'
   }
 }

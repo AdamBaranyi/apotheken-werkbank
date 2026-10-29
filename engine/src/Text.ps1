@@ -54,7 +54,24 @@ function Get-Kandidatenwert {
     [Werkbank.TextAbgleich]::Ziffern($Kandidat) -eq [Werkbank.TextAbgleich]::Ziffern($Ziel)
     return [double]$gleich
   }
+  # Zahlen tragen die Bedeutung (Menge, Betrag, Zähler): Ihre Ziffern müssen
+  # genau stimmen. Sonst galt «Positionen 1» als «Positionen 2» (0,917).
+  if ((Get-Zahlenfolge $Kandidat) -ne (Get-Zahlenfolge $Ziel)) { return 0.0 }
   Get-Aehnlichkeit -A $Kandidat -B $Ziel
+}
+
+function Get-Zahlenfolge {
+  # Die Ziffern aller Zahlwörter eines Textes, OCR-Verwechslungen ausgeglichen
+  # (O/0, l/1 …), Punkt wie Komma, Leerzeichen dazwischen ohne Bedeutung: so
+  # ergeben «15,34» und «1 5.34» dasselbe. Ein Zahlwort enthält eine Ziffer
+  # oder besteht aus höchstens zwei Zeichen, die die OCR mit Ziffern verwechselt.
+  param([string] $Text)
+  $teile = foreach ($wort in ($Text -split ' ')) {
+    if ($wort -match '\d' -or $wort -match '^[oil|!sbz]{1,2}$') {
+      [Werkbank.TextAbgleich]::Ziffern($wort) -replace '\.', ',' -replace '[^\d,]', ''
+    }
+  }
+  $teile -join ''
 }
 
 function New-Fundstelle {

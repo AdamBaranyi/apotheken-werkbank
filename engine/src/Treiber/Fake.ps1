@@ -25,6 +25,8 @@ function New-FakeTreiber {
     Bilder         = 0
     SprungVorKlick = $SprungVorKlick
     Sprung         = $Sprung
+    # Ein anderes Programm ist vorne und lässt die Kasse nicht nach vorne.
+    NichtVorne     = $false
   }
   $treiber | Add-Member -MemberType ScriptMethod -Name Fenster -Value {
     param([string] $Titel)
@@ -47,8 +49,8 @@ function New-FakeTreiber {
   }
   $treiber | Add-Member -MemberType ScriptMethod -Name Vordergrund -Value {
     param($Fenster)
-    $null = $Fenster # Die Simulation ist immer vorne.
-    $true
+    $null = $Fenster
+    -not $this.NichtVorne
   }
   $treiber | Add-Member -MemberType ScriptMethod -Name Klick -Value {
     param([int] $X, [int] $Y)

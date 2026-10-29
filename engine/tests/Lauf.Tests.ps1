@@ -176,6 +176,37 @@ Describe 'Invoke-Flow mit dem Fake-Treiber' {
     $t.Simulation.Kasse.Journal.Count | Should -Be 1
   }
 
+  It 'bricht ab, wenn ein Dialog das Enter einer Position schluckt (Durchsicht 29.10.)' {
+    # Der Ersatz für Taste ruft die Simulation selbst; ohne diesen Import würfe
+    # er, und der Lauf bräche aus dem falschen Grund ab.
+    Import-Module (Join-Path $PSScriptRoot '../../attrappe/Kassen.Attrappe.psd1')
+    $t = New-FakeTreiber -Variante nord
+    $t | Add-Member -NotePropertyName Enter -NotePropertyValue 0
+    $t | Add-Member -Force -MemberType ScriptMethod -Name Taste -Value {
+      param([string] $Name)
+      if ($Name -eq 'Enter') {
+        $this.Enter++
+        # Das dritte Enter fügt Position 2 hinzu; ein Dialog geht auf und schluckt es.
+        if ($this.Enter -eq 3) {
+          $this.Simulation.Dialog = @{ Art = 'preisliste'; Text = 'Neue Preisliste verfügbar'; Escape = 'spaeter'; Ziel = ''
+            Knoepfe = @(@{ Text = 'Später'; Antwort = 'spaeter' }, @{ Text = 'Jetzt laden'; Antwort = 'laden' }) }
+        }
+      }
+      Send-SimulationsTaste -Simulation $this.Simulation -Name $Name
+      $true
+    }
+    $auftrag = @{
+      kennung    = 'K7-QX4M'; zahlung = 'karte'
+      positionen = @(@{ pzn = '99100008'; menge = 3 }, @{ pzn = '99102740'; menge = 1 })
+    }
+    $bericht = Invoke-Testlauf $t -Auftrag $auftrag
+    # Vorher: «Positionen 1» galt als «Positionen 2», gebucht wurde ohne Position 2.
+    $t.Enter | Should -BeGreaterOrEqual 3
+    $bericht.fehler.meldung | Should -Match 'Positionen 2'
+    $bericht.status | Should -Be 'abgebrochen'
+    $t.Simulation.Kasse.Journal.Count | Should -Be 0
+  }
+
   It 'nennt bei einer unsichtbaren Eingabe, was die OCR dort las, und hält den Bildschirm als Text fest' {
     $t = New-FakeTreiber -Variante nord -Chaos @{ Unsichtbar = @('1') }
     $bericht = Invoke-Testlauf $t
@@ -242,5 +273,46 @@ Describe 'Invoke-Flow mit dem Fake-Treiber' {
     $bericht.werte.belege | Should -Be '1'
     $bericht.werte.summe | Should -Be '24,75'
     (Invoke-Testlauf $t -Flow abschluss -Auftrag @{}).status | Should -Be 'nichts-offen'
+  }
+
+  It 'klickt im Trockenlauf nichts, auch keinen bekannten Dialog (Durchsicht 29.10.)' {
+    $t = New-FakeTreiber -Variante nord
+    $t.Simulation.Dialog = @{ Art = 'preisliste'; Text = 'Neue Preisliste verfügbar'; Escape = 'spaeter'; Ziel = ''
+      Knoepfe = @(@{ Text = 'Später'; Antwort = 'spaeter' }, @{ Text = 'Jetzt laden'; Antwort = 'laden' }) }
+    $bericht = Invoke-Testlauf $t -Mehr @{ DryRun = $true }
+    $bericht.status | Should -Be 'trocken'
+    $t.Klicks | Should -Be 0
+    $t.Simulation.Dialog | Should -Not -BeNullOrEmpty
+  }
+
+  It 'klickt den Knopf eines bekannten Dialogs nur im Dialog (Durchsicht 29.10.)' {
+    $t = New-FakeTreiber -Variante nord
+    # Dasselbe Wort steht weiter oben im Fenster, ausserhalb des Dialogs.
+    $t.Simulation.Felder.pzn = 'Später'
+    $t.Simulation.Dialog = @{ Art = 'preisliste'; Text = 'Neue Preisliste verfügbar'; Escape = 'spaeter'; Ziel = ''
+      Knoepfe = @(@{ Text = 'Später'; Antwort = 'spaeter' }, @{ Text = 'Jetzt laden'; Antwort = 'laden' }) }
+    $bericht = Invoke-Testlauf $t
+    @($bericht.dialoge).Count | Should -Be 1
+    $bericht.status | Should -Be 'ok'
+  }
+
+  It 'sendet nichts, wenn das Kassenfenster nicht vorne ist (Durchsicht 29.10.)' {
+    $t = New-FakeTreiber -Variante nord
+    $t.NichtVorne = $true
+    $bericht = Invoke-Testlauf $t
+    $bericht.status | Should -Be 'abgebrochen'
+    $bericht.fehler.meldung | Should -Match 'nicht vorne'
+    $t.Klicks | Should -Be 0
+    $t.Simulation.Felder.Values | Where-Object { $_ } | Should -BeNullOrEmpty
+  }
+
+  It 'meldet «unklar», wenn nach dem Tagesabschluss die Bestätigung fehlt (Durchsicht 29.10.)' {
+    $t = New-FakeTreiber -Variante nord
+    (Invoke-Testlauf $t).status | Should -Be 'ok'
+    $t.Simulation.Chaos.Unsichtbar = @('Abschluss 1: 1 Beleg, 24,75 €')
+    $bericht = Invoke-Testlauf $t -Flow abschluss -Auftrag @{}
+    # Abgeschlossen ist trotzdem; «abgebrochen» hiesse «nichts passiert».
+    $t.Simulation.Kasse.Abschluesse | Should -Be 1
+    $bericht.status | Should -Be 'unklar'
   }
 }

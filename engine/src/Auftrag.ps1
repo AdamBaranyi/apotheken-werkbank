@@ -9,14 +9,17 @@ $script:KennungZeichen = '23456789ACDEFHJKMNPQRTVWXY'
 function New-Kennung {
   <#
     .SYNOPSIS
-    Neue Kennung für einen Auftrag, etwa «K7-QX4M».
+    Neue Kennung für einen Auftrag, etwa «K7-QX4MP9»: 26 hoch 8 Möglichkeiten.
+    Mit sechs Zeichen wäre ab rund 20 000 Belegen eine doppelte Kennung
+    wahrscheinlicher als nicht, und ein neuer Verkauf endete als «bereits
+    gebucht»; mit acht erst ab rund einer halben Million.
   #>
   [CmdletBinding()]
   [OutputType([string])]
   param()
   $z = $script:KennungZeichen
   $teil = { param([int] $n) -join (1..$n | ForEach-Object { $z[[System.Security.Cryptography.RandomNumberGenerator]::GetInt32($z.Length)] }) }
-  "$(& $teil 2)-$(& $teil 4)"
+  "$(& $teil 2)-$(& $teil 6)"
 }
 
 function ConvertTo-Wahr {
@@ -63,8 +66,9 @@ function Test-Auftrag {
     if (-not $a.ContainsKey($e) -or $null -eq $a[$e]) { $a[$e] = '' }
   }
   $z = $script:KennungZeichen
-  if ($a.ContainsKey('kennung') -and [string]$a.kennung -cnotmatch "^[$z]{2}-[$z]{4}$") {
-    throw "Kennung ungültig: '$($a.kennung)'. Erlaubt sind 2 und 4 Zeichen aus 2–9 und Buchstaben ohne B, G, I, L, O, S, U, Z."
+  # Neue Kennungen haben 2 und 6 Zeichen; ältere mit 2 und 4 gelten weiter.
+  if ($a.ContainsKey('kennung') -and [string]$a.kennung -cnotmatch "^[$z]{2}-[$z]{4}(?:[$z]{2})?$") {
+    throw "Kennung ungültig: '$($a.kennung)'. Erlaubt sind 2 und 6 (früher 4) Zeichen aus 2–9 und Buchstaben ohne B, G, I, L, O, S, U, Z."
   }
   if ($a.ContainsKey('positionen')) { $a.positionen = @(ConvertTo-Positionen $a.positionen) }
   if ($a.ContainsKey('zahlung')) {

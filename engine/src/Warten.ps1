@@ -13,21 +13,46 @@ function Get-Stand {
   for ($runde = 0; $runde -lt 4; $runde++) {
     $f = $Lauf.Treiber.Fenster($Lauf.Flow.Fenster)
     if ($null -eq $f) { throw "Fenster '$($Lauf.Flow.Fenster)' nicht gefunden." }
-    $null = $Lauf.Treiber.Vordergrund($f)
+    Assert-Vorne $Lauf $f
     $bild = $Lauf.Treiber.Bildschirm($f)
     $Lauf.Bild = $bild
     $Lauf.Fenster = $f
     if ($bild.PSObject.Properties['Sprache'] -and $bild.Sprache) { $Lauf.Bericht.ocr = $bild.Sprache }
     $aktuell = @(Get-Fehlerzeilen $Lauf $bild)
     $Lauf.FehlerVorher = @($Lauf.FehlerVorher | Where-Object { $aktuell -contains $_ })
-    $dialog = $Lauf.Flow.Dialoge | Where-Object { Find-Text -Bild $bild -Text $_.text } | Select-Object -First 1
-    if (-not $dialog) { return $bild }
-    $knopf = Find-Text -Bild $bild -Text $dialog.klicke
+    # Der Trockenlauf klickt nichts, auch keinen bekannten Dialog.
+    if ($Lauf.Optionen.DryRun) { return $bild }
+    $knopf = Find-Dialogknopf $Lauf $bild
     if (-not $knopf) { return $bild }
     $null = $Lauf.Treiber.Klick($f.X + $knopf.MitteX, $f.Y + $knopf.MitteY)
-    $Lauf.Bericht.dialoge.Add([pscustomobject]@{ text = $dialog.text; klick = $dialog.klicke; zeit = (Get-Date).ToString('o') })
+    $Lauf.Bericht.dialoge.Add([pscustomobject]@{ text = $knopf.Dialog; klick = $knopf.Text; zeit = (Get-Date).ToString('o') })
   }
   $bild
+}
+
+function Assert-Vorne {
+  # Eingaben gehen an das Fenster, das vorne ist. Kommt die Kasse (oder ihr
+  # eigener Dialog) nicht nach vorne, sendet die Engine nichts.
+  param([hashtable] $Lauf, $Fenster)
+  if ($Lauf.Treiber.Vordergrund($Fenster)) { return }
+  $null = Wait-Pause $Lauf (Get-Date).AddMilliseconds(300)
+  if ($Lauf.Treiber.Vordergrund($Fenster)) { return }
+  throw "Das Fenster '$($Lauf.Flow.Fenster)' ist nicht vorne; die Engine sendet keine Eingabe an ein anderes Programm."
+}
+
+function Find-Dialogknopf {
+  # Der Knopf eines bekannten Dialogs, gesucht nur rund um dessen Text (ein
+  # Dialog ist kaum grösser als 450 x 150) und nur, wenn er dort eindeutig ist.
+  param([hashtable] $Lauf, $Bild)
+  foreach ($d in $Lauf.Flow.Dialoge) {
+    $text = Find-Text -Bild $Bild -Text $d.text
+    if (-not $text) { continue }
+    $bereich = @{ X = $text.X - 40; Y = $text.Y - 10; B = 450; H = 150 }
+    $knopf = Find-Ziel -Bild $Bild -Text $d.klicke -Bereich $bereich
+    if (-not $knopf -or $knopf.Mehrdeutig) { return $null }
+    return $knopf | Add-Member -NotePropertyName Dialog -NotePropertyValue $d.text -PassThru -Force
+  }
+  $null
 }
 
 function Get-Zeilentext {
@@ -47,8 +72,8 @@ function Get-Fehlerzeilen {
 function Find-Ziel {
   # Wie Find-Text, aber ein Ziel an zwei gleich guten Stellen ist mehrdeutig:
   # Die Engine klickt dann nicht und rät nicht.
-  param($Bild, [string] $Text, [switch] $Genau)
-  $alle = @(Find-Text -Bild $Bild -Text $Text -Genau:$Genau -Alle)
+  param($Bild, [string] $Text, [switch] $Genau, [hashtable] $Bereich)
+  $alle = @(Find-Text -Bild $Bild -Text $Text -Genau:$Genau -Bereich $Bereich -Alle)
   if ($alle.Count -eq 0) { return $null }
   $gleich = @($alle | Where-Object { [math]::Abs($_.Wert - $alle[0].Wert) -lt 0.001 })
   if ($gleich.Count -gt 1) { return [pscustomobject]@{ Mehrdeutig = $true; Anzahl = $gleich.Count } }
