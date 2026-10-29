@@ -209,6 +209,9 @@ enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
   Schreibmarke nicht las, stand schon in der Doku; ohne Marke scheiterte sie genauso. Erst die
   Wörter, die die OCR wirklich las, und eine Probe in drei Grössen zeigten die Ursache: Dreifach
   vergrössert fehlt die «1», zwei- und vierfach steht sie da.
+- Eine zweite Durchsicht fand, was die Tests nicht fragten: Zahlen, die unscharf verglichen
+  wurden, und Zustände nach einer Unterbrechung (ein geschlucktes Enter, ein Bild von vor einer
+  langen Frage). Jeder der neun Befunde bekam zuerst einen roten Test.
 - Gegen doppeltes Buchen zählt, was sicher dasteht, nicht was fehlt. Ein Flow, der weiterverkaufte,
   weil er «Beleg» in einem Bild nicht las, hätte zweimal gebucht. Jetzt braucht der Verkauf ein
   gelesenes «unbekannt».

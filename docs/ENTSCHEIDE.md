@@ -261,7 +261,9 @@ zusätzlich dunkel in 390 px, und axe prüft die Kontraste auch dort.
 
 _28.10.2026._ Adams Wunsch: ein Rundgang wie in seinen anderen Apps, der zeigt, wie man die
 Werkbank benutzt und was schon fertig ist. Der Knopf «Rundgang» steht in der Leiste; er öffnet
-einen echten modalen Dialog (Fokusfalle und Escape vom Browser), Schritt für Schritt einmal durch die ganze Werkbank: 14 Schritte über Bestellen, Bestellungen, Kasse, Belege, Tagesabschluss und Flow-Monitor; er wechselt selbst die Seite, die Leiste und mit ihr der Dialog bleiben stehen. Das
+einen echten modalen Dialog (Fokusfalle und Escape vom Browser), Schritt für Schritt einmal durch
+die ganze Werkbank: 14 Schritte über Bestellen, Bestellungen, Kasse, Belege, Tagesabschluss und
+Flow-Monitor; er wechselt selbst die Seite, die Leiste und mit ihr der Dialog bleiben stehen. Das
 erklärte Element wird hervorgehoben; fehlt es gerade (leerer Bon), bleibt nur der Text. Anders als
 in Evidarium öffnet er sich beim ersten Besuch noch nicht von selbst: Dafür müssten alle
 Browser-Tests als Besucher beginnen, die ihn schon kennen. Das folgt mit dem lokalen Speicher.
@@ -376,9 +378,10 @@ gleich. Damit sich das klären liess, nennt eine nicht sichtbare Eingabe seither
 OCR im Feld las, und ein Abbruch hält den Bildschirm als Text im Bericht fest. Die Probe
 `engine/probe/ziffer.ps1` las dieselbe Zeile zweifach und vierfach mit «1», dreifach ohne. Die
 Skalierung bleibt dreifach (20 von 20 Prüfwörtern, E32); findet die Engine einen Text bis zum Ende
-der Frist nicht, liest sie das letzte Bild noch einmal vierfach, bevor sie scheitert. Verworfen:
-immer vierfach (fast doppelt so viele Bildpunkte je Bild, und ob vierfach die 20 Prüfwörter auch
-liest, misst die Probe erst jetzt). Preis: Ein Fehlschlag dauert ein Bild länger.
+der Frist nicht, liest sie das letzte Bild noch einmal vierfach, bevor sie scheitert. Offen: immer
+vierfach. Die Probe las vierfach alle 20 Prüfwörter, in 1,1 statt 1,0 Sekunden je Bild; die echten
+Läufe sind aber dreifach mit zweitem Blick geprüft, nicht vierfach. Preis: Ein Fehlschlag dauert ein
+Bild länger.
 
 ## E39 — Verkaufen nur, wenn «unbekannt» dasteht
 
@@ -390,3 +393,24 @@ Bild) zeigte genau das: zwei Belege für eine Kennung. Jetzt prüft der Flow nac
 «unbekannt» sicher dasteht; sonst bricht der Lauf ab und bucht nichts. Eine Sabotage hält fest, dass
 der Test die fehlende Prüfung findet. Preis: Ein Lauf, der die Zeile in keinem Bild liest, endet mit
 «abgebrochen» statt zu verkaufen; ein Mensch oder ein neuer Lauf klärt ihn.
+
+## E40 — Zahlen im Suchtext genau vergleichen
+
+_29.10.2026._ Befund der Durchsicht vor dem Merge: Die Engine verglich ganze Suchtexte unscharf
+(Levenshtein, Schwelle 0,85), Zahlen eingeschlossen. «Positionen 1» galt als «Positionen 2» (0,917),
+und ein Enter, das ein Dialog schluckte, fiel nicht auf: Der Lauf meldete «ok», auf dem Beleg fehlte
+eine Position. Ebenso galt «1234,60» als «1234,50» (0,857). Jetzt müssen die Ziffern eines Suchtexts
+genau stimmen, nach Ausgleich der OCR-Verwechslungen (O/0, l/1 …), Punkt wie Komma und ohne
+Leerzeichen dazwischen; Buchstaben bleiben unscharf. Ein Test spielt das geschluckte Enter nach, eine
+Sabotage hält die Regel fest. Preis: Liest die OCR eine Ziffer falsch, die sie nicht verwechseln
+darf, scheitert die Prüfung, statt durchzugehen; dafür gibt es den zweiten Blick (E38).
+
+## E41 — Kennungen mit acht Zeichen
+
+_29.10.2026._ Befund der Durchsicht: Mit 26 hoch 6 Kennungen ist ab rund 20 000 Belegen eine doppelte
+wahrscheinlicher als nicht. Ein neuer Verkauf mit einer schon vergebenen Kennung endete als «bereits
+gebucht», und der Verkauf fehlte. Neue Kennungen haben jetzt acht Zeichen (26 hoch 8, die Grenze
+liegt bei rund einer halben Million); ältere mit sechs gelten weiter. Verworfen: beim gefundenen
+Beleg
+Summe und Positionen vergleichen; das bräuchte eine Lesestelle, die keine Kasse gleich zeigt. Preis:
+zwei Zeichen mehr, die die OCR genau lesen muss.

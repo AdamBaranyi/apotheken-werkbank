@@ -92,7 +92,8 @@ Flow und Apotheke passen.
 
 Die **Kennung** besteht aus Zeichen, die eine OCR nicht verwechselt (2–9 und Buchstaben ohne B, G,
 I, L, O, S, U, Z). Sie steht als Referenz auf dem Beleg; vor jedem Verkauf sucht der Flow sie im
-Journal der Kasse.
+Journal der Kasse. `werkbank.ps1 kennung` erzeugt acht Zeichen («K7-QX4MP9»); ältere Kennungen mit
+sechs gelten weiter (E41).
 
 ## Stabil halten: die Regeln
 
@@ -116,11 +117,19 @@ Journal der Kasse.
    «Beleg» nur in einem Bild, bricht der Lauf ab, statt ein zweites Mal zu buchen (E39).
 6. **Mehrdeutig heisst nicht klicken.** Steht ein Ziel an zwei gleich guten Stellen, bricht der
    Schritt ab. Die Layouts sind so gebaut, dass kein Knopftext zweimal vorkommt (`Test-KassenLayout`).
-7. **Bekannte Dialoge** aus dem Flow klickt die Engine vor jedem Bild weg (Stufe 1). Ein unbekannter
-   Dialog führt zum Abbruch mit Bildschirmfoto, oder zur Selbstheilung (Stufe 2).
+7. **Bekannte Dialoge** aus dem Flow klickt die Engine vor jedem Bild weg (Stufe 1), den Knopf
+   gesucht nur rund um den Text des Dialogs und nur, wenn er dort eindeutig ist; der Trockenlauf
+   klickt nichts. Ein unbekannter Dialog führt zum Abbruch mit Bildschirmfoto, oder zur
+   Selbstheilung (Stufe 2).
 8. **Vor «nicht erschienen» ein zweiter Blick.** Findet die Engine einen Text bis zum Ende der
    Frist nicht, liest sie das letzte Bild noch einmal eine Stufe grösser (vierfach statt dreifach).
    Erst dann meldet sie den Fehler, mit den Wörtern, die die OCR im Feld las (E38).
+9. **Zahlen genau.** Ein Suchtext mit Ziffern trifft nur dieselben Ziffern, nach Ausgleich der
+   OCR-Verwechslungen; Buchstaben vergleicht die Engine weiter unscharf. Sonst galt «Positionen 1»
+   als «Positionen 2» (E40).
+10. **Nur senden, wenn die Kasse vorne ist.** Vorne zählt das Kassenfenster oder ein Dialog derselben
+    Anwendung. Ist es ein anderes Programm, oder steht die Kasse zweimal offen, bricht der Lauf vor
+    der nächsten Eingabe ab.
 
 ## Fallstricke, gemessen
 

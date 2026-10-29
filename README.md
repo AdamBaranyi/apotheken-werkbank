@@ -52,6 +52,7 @@ und echte Läufe auf einem Windows-Läufer gegen das Fenster der Kassen-Attrappe
 ## Weiterlesen
 
 - [Überblick](docs/UEBERBLICK.md): die drei Arbeitsfelder und was das Bauen gelehrt hat
+- [Fallstudie](docs/FALLSTUDIE.md): wie die Engine entstand, was gemessen wurde und was schiefging
 - [Entscheide](docs/ENTSCHEIDE.md) mit Grund und Preis
 - [Fragen und Antworten](docs/FRAGEN.md)
 - [Sicherheit](docs/SECURITY.md) und [Betrieb](docs/BETRIEB.md)

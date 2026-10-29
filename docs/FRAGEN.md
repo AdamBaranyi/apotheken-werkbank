@@ -108,5 +108,5 @@ weiter, aber den Bon nur vorbereiten, weil ein Rezept vor der Abgabe pharmazeuti
 ([Prototyp](../prototypen/rezept-zur-kasse/README.md))
 
 **22. Was würdest du als Nächstes bauen?** Die OCR als dauernden Prozess statt als Neustart je
-Bild (heute etwa 1,5 Sekunden je Bild), einen Flow «Bon vorbereiten» ohne buchenden Schritt und
+Bild (heute etwa 1 bis 1,5 Sekunden je Bild), einen Flow «Bon vorbereiten» ohne buchenden Schritt und
 eine Datenbank für den Grosshandel, damit Bestellstatus sieben Tage abrufbar bleiben.

@@ -44,8 +44,8 @@ dasselbe Rezept hat darum immer dieselbe Kennung und wird kein zweites Mal gebuc
 **5 von 10 automatisch gebucht, 1 Doppel ohne Menschen erkannt, 4 mit klarem Grund für einen
 Menschen.** Drei davon fing die Prüfung vor der Kasse ab, einen die Kasse selbst; gebucht wurde in
 keinem dieser Fälle. Dauer mit dem Test-Treiber 1,0 s je Buchung; mit echter OCR auf Windows dauert
-ein Verkauf dieser Grösse nach den Läufen der Engine etwa 35 bis 45 s, fast ganz für das Lesen des
-Bildschirms (rund 1,5 s je Bild).
+ein Verkauf mit zwei Positionen nach den echten Läufen der Engine 27 bis 39 s, fast ganz für das
+Lesen des Bildschirms (etwa 1 bis 1,5 s je Bild).
 
 ## 6. Entscheid
 
