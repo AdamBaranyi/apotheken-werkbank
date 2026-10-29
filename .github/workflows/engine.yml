@@ -9,7 +9,7 @@ name: Engine
 
 on:
   push:
-    branches: [main, 'abend-3/**']
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
