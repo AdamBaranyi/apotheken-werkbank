@@ -30,6 +30,7 @@ const SEITEN = [
   { pfad: '/kasse/abschluss', angemeldet: true },
   { pfad: '/bestellen', angemeldet: true },
   { pfad: '/bestellungen', angemeldet: true },
+  { pfad: '/monitor', angemeldet: true },
 ];
 const KATEGORIEN = ['accessibility', 'best-practices', 'performance'];
 
@@ -66,7 +67,14 @@ function messen(seite, ordner, versuch, cookie) {
     '--chrome-flags=--headless=new',
   ];
   if (seite.angemeldet) argumente.push(`--extra-headers=${JSON.stringify({ Cookie: cookie })}`);
-  const lauf = spawnSync('npx', argumente, { stdio: ['ignore', 'ignore', 'inherit'] });
+  // Lighthouse bricht gelegentlich ab, ohne dass die Seite schuld ist
+  // («NO_NAVSTART … Please run Lighthouse again»). Dann bis zu zweimal neu;
+  // die Punkte prüft erst der gelungene Lauf.
+  let lauf = spawnSync('npx', argumente, { stdio: ['ignore', 'ignore', 'inherit'] });
+  for (let neu = 1; neu <= 2 && lauf.status !== 0; neu++) {
+    console.error(`neu      ${seite.pfad}: Lighthouse brach ab, Versuch ${neu + 1} von 3`);
+    lauf = spawnSync('npx', argumente, { stdio: ['ignore', 'ignore', 'inherit'] });
+  }
   if (lauf.status !== 0) throw new Error(`Lighthouse scheiterte für ${seite.pfad}`);
   const { categories, environment, finalDisplayedUrl } = JSON.parse(readFileSync(bericht, 'utf8'));
   if (!finalDisplayedUrl.endsWith(seite.pfad)) {

@@ -1,0 +1,9 @@
+{
+  "kennung": "K7-QX4M",
+  "positionen": [
+    { "pzn": "99100008", "menge": 3 },
+    { "pzn": "99104118", "menge": 1, "rezept": true }
+  ],
+  "zahlung": "bar",
+  "gegeben": "50,00"
+}

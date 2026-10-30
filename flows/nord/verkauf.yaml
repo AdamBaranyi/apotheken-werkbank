@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=../../engine/flow.schema.json
+#
+# Verkauf an der Kasse der Apotheke Nord. Der Auftrag bringt eine Kennung,
+# die Positionen, die Zahlart und bei Bargeld den gegebenen Betrag.
+# Nie doppelt buchen: Zuerst sucht der Flow die Kennung im Journal der Kasse,
+# und die Kennung steht als Kundenreferenz auf jedem Beleg.
+flow: verkauf
+apotheke: nord
+beschreibung: Verkauf mit Rezept-Rückfrage, Kundenreferenz und Zahlung buchen
+fenster: Kasse Nord
+eingaben: [kennung, positionen, zahlung, gegeben?]
+
+dialoge:
+  - text: Neue Preisliste verfügbar
+    klicke: Später
+
+fehler:
+  - Gegeben reicht nicht
+  - Betrag ungültig
+  - Bon ist leer
+  - PZN ungültig
+  - Artikel unbekannt
+  - Menge ungültig
+  - Ohne Rezept nicht abgegeben
+
+heilung:
+  klickbar: [OK, Später, Schliessen]
+
+schritte:
+  - klicke: Bon leeren
+    danach: Neuer Bon
+    wiederholbar: true
+
+  - eingeben: { neben: Belegsuche, dx: 150, text: '${kennung}', genau: true }
+  - taste: Enter
+    wiederholbar: true
+    danach:
+      eins-von: ['Referenz ${kennung}: unbekannt', 'Referenz ${kennung}: Beleg']
+      genau: true
+  - beenden-wenn:
+      text: 'Referenz ${kennung}: Beleg'
+      genau: true
+      status: bereits-gebucht
+  # Verkauft wird nur, wenn «unbekannt» sicher dasteht. Fehlt die Zeile
+  # «Beleg» nur in diesem Bild (OCR, halb gezeichnet), bricht der Lauf ab,
+  # statt ein zweites Mal zu buchen (E39).
+  - pruefe:
+      text: 'Referenz ${kennung}: unbekannt'
+      genau: true
+
+  - fuer-jede: positionen
+    als: pos
+    schritte:
+      - eingeben: { neben: PZN, dx: 60, text: '${pos.pzn}' }
+      - eingeben: { neben: Menge, dx: 70, text: '${pos.menge}' }
+      - taste: Enter
+        danach:
+          eins-von: ['Positionen ${pos.nr}', 'Rezept liegt vor?']
+      - wenn: { wert: '${pos.rezept}', ist: 'true' }
+        wenn-sichtbar: Rezept liegt vor?
+        klicke: Ja
+        danach: 'Positionen ${pos.nr}'
+      - wenn: { wert: '${pos.rezept}', ist: 'false' }
+        wenn-sichtbar: Rezept liegt vor?
+        klicke: Nein
+
+  - eingeben: { neben: Kundenreferenz, dx: 130, text: '${kennung}', genau: true }
+  - wenn: { wert: '${zahlung}', ist: bar }
+    eingeben: { neben: Gegeben, dx: 90, text: '${gegeben}' }
+
+  # Ab hier bucht die Kasse: kein zweiter Klick, auch wenn die Antwort fehlt.
+  - wenn: { wert: '${zahlung}', ist: bar }
+    klicke: Bar
+    kritisch: true
+  - wenn: { wert: '${zahlung}', ist: karte }
+    klicke: Karte
+    kritisch: true
+  - lies:
+      muster: 'Beleg (\d+) gebucht'
+      als: beleg
+      zeit: 15

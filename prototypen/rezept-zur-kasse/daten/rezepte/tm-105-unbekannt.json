@@ -1,0 +1,16 @@
+{
+  "rezeptId": "TM-2026-000105",
+  "quelle": "Telemedizin-Attrappe (erfunden)",
+  "ausgestellt": "2026-10-28",
+  "gueltigBis": "2026-11-25",
+  "arzt": "Dr. med. Erfunden, Telemedizin-Attrappe",
+  "patient": "Pseudonym P-1005",
+  "zahlung": "karte",
+  "positionen": [
+    {
+      "pzn": "12345678",
+      "menge": 1,
+      "dosierung": "1-mal täglich"
+    }
+  ]
+}

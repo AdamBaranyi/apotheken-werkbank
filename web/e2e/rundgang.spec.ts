@@ -17,7 +17,8 @@ const WEG: [string, RegExp][] = [
   ['Belege', /\/kasse\/belege$/],
   ['Seit dem letzten Abschluss', /\/kasse\/abschluss$/],
   ['Tag abschliessen', /\/kasse\/abschluss$/],
-  ['Geschafft', /\/kasse\/abschluss$/],
+  ['Flow-Monitor', /\/monitor$/],
+  ['Geschafft', /\/monitor$/],
 ];
 
 test.describe('Rundgang', () => {

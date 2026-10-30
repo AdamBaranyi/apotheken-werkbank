@@ -1,0 +1,127 @@
+/* Flow-Monitor: Läufe der Engine. Status in Worten; Farbe und Rahmen kommen
+   nur dazu (gut: durchgezogen, Abbruch: dick, unklar: doppelt gestrichelt). */
+
+.lauf {
+  overflow-wrap: anywhere;
+}
+
+.kennung {
+  color: var(--tinte-leise);
+}
+
+.abstand {
+  margin-left: 0.5rem;
+}
+
+.status {
+  display: inline-block;
+  margin-right: 0.5rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--linie-feld);
+  border-radius: 4px;
+  font-weight: 650;
+}
+
+.status[data-status='ok'] {
+  border: 2px solid var(--daten-normal);
+  color: var(--daten-normal);
+}
+
+.status[data-status='abgebrochen'] {
+  border: 3px solid var(--daten-defekt);
+  color: var(--daten-defekt);
+}
+
+.status[data-status='unklar'] {
+  border: 3px dashed var(--daten-nachlieferung);
+  color: var(--daten-nachlieferung);
+}
+
+.kasten {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 48rem;
+  margin-bottom: 2rem;
+  padding: 1.25rem 1rem;
+  border: 1px solid var(--linie);
+  background: var(--flaeche);
+  border-radius: var(--radius);
+}
+
+.kasten h2,
+.kasten p {
+  margin: 0;
+}
+
+.meldung {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.angaben {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem 2rem;
+  margin: 0 0 2rem;
+}
+
+.angaben dt {
+  color: var(--tinte-leise);
+}
+
+.angaben dd {
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.abschnitt {
+  margin-bottom: 2rem;
+}
+
+.umbruch {
+  overflow-wrap: anywhere;
+}
+
+.schrittmeldung {
+  display: block;
+  color: var(--daten-defekt);
+  overflow-wrap: anywhere;
+}
+
+.heilungen {
+  display: grid;
+  gap: 1rem;
+  padding-left: 1.25rem;
+}
+
+.heilungen p {
+  margin: 0;
+}
+
+.leise {
+  color: var(--tinte-leise);
+}
+
+.foto {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius);
+}
+
+/* Der Bildschirm des Test-Treibers als Text: eine OCR-Zeile je Zeile. Lange
+   Zeilen brechen um, statt quer zu scrollen (auch bei 320 px lesbar). */
+.textkarte {
+  margin: 0;
+  padding: 1rem;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius);
+  background: var(--flaeche);
+  font-size: 1rem;
+  line-height: 1.5;
+}

@@ -11,6 +11,7 @@ const BEREICHE = [
   { pfad: '/kasse/abschluss', name: 'Tagesabschluss' },
   { pfad: '/bestellen', name: 'Bestellen' },
   { pfad: '/bestellungen', name: 'Bestellungen' },
+  { pfad: '/monitor', name: 'Flow-Monitor' },
 ];
 
 function aktiv(pfad: string, aktuell: string): boolean {

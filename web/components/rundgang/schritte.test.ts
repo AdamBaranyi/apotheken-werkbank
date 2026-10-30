@@ -10,6 +10,7 @@ describe('Rundgang', () => {
       '/kasse',
       '/kasse/belege',
       '/kasse/abschluss',
+      '/monitor',
     ]);
   });
 

@@ -1,0 +1,156 @@
+name: Engine
+
+# Die Engine bedient eine Windows-Kasse über Bildschirmfoto, OCR und Eingabe.
+# Linux prüft schnell, was ohne Bildschirm geht (Pester mit dem Fake-Treiber,
+# Analyse, Flows). Erst wenn das grün ist, laufen zwei Jobs gleichzeitig: die
+# Sabotagen und Windows (E4) mit echten Läufen gegen das WinForms-Fenster der
+# Kassen-Attrappe, Bildfolge als Artefakt. Die Selbstheilung mit dem echten
+# Modell läuft nur von Hand oder auf main (E5), sonst nutzen die Tests eine
+# Attrappe des Modells.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: 'Engine: Pester, Analyse, Flows'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: PowerShell-Module in festen Fassungen
+        shell: pwsh
+        run: ./engine/werkzeuge.ps1
+
+      - name: Statische Prüfung
+        shell: pwsh
+        run: ./engine/analyse.ps1
+
+      - name: Flows prüfen (lint)
+        shell: pwsh
+        run: ./engine/werkbank.ps1 lint
+
+      - name: Pester mit dem Fake-Treiber
+        shell: pwsh
+        run: ./engine/tests/pester.ps1
+
+  sabotagen:
+    name: 'Engine: Sabotagen'
+    needs: linux
+    runs-on: ubuntu-24.04
+    # Jeder Eintrag startet ein frisches pwsh mit Pester, bei Lauf und Heilung
+    # nur mit dem Test, der ihn fangen soll («nur»). Mit allen 29 Lauf-Tests je
+    # Eintrag brauchte einer 125 s, und 33 Einträge rissen am 29.10. 40 Minuten.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: PowerShell-Module in festen Fassungen
+        shell: pwsh
+        run: ./engine/werkzeuge.ps1
+
+      # Jede Schutzfunktion einmal kaputt: Der passende Test muss rot werden.
+      - name: Sabotagen an Engine und Attrappe
+        run: node scripts/sabotage.mjs engine
+
+  windows:
+    name: Engine auf Windows
+    needs: linux
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: PowerShell-Module in festen Fassungen
+        shell: pwsh
+        run: ./engine/werkzeuge.ps1
+
+      # Bildschirm, OCR-Sprache, Trefferquote je Skalierung, Klick und Eingabe.
+      - name: Probe des Läufers
+        shell: pwsh
+        run: ./engine/probe/probe.ps1 -Ausgabe ausgabe/probe
+
+      # Was liest die OCR von einer einzelnen Ziffer neben einer Beschriftung?
+      - name: Probe einer einzelnen Ziffer
+        shell: pwsh
+        run: ./engine/probe/ziffer.ps1 -Ausgabe ausgabe/ziffer
+
+      - name: Pester ohne Bildschirm
+        shell: pwsh
+        run: ./engine/tests/pester.ps1
+
+      - name: Echte Läufe gegen die Kassen-Attrappe
+        shell: pwsh
+        env:
+          WERKBANK_AUSGABE: ${{ github.workspace }}/ausgabe/echt
+        run: ./engine/tests/pester.ps1 -NurWindows
+
+      - name: Laufberichte, Bildfolgen, Journale
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: engine-windows
+          path: ausgabe
+          retention-days: 14
+
+  modell:
+    name: Selbstheilung mit echtem Modell
+    needs: windows
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: PowerShell-Module in festen Fassungen
+        shell: pwsh
+        run: ./engine/werkzeuge.ps1
+
+      # Ohne Secret kein Aufruf: Der Schritt meldet das und endet grün.
+      - name: Unbekannter Dialog, geheilt von Claude Haiku 5.5
+        shell: pwsh
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WERKBANK_AUSGABE: ${{ github.workspace }}/ausgabe/modell
+        run: |
+          if (-not $env:ANTHROPIC_API_KEY) {
+            Write-Output '::notice::Kein Secret ANTHROPIC_API_KEY: Lauf mit echtem Modell übersprungen.'
+            exit 0
+          }
+          ./engine/tests/pester.ps1 -NurModell
+
+      - name: Laufbericht und Bildfolge
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: engine-modell
+          path: ausgabe
+          retention-days: 14
+          if-no-files-found: ignore

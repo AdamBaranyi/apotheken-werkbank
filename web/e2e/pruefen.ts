@@ -37,4 +37,31 @@ export async function bildschirmPruefen(seite: Page): Promise<void> {
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(ueberstand).toBeLessThanOrEqual(0);
+
+  expect(await inDerBeschriftung(seite)).toEqual([]);
+}
+
+/**
+ * Schmal ist jede Tabellenzelle ein Raster: links die Beschriftung, rechts der
+ * Wert. Jedes Kind der Zelle wird ein eigenes Rasterfeld; ein zweites Kind
+ * (Kennung, Marke, Meldung) rutscht sonst in die Spalte der Beschriftung.
+ */
+async function inDerBeschriftung(seite: Page): Promise<string[]> {
+  return seite.evaluate(() =>
+    [...document.querySelectorAll('td[data-titel]')]
+      .filter((td) => getComputedStyle(td).display === 'grid' && td.getClientRects().length > 0)
+      .flatMap((td) => {
+        const spalte = parseFloat(getComputedStyle(td).gridTemplateColumns);
+        const grenze = td.getBoundingClientRect().left + spalte;
+        return [...td.childNodes]
+          .filter((n) => n.nodeType === 1 || n.textContent?.trim())
+          .filter((n) => {
+            const bereich = document.createRange();
+            bereich.selectNodeContents(n);
+            const erstes = bereich.getClientRects()[0];
+            return erstes !== undefined && erstes.left < grenze - 0.5;
+          })
+          .map((n) => `${td.getAttribute('data-titel')}: ${n.textContent?.trim().slice(0, 30)}`);
+      }),
+  );
 }

@@ -49,6 +49,7 @@ const CODE_EXTENSIONS = new Set([
   '.ps1',
   '.psm1',
   '.psd1',
+  '.cs',
   '.wsdl',
   '.xsd',
 ]);

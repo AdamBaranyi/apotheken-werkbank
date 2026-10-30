@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto';
 
 /**
- * Die beiden erfundenen Apotheken mit ihrem Konto und ihrem Zugang zur
- * Grosshandel-Attrappe. Eine Liste für lokal (scripts/lokal-einrichten.ts) und
+ * Die beiden erfundenen Apotheken mit ihrem Konto, ihrem Zugang zur
+ * Grosshandel-Attrappe und dem Layout ihrer Kasse (attrappe/layouts). Eine Liste für lokal (scripts/lokal-einrichten.ts) und
  * Produktion (scripts/produktion-zugaenge.ts), damit beide gleich aussehen.
  */
 export const DEMO_APOTHEKEN = [
@@ -10,6 +10,7 @@ export const DEMO_APOTHEKEN = [
     name: 'Apotheke am Nordtor (erfunden)',
     email: 'inhaber.nord@werkbank.test',
     rolle: 'inhaber',
+    kasse: 'nord',
     kennung: 'nord1001',
     vertrag: 'standard',
     btm: true,
@@ -18,6 +19,7 @@ export const DEMO_APOTHEKEN = [
     name: 'Süd-Apotheke Musterstadt (erfunden)',
     email: 'mitarbeit.sued@werkbank.test',
     rolle: 'mitarbeiter',
+    kasse: 'sued',
     kennung: 'sued2002',
     vertrag: 'spaet',
     btm: false,

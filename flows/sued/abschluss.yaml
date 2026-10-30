@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../engine/flow.schema.json
+#
+# Kassenschnitt an der Kasse Süd: alle offenen Vorgänge in einen Abschluss.
+flow: abschluss
+apotheke: sued
+beschreibung: Kassenschnitt ausführen und Belege und Summe lesen
+fenster: Kassensystem Süd
+eingaben: []
+
+dialoge:
+  - text: Neue Preisliste verfügbar
+    klicke: Später
+
+heilung:
+  klickbar: [OK, Später, Schliessen]
+
+schritte:
+  - klicke: Storno Bon
+    danach: Neuer Bon
+    wiederholbar: true
+  # Der Abschluss lässt sich nicht zurücknehmen: kein zweiter Klick, und fehlt
+  # die Bestätigung, heisst der Lauf «unklar», nicht «abgebrochen».
+  - klicke: Kassenschnitt
+    kritisch: true
+    danach:
+      eins-von: ['Abschluss', 'keine offenen Belege']
+  - beenden-wenn:
+      text: 'Abschluss: keine offenen Belege'
+      status: nichts-offen
+  - lies:
+      muster: 'Abschluss (\d+): (\d+) Belege?, ([\d.,]+)'
+      als: [abschluss, belege, summe]

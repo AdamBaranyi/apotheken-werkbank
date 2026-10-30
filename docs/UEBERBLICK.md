@@ -181,3 +181,45 @@ enable_signup = false` auch die Anmeldung ab, und Node 24 nimmt bei AES-GCM ohne
 - Eine Bremse muss prüfen und zählen in einem Schritt, sonst kommen gleichzeitige Versuche
   gemeinsam durch; und lässt sie bei Störung durch, lässt sie sich abschalten: erst überlasten,
   dann raten. Beides fand die Durchsicht vor dem Merge, nicht die Tests.
+
+### Abend 3, Engine
+
+- Ein Windows-Läufer von GitHub hat eine echte Sitzung mit Bildschirm: Fenster, Bildschirmfoto,
+  Klick und Eingabe funktionieren dort wie an einem Arbeitsplatz. Nur Deutsch fehlt der OCR, und
+  es nachzuinstallieren dauerte länger als zwölf Minuten. Englisch liest Umlaute trotzdem.
+- Kassenschrift ist klein. Dreifach hochskaliert las die OCR alle 20 Prüfwörter, in echter Grösse
+  18; doppelt wurde «15,34» zu «1 5,34».
+- Eine Oberfläche ohne Schnittstelle zu bedienen heisst vor allem wissen, wann man etwas nicht
+  weiss: kein Klick auf ein Ziel, das an zwei Stellen steht, kein zweiter buchender Klick, und
+  «unklar» statt raten. Danach klärt die Kennung auf dem Beleg, ob gebucht wurde.
+- Die heikelsten Fehler steckten im Lesen alter Zustände: ein Suchergebnis von vorhin, eine
+  Meldung, die schon dastand. Die Regel: Nach einer Aktion zählt nur, was vorher nicht da war.
+- Wie eine Kasse gestaltet ist, entscheidet, wie gut sie sich automatisieren lässt. Ein Haken statt
+  eines Textes, dasselbe Wort auf Knopf und Beschriftung, «Karte» im Status neben dem Knopf
+  «Karte»: Die Attrappe vermeidet das. Eine echte Kasse lässt sich nicht ändern; dort muss der
+  Flow mit Bereich und genauem Vergleich arbeiten.
+
+### Abend 4, Selbstheilung und Flow-Monitor
+
+- Der erste echte Lauf auf Windows fand, was keine Simulation zeigte: Die blinkende Schreibmarke
+  klebt am letzten Zeichen eines Feldes, und eine Kennung stimmte erst beim dritten Bild oder gar
+  nicht, je nachdem, ob die Marke beim Bildschirmfoto gerade an war. Danach zeigt die Simulation sie
+  auch.
+- Eine Erklärung aus einem Bildschirmfoto ist noch keine Messung. Dass die OCR eine «1» wegen der
+  Schreibmarke nicht las, stand schon in der Doku; ohne Marke scheiterte sie genauso. Erst die
+  Wörter, die die OCR wirklich las, und eine Probe in drei Grössen zeigten die Ursache: Dreifach
+  vergrössert fehlt die «1», zwei- und vierfach steht sie da.
+- Eine zweite Durchsicht fand, was die Tests nicht fragten: Zahlen, die unscharf verglichen
+  wurden, und Zustände nach einer Unterbrechung (ein geschlucktes Enter, ein Bild von vor einer
+  langen Frage). Jeder der neun Befunde bekam zuerst einen roten Test.
+- Gegen doppeltes Buchen zählt, was sicher dasteht, nicht was fehlt. Ein Flow, der weiterverkaufte,
+  weil er «Beleg» in einem Bild nicht las, hätte zweimal gebucht. Jetzt braucht der Verkauf ein
+  gelesenes «unbekannt».
+- Bei der Selbstheilung liegt die Sicherheit nicht im Modell, sondern in der Liste dessen, was es
+  vorschlagen darf. Ein Text auf dem Bildschirm kann ein Modell beeinflussen; er kann aber keinen
+  Knopf freischalten, den der Flow nicht erlaubt.
+- Ein Konto für eine Maschine sollte weniger dürfen als ein Mensch, nicht gleich viel. Weil die
+  Engine-Konten nicht in `mitglieder` stehen, sehen sie ohne eine einzige geänderte Regel nichts
+  von der Apotheke ausser ihren eigenen Meldungen.
+- Grenzen der Plattform zählen auch in Tests: 30 Anmeldungen in fünf Minuten je IP hätten die CI
+  unberechenbar gemacht, wenn die Engine sich für jeden Lauf neu angemeldet hätte.

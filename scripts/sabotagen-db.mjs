@@ -74,6 +74,7 @@ language sql stable security definer set search_path = '' as $$ select privat.is
     tests: ['supabase/tests/schnittstelle.test.ts'],
   },
   ...kasseUndBestellung(),
+  ...engineMonitor(),
 ];
 
 /** Die Regeln von Abend 2: Kasse, Abschluss, Bestellungen, Bremse, Befunde der Durchsicht. */
@@ -161,6 +162,47 @@ function kasseUndBestellung() {
       suche: '    if v_alt.zugang_id is distinct from p_zugang\n      or exists (',
       ersatz: '    if v_alt.zugang_id is distinct from p_zugang\n      or false and exists (',
       tests: ['supabase/tests/bestellungen.test.ts'],
+    },
+  ].map((s) => ({ ...s, vorbereiten: RESET, konfig: KONFIG }));
+}
+
+/** Die Regeln des Flow-Monitors: Engine-Konten melden, Mitglieder lesen. */
+function engineMonitor() {
+  const ENGINE = 'supabase/migrations/20261029120000_engine_laeufe.sql';
+  const tests = ['supabase/tests/engine.test.ts'];
+  return [
+    {
+      name: 'Engine-Konto liest Läufe',
+      datei: ENGINE,
+      suche: `create policy engine_laeufe_lesen on public.engine_laeufe for select to authenticated
+  using (apotheke_id in (select privat.meine_apotheken()));`,
+      ersatz: `create policy engine_laeufe_lesen on public.engine_laeufe for select to authenticated
+  using (true);`,
+      tests,
+    },
+    {
+      name: 'Meldung ohne Engine-Konto erlaubt',
+      datei: ENGINE,
+      suche: '    apotheke_id = (select privat.meine_engine_apotheke())\n    and gemeldet_von',
+      ersatz: '    gemeldet_von',
+      tests,
+    },
+    {
+      name: 'Foto zu einem Lauf einer anderen Apotheke',
+      datei: ENGINE,
+      suche:
+        'foreign key (lauf_id, apotheke_id) references public.engine_laeufe (id, apotheke_id) on delete cascade',
+      ersatz: 'foreign key (lauf_id) references public.engine_laeufe (id) on delete cascade',
+      tests,
+    },
+    {
+      name: 'Läufe lassen sich ändern und löschen',
+      datei: ENGINE,
+      suche:
+        'grant all on public.engine_konten, public.engine_laeufe, public.engine_fotos to service_role;',
+      ersatz:
+        'grant all on public.engine_konten, public.engine_laeufe, public.engine_fotos to service_role;\ngrant update, delete on public.engine_laeufe to authenticated;\ncreate policy offen on public.engine_laeufe for all to authenticated using (true);',
+      tests,
     },
   ].map((s) => ({ ...s, vorbereiten: RESET, konfig: KONFIG }));
 }

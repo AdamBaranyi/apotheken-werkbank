@@ -1,0 +1,172 @@
+{
+  "lauf": "L-20261029-195039-R8J6",
+  "flow": "verkauf",
+  "apotheke": "nord",
+  "kennung": "M4-TR7C",
+  "treiber": "fake",
+  "status": "ok",
+  "beginn": "2026-10-29T19:50:39.4369350+01:00",
+  "ende": "2026-10-29T19:50:42.6983880+01:00",
+  "dauerMs": 3261,
+  "ocr": null,
+  "schritte": [
+    {
+      "nr": "1",
+      "art": "klicke",
+      "ziel": "Bon leeren",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 205,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "2",
+      "art": "eingeben",
+      "ziel": "Belegsuche",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 146,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "3",
+      "art": "taste",
+      "ziel": "Enter",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 243,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "4",
+      "art": "beenden-wenn",
+      "ziel": "Referenz ${kennung}: Beleg",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 54,
+      "meldung": "",
+      "wert": null
+    },
+    {
+      "nr": "5.1.1",
+      "art": "eingeben",
+      "ziel": "PZN",
+      "ergebnis": "ok",
+      "versuche": 4,
+      "dauerMs": 56,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "5.1.2",
+      "art": "eingeben",
+      "ziel": "Menge",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 61,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "5.1.3",
+      "art": "taste",
+      "ziel": "Enter",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 88,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "5.2.1",
+      "art": "eingeben",
+      "ziel": "PZN",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 92,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "5.2.2",
+      "art": "eingeben",
+      "ziel": "Menge",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 96,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "5.2.3",
+      "art": "taste",
+      "ziel": "Enter",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 114,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "6",
+      "art": "eingeben",
+      "ziel": "Kundenreferenz",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 123,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "9",
+      "art": "klicke",
+      "ziel": "Karte",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 69,
+      "meldung": "",
+      "wert": 1.0
+    },
+    {
+      "nr": "10",
+      "art": "lies",
+      "ziel": "Beleg (\\d+) gebucht",
+      "ergebnis": "ok",
+      "versuche": 1,
+      "dauerMs": 38,
+      "meldung": "",
+      "wert": "Beleg 1001 gebucht, Kartenzahlung"
+    }
+  ],
+  "dialoge": [
+    {
+      "text": "Neue Preisliste verfügbar",
+      "klick": "Später",
+      "zeit": "2026-10-29T19:50:40.0792110+01:00"
+    }
+  ],
+  "heilungen": [
+    {
+      "schritt": "5.1.1",
+      "aktion": "klicke",
+      "ziel": "OK",
+      "taste": "",
+      "begruendung": "Der Dialog meldet nur Papier; OK schliesst ihn.",
+      "erlaubt": true,
+      "ausgefuehrt": true,
+      "grund": "",
+      "ergebnis": "geholfen",
+      "kostenUsd": 0.0,
+      "dauerMs": 0,
+      "heiler": "attrappe"
+    }
+  ],
+  "werte": {
+    "beleg": "1001"
+  },
+  "plan": [],
+  "fehler": null
+}

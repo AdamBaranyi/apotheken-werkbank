@@ -22,6 +22,7 @@ supabase/.temp/
 
 # Engine: Läufe, Bildschirmfotos und Berichte entstehen lokal und in der CI
 engine/laeufe/
+/ausgabe/
 *.local
 # Lokale Mandanten und Schlüssel für die Entwicklung, nie ins Repo
 .lokal/

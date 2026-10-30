@@ -1,6 +1,6 @@
 /**
  * Der Rundgang führt einmal durch die ganze Werkbank: Bestellen,
- * Bestellungen, Kasse, Belege, Tagesabschluss. Ein Schritt mit `pfad` öffnet
+ * Bestellungen, Kasse, Belege, Tagesabschluss, Flow-Monitor. Ein Schritt mit `pfad` öffnet
  * zuerst diese Seite. Ein Ziel zeigt auf das erklärte Element: ein
  * CSS-Selektor oder die Beschriftung eines Knopfs im Inhalt. Fehlt das Ziel
  * gerade (leerer Bon, nichts abzuschliessen), bleibt nur der Text.
@@ -86,6 +86,12 @@ export const SCHRITTE: readonly Schritt[] = [
     titel: 'Tag abschliessen',
     text: 'Schliesst den Zeitraum ab. Jeder Beleg landet in genau einem Abschluss; die früheren stehen darunter.',
     ziel: { knopf: 'Tag abschliessen' },
+  },
+  {
+    pfad: '/monitor',
+    titel: 'Flow-Monitor',
+    text: 'Eine Engine bedient die Windows-Kasse über Bildschirm, OCR und Eingabe. Hier stehen ihre Läufe mit Status und Dauer; ein Klick zeigt jeden Schritt, die Selbstheilung und bei einem Abbruch den Bildschirm.',
+    ziel: TABELLE,
   },
   {
     titel: 'Geschafft',

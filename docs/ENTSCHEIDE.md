@@ -80,6 +80,11 @@ Lieferengpass-Radar fiele im Hobby-Tarif ohnehin auf einen täglichen Cron zurü
 
 _Offen, entschieden an Abend 3._
 
+_Nachtrag 29.10.2026._ Die Engine bekommt keinen eigenen Markennamen: Sie heisst
+«Werkbank-Engine», das Modul `Werkbank.Engine`, der Befehl `engine/werkbank.ps1`. Der Name des
+Repos ist geprüft (E1); jeder neue Name bräuchte eine eigene Prüfung und sagte nicht mehr als
+«die Engine der Werkbank».
+
 ## E12 — Eigener SOAP-Server, node-soap als Prüfer
 
 _26.10.2026._ Die Grosshandel-Attrappe nimmt SOAP selbst entgegen (Node, `fast-xml-parser`,
@@ -256,7 +261,9 @@ zusätzlich dunkel in 390 px, und axe prüft die Kontraste auch dort.
 
 _28.10.2026._ Adams Wunsch: ein Rundgang wie in seinen anderen Apps, der zeigt, wie man die
 Werkbank benutzt und was schon fertig ist. Der Knopf «Rundgang» steht in der Leiste; er öffnet
-einen echten modalen Dialog (Fokusfalle und Escape vom Browser), Schritt für Schritt einmal durch die ganze Werkbank: 13 Schritte über Bestellen, Bestellungen, Kasse, Belege und Tagesabschluss; er wechselt selbst die Seite, die Leiste und mit ihr der Dialog bleiben stehen. Das
+einen echten modalen Dialog (Fokusfalle und Escape vom Browser), Schritt für Schritt einmal durch
+die ganze Werkbank: 14 Schritte über Bestellen, Bestellungen, Kasse, Belege, Tagesabschluss und
+Flow-Monitor; er wechselt selbst die Seite, die Leiste und mit ihr der Dialog bleiben stehen. Das
 erklärte Element wird hervorgehoben; fehlt es gerade (leerer Bon), bleibt nur der Text. Anders als
 in Evidarium öffnet er sich beim ersten Besuch noch nicht von selbst: Dafür müssten alle
 Browser-Tests als Besucher beginnen, die ihn schon kennen. Das folgt mit dem lokalen Speicher.
@@ -268,3 +275,145 @@ Leinwand mit einer hellen Arbeitsfläche, dunkle App-Leiste, feine Linien statt 
 etwas grössere Rundungen. Schrift, Datenfarben mit Wort und Muster und die Regeln zu Grösse und
 Kontrast bleiben. Die Jetzt-Marke im Tourenband steht nur noch im Fortschrittsstreifen; vorher lief
 sie zu manchen Uhrzeiten mitten durch den Text der laufenden Tour.
+
+## E30 — Flows als YAML, geprüft von Schema und eigenem lint
+
+_29.10.2026._ Ein Flow ist eine YAML-Datei je Apotheke, gelesen mit `powershell-yaml` 0.4.12
+(Januar 2025, weit über der Wartezeit). YAML erlaubt Kommentare, und ein Mensch, der eine neue
+Apotheke ausrollt, liest es leichter als JSON. `engine/flow.schema.json` prüft den Aufbau (auch im
+Editor), `Test-Flow` den Sinn: Variablen, Schleifen, Muster, Dateinamen. Gemessen: `Test-Json`
+meldet bei einem Fehler in einem verschachtelten Schritt nur «ungültig», ohne Stelle; darum prüft
+die Engine den Aufbau der Schritte zusätzlich selbst und nennt die Schrittnummer. Preis: ein
+Modul mehr, das mit Pester und PSScriptAnalyzer in festen Fassungen installiert wird
+(`engine/werkzeuge.ps1`).
+
+## E31 — Ein Fake-Treiber aus derselben Attrappe
+
+_29.10.2026._ Der Fake-Treiber zeigt die Kasse als Wörter mit Lage, wie eine OCR sie liefert. Er
+baut auf demselben Layout und derselben Kassenlogik wie das WinForms-Fenster auf und ahmt dessen
+Verhalten nach: Fokus im ersten Feld, Escape leert, Enter löst die Aktion des Feldes aus, Dialoge
+sind modal, eine langsame Buchung sperrt das Fenster. So laufen alle Flows und die ganze
+Lauf-Logik in Pester auf dem Mac und unter Linux, mit Chaos (springendes und wanderndes Fenster,
+langsame Kasse, Nullen als O, Dialoge). Was die Simulation anders macht als Windows, finden die
+echten Läufe in der Windows-CI. Preis: Das Verhalten steht zweimal im Code, als Fenster und als
+Simulation.
+
+## E32 — OCR mit Windows.Media.Ocr, Englisch, dreifach skaliert
+
+_29.10.2026._ Gate von Abend 3, gemessen auf `windows-2025`: echte Sitzung mit Bildschirm
+(1024 × 768, 96 DPI), Fenster, Bildschirmfoto, Klick und Eingabe über `SendInput` funktionieren.
+Die OCR kennt nur Englisch; Deutsch nachzuinstallieren brach nach 12 Minuten ab. Englisch liest
+Umlaute, ß und € trotzdem richtig. Trefferquote auf Segoe UI 9 pt: einfach 18/20, doppelt 19/20,
+dreifach 20/20. Die OCR läuft in Windows PowerShell 5.1 als Unterprozess, weil PowerShell 7 die
+WinRT-Typen nur mit einem Zusatzpaket kennt; Tesseract wäre der dritte Weg gewesen. Da die OCR
+keine Sicherheit je Wort liefert, vergleicht die Engine selbst (Levenshtein, Schwelle 0,85, kurze
+Wörter und Kennungen genau). Preis: jedes Bild etwa 1,5 Sekunden.
+
+## E33 — Kritische Schritte, «unklar» und die Kennung als Referenz
+
+_29.10.2026._ Ein Schritt, der bucht, heisst im Flow `kritisch` und wird nie zweimal gesendet. Fehlt
+danach die Bestätigung, endet der Lauf mit «unklar». Jeder Verkauf trägt die Kennung des Auftrags
+als Referenz auf dem Beleg, und jeder Verkaufs-Flow sucht sie zuerst im Journal der Kasse: Ein
+zweiter Lauf mit derselben Kennung endet mit «bereits gebucht». Das ist dasselbe Muster wie beim
+Bestellen (E25): ID vor dem Senden, nach einem Abbruch nachfragen statt neu senden. Kennungen
+bestehen nur aus Zeichen, die eine OCR nicht verwechselt; die Engine vergleicht sie genau. Gemessen
+im Test: Wiederholte die Engine auch reine Warteschritte, verdreifachte sich die Frist, und ein
+Lauf, der «unklar» melden sollte, meldete «ok». Warten wird darum nicht wiederholt. Preis: Ein
+Lauf, der «unklar» endet, braucht einen zweiten Lauf oder einen Menschen.
+
+## E34 — Fehlermeldungen der Kasse: neu gegen alt
+
+_29.10.2026._ Steht eine Meldung aus der Fehlerliste des Flows auf dem Bildschirm, bricht der Lauf
+ab: Die Kasse hat abgelehnt, also nichts gebucht («abgebrochen», auch nach einem kritischen
+Schritt). Alt ist nur, was beim Start des Laufs schon dastand, und nur, bis es verschwindet. Die
+erste Fassung merkte vor jeder Aktion alle sichtbaren Meldungen als alt. Gemessen im Test: Nach
+«Ohne Rezept nicht abgegeben» lief ein Verkauf weiter und buchte eine von zwei Positionen. Preis:
+Meldet die Kasse einen Fehler, den der Flow nicht kennt, merkt die Engine es erst, wenn der
+erwartete Zustand ausbleibt.
+
+## E35 — Selbstheilung: das Modell schlägt vor, die Liste entscheidet
+
+_29.10.2026._ Scheitert ein Schritt, fragt die Engine einen Heiler nach genau einer Aktion. Das
+Modell (Claude Haiku 5.5, E5) bekommt Bildschirmfoto, erkannten Text, den gescheiterten Schritt und
+die Klickziele aus `heilung.klickbar` des Flows; die Antwort legt ein JSON-Schema über
+`output_config.format` fest, mit `effort: low`. Ausgeführt wird nur ein Ziel aus der Liste, das
+eindeutig sichtbar ist, dazu Escape oder Warten; danach ein neuer Versuch, aber nie für einen
+gesendeten buchenden Schritt. So hängt die Sicherheit nicht am Modell: Ein Bildschirmtext, der dem
+Modell etwas einflüstert, erreicht höchstens einen Knopf, den der Flow ohnehin erlaubt. Deckel: drei
+Fragen je Lauf, eine Zahl je Tag, dazu das Monatslimit im Konto des Anbieters. Gemessen in den
+Tests: Ein Vorschlag «Karte» wird abgelehnt, ein unsichtbares «Schliessen» auch. Preis: Was nicht
+auf der Liste steht, heilt die Engine nicht, selbst wenn das Modell richtig läge.
+
+## E36 — Flow-Monitor über Engine-Konten, die keine Mitglieder sind
+
+_29.10.2026._ Die Engine meldet ihre Läufe mit einem eigenen Supabase-Konto, das in
+`engine_konten` steht und nicht in `mitglieder`. Alle bestehenden Regeln fragen `mitglieder`; ein
+Engine-Konto sieht darum ohne eine geänderte Regel weder Belege noch Bestellungen noch Zugänge. Es
+darf Läufe und Fotos seiner Apotheke schreiben; die Apotheke setzt die Datenbank, ein Foto hängt
+über einen zusammengesetzten Fremdschlüssel an einem Lauf derselben Apotheke, und nichts wird
+geändert. Verworfen: eine Route der Web-App mit eigenem Gerätetoken (bräuchte eine weitere
+Datenbankrolle und ein Geheimnis in Vercel) und eine Rolle «engine» in `mitglieder` (jede Regel und
+`zugang_fuer_bestellung` hätten sie ausschliessen müssen). Fotos liegen als `bytea` in der Datenbank,
+nicht im Speicher von Supabase, der in der CI nicht läuft. Preis: je Apotheke ein Konto mehr, das die
+Einrichtung anlegt; in der Produktion legt Adam es an (E21).
+
+## E37 — Eingaben ohne Schreibmarke prüfen
+
+_29.10.2026._ Befund des ersten Laufs auf Windows: Die blinkende Schreibmarke klebt am letzten
+Zeichen des Feldes mit dem Fokus. Kennungen im Suchfeld stimmten darum erst beim zweiten oder
+dritten Bild, in Süd gar nicht (Abbruch nach drei Versuchen). `eingeben` verlässt das Feld nach dem
+Tippen mit Tab, prüft den Text und kehrt mit Umschalt+Tab zurück, damit ein Enter danach wieder im
+richtigen Feld wirkt. Gemessen im nächsten Lauf: jede Kennung beim ersten Versuch. Die Simulation
+zeigt die Marke als Chaos, ein Test und eine Sabotage halten den Fehler fest. Zuerst stand hier, die
+OCR habe die Menge «1» als «1|» gelesen. Das war aus dem Bildschirmfoto geschlossen, nicht gemessen:
+Ohne Marke scheiterte dieselbe «1» genau gleich (E38). Preis: Eine echte Kasse könnte
+beim Verlassen eines Feldes etwas prüfen oder auslösen; dann braucht ihr Flow einen anderen Weg.
+
+## E38 — Eine einzelne Ziffer neben einer Beschriftung
+
+_29.10.2026._ Befund der echten Läufe: In der Kasse Nord fand die Engine die Menge «1» im Feld
+neben «Menge» in keinem Lauf, die «3» davor in jedem. Süd, wo die Beschriftung über dem Feld steht,
+las dieselbe «1» in jedem Lauf. Die Schreibmarke war es nicht: Der Lauf ohne Marke scheiterte genau
+gleich. Damit sich das klären liess, nennt eine nicht sichtbare Eingabe seither die Wörter, die die
+OCR im Feld las, und ein Abbruch hält den Bildschirm als Text im Bericht fest. Die Probe
+`engine/probe/ziffer.ps1` las dieselbe Zeile zweifach und vierfach mit «1», dreifach ohne. Die
+Skalierung bleibt dreifach (20 von 20 Prüfwörtern, E32); findet die Engine einen Text bis zum Ende
+der Frist nicht, liest sie das letzte Bild noch einmal vierfach, bevor sie scheitert. Offen: immer
+vierfach. Die Probe las vierfach alle 20 Prüfwörter, in 1,1 statt 1,0 Sekunden je Bild; die echten
+Läufe sind aber dreifach mit zweitem Blick geprüft, nicht vierfach. Preis: Ein Fehlschlag dauert ein
+Bild länger.
+
+## E39 — Verkaufen nur, wenn «unbekannt» dasteht
+
+_29.10.2026._ Gefunden bei der Arbeit an E38: Der Verkaufs-Flow wartete nach der Suche auf eine der
+Zeilen «Referenz …: unbekannt» oder «… Beleg» und beendete den Lauf, wenn er im nächsten Bild «Beleg»
+las. Fehlte die Zeile in diesem Bild (die OCR übersieht etwas, das Fenster ist halb gezeichnet),
+verkaufte er ein zweites Mal. Ein Test mit dem Chaos «Flackern» (die Zeile fehlt in jedem zweiten
+Bild) zeigte genau das: zwei Belege für eine Kennung. Jetzt prüft der Flow nach «beenden-wenn», dass
+«unbekannt» sicher dasteht; sonst bricht der Lauf ab und bucht nichts. Eine Sabotage hält fest, dass
+der Test die fehlende Prüfung findet. Preis: Ein Lauf, der die Zeile in keinem Bild liest, endet mit
+«abgebrochen» statt zu verkaufen; ein Mensch oder ein neuer Lauf klärt ihn.
+
+## E40 — Zahlen im Suchtext genau vergleichen
+
+_29.10.2026._ Befund der Durchsicht vor dem Merge: Die Engine verglich ganze Suchtexte unscharf
+(Levenshtein, Schwelle 0,85), Zahlen eingeschlossen. «Positionen 1» galt als «Positionen 2» (0,917),
+und ein Enter, das ein Dialog schluckte, fiel nicht auf: Der Lauf meldete «ok», auf dem Beleg fehlte
+eine Position. Ebenso galt «1234,60» als «1234,50» (0,857). Jetzt muss jede Zahl des Suchtexts genau
+so im gelesenen Text stehen: als eigenes Wort, aus zwei Nachbarwörtern («1 5,34» für «15,34») oder am
+Ende eines Worts («Vorgang1»), nach Ausgleich der OCR-Verwechslungen (O/0, l/1 …) und mit Punkt wie
+Komma. Buchstaben bleiben unscharf. Die erste Fassung verlangte dieselbe Folge aller Ziffern und war
+zu streng: Der echte Lauf in Süd las «Im Vorgang 1» als «1m Vorgang 1», das «1m» zählte als Zahl,
+und kein Verkauf ging mehr durch. Tests spielen das geschluckte Enter und das «1m» nach, eine
+Sabotage hält die Regel fest. Preis: Liest die OCR eine Ziffer falsch, die sie nicht verwechseln
+darf, scheitert die Prüfung, statt durchzugehen; dafür gibt es den zweiten Blick (E38).
+
+## E41 — Kennungen mit acht Zeichen
+
+_29.10.2026._ Befund der Durchsicht: Mit 26 hoch 6 Kennungen ist ab rund 20 000 Belegen eine doppelte
+wahrscheinlicher als nicht. Ein neuer Verkauf mit einer schon vergebenen Kennung endete als «bereits
+gebucht», und der Verkauf fehlte. Neue Kennungen haben jetzt acht Zeichen (26 hoch 8, die Grenze
+liegt bei rund einer halben Million); ältere mit sechs gelten weiter. Verworfen: beim gefundenen
+Beleg
+Summe und Positionen vergleichen; das bräuchte eine Lesestelle, die keine Kasse gleich zeigt. Preis:
+zwei Zeichen mehr, die die OCR genau lesen muss.
