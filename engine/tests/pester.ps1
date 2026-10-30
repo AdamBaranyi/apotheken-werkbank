@@ -4,8 +4,11 @@
   einen echten Bildschirm, echte OCR und echte Eingabe.
 
   Aufruf:  pwsh engine/tests/pester.ps1 [-Pfad <Datei oder Ordner> ...] [-NurWindows] [-NurModell]
+                                        [-Name <Muster> ...]
   Tests mit dem Tag «Modell» rufen das echte Modell auf (kostet, braucht
   ANTHROPIC_API_KEY) und laufen nur mit -NurModell.
+  -Name nimmt nur Tests, deren voller Name zum Muster passt (Platzhalter *);
+  die Sabotage-Runde startet so allein den Test, der eine Sabotage fängt.
   Exit-Code 0 nur, wenn alles grün ist.
 #>
 param(
@@ -16,7 +19,8 @@ param(
   ),
   [switch] $NurWindows,
   [switch] $NurModell,
-  [string] $Bericht
+  [string] $Bericht,
+  [string[]] $Name
 )
 $ErrorActionPreference = 'Stop'
 Import-Module Pester -RequiredVersion 5.9.1
@@ -37,6 +41,9 @@ elseif ($NurWindows) {
 }
 else {
   $konfig.Filter.ExcludeTag = @('Windows', 'Modell')
+}
+if ($Name) {
+  $konfig.Filter.FullName = $Name
 }
 if ($Bericht) {
   $konfig.TestResult.Enabled = $true

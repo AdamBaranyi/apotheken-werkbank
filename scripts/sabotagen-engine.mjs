@@ -2,6 +2,10 @@
  * Sabotagen an Engine und Kassen-Attrappe (PowerShell). Jede macht eine
  * Schutzfunktion kaputt; der genannte Pester-Test muss rot werden.
  * Neue Schutzfunktion, neuer Eintrag – in derselben Änderung.
+ *
+ * «nur» nennt den Test, der die Sabotage fängt: einen Teil seines Namens,
+ * ohne Platzhalterzeichen. Dann läuft allein er statt der ganzen Datei; alle
+ * Lauf-Tests je Eintrag brauchten auf dem Läufer gut zwei Minuten.
  */
 const S = 'engine/src';
 const T = 'engine/tests';
@@ -14,6 +18,7 @@ export const SABOTAGEN_ENGINE = [
     suche: "if ($Schritt['kritisch']) { return $false }",
     ersatz: 'if ($false) { return $false }',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['sendet einen kritischen Schritt nie zweimal'],
   },
   {
     name: 'Bereits gebuchte Kennung beendet den Lauf nicht',
@@ -21,6 +26,7 @@ export const SABOTAGEN_ENGINE = [
     suche: 'return @{ Ok = $true; Ende = $b.status }',
     ersatz: 'return @{ Ok = $true }',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['bucht denselben Auftrag kein zweites Mal'],
   },
   {
     name: 'Genauer Vergleich wird unscharf',
@@ -35,6 +41,7 @@ export const SABOTAGEN_ENGINE = [
     suche: 'if ($gleich.Count -gt 1) {',
     ersatz: 'if ($false) {',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['klickt nicht, wenn das Ziel an zwei Stellen steht'],
   },
   {
     name: 'Neue Fehlermeldung der Kasse wird übersehen',
@@ -42,6 +49,7 @@ export const SABOTAGEN_ENGINE = [
     suche: 'if ($Lauf.FehlerVorher -notcontains $zeile) { return $zeile }',
     ersatz: 'if ($false) { return $zeile }',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['wenn die Kasse einen Rx-Artikel ohne Rezept ablehnt'],
   },
   {
     name: 'Alte Fehlermeldung beim Start bricht den Lauf ab',
@@ -49,6 +57,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '$lauf.FehlerVorher = @(Get-Fehlerzeilen $lauf $start)',
     ersatz: '$lauf.FehlerVorher = @()',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['von einer alten Fehlermeldung beim Start nicht aufhalten'],
   },
   {
     name: 'Verschwundene alte Meldung bleibt für immer alt',
@@ -56,6 +65,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '$Lauf.FehlerVorher = @($Lauf.FehlerVorher | Where-Object { $aktuell -contains $_ })',
     ersatz: '$Lauf.FehlerVorher = @($Lauf.FehlerVorher)',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['erkennt dieselbe Meldung wieder'],
   },
   {
     name: 'Warten wird wiederholt und verlängert die Frist',
@@ -63,6 +73,7 @@ export const SABOTAGEN_ENGINE = [
     suche: "if ($aktion -notin 'klicke', 'taste') { return $false }",
     ersatz: "if ($aktion -notin 'klicke', 'taste') { return $true }",
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['wenn die Buchung nicht bestätigt wird'],
   },
   {
     name: 'Eingabe wird nicht im Feld geprüft',
@@ -71,6 +82,7 @@ export const SABOTAGEN_ENGINE = [
       "$w = Wait-Suche $Lauf @{ text = $text; genau = [bool]$e['genau'] } $script:StandardZeit.eingabe $bereich",
     ersatz: '$w = @{ Ok = $true }',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['bei einer unsichtbaren Eingabe'],
   },
   {
     name: 'Kennung darf verwechselbare Zeichen enthalten',
@@ -120,6 +132,7 @@ export const SABOTAGEN_ENGINE = [
     suche: 'if (-not ($Lauf.Flow.Klickbar | Where-Object { $_ -ieq $ziel })) {',
     ersatz: 'if ($false) {',
     tests: [`${T}/Heilung.Tests.ps1`],
+    nur: ['Vorschlag ausserhalb der erlaubten Liste nie aus'],
   },
   {
     name: 'Heilung fragt ohne Deckel je Lauf',
@@ -127,6 +140,7 @@ export const SABOTAGEN_ENGINE = [
     suche: 'if ($Lauf.Heilungen -ge $o.HeilungenJeLauf) { return $false }',
     ersatz: 'if ($false) { return $false }',
     tests: [`${T}/Heilung.Tests.ps1`],
+    nur: ['fragt höchstens dreimal je Lauf'],
   },
   {
     name: 'Heilung fragt ohne Tagesdeckel',
@@ -134,6 +148,7 @@ export const SABOTAGEN_ENGINE = [
     suche: 'if ($anzahl -ge $Deckel) { return @{ Ok = $false; Anzahl = $anzahl } }',
     ersatz: '',
     tests: [`${T}/Heilung.Tests.ps1`],
+    nur: ['hält den Tagesdeckel ein'],
   },
   {
     name: 'Heilung klickt ein Ziel, das nicht sichtbar ist',
@@ -142,6 +157,7 @@ export const SABOTAGEN_ENGINE = [
       'if ($null -eq $z) { return @{ Ok = $false; Grund = "Ziel nicht sichtbar: \'$ziel\'" } }',
     ersatz: '',
     tests: [`${T}/Heilung.Tests.ps1`],
+    nur: ['das nicht auf dem Bildschirm steht'],
   },
   {
     name: 'Eingabe wird mit der Schreibmarke im Feld geprüft',
@@ -149,6 +165,7 @@ export const SABOTAGEN_ENGINE = [
     suche: "  $null = $Lauf.Treiber.Taste('Tab')\n",
     ersatz: '',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['liest Eingaben trotz Schreibmarke im Feld'],
   },
   {
     name: 'Verkauf läuft weiter, ohne dass «unbekannt» dasteht',
@@ -156,6 +173,7 @@ export const SABOTAGEN_ENGINE = [
     suche: "  - pruefe:\n      text: 'Referenz ${kennung}: unbekannt'\n      genau: true\n",
     ersatz: '',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['nach der Suche flackert'],
   },
   {
     name: 'Kein zweiter Blick vor «nicht erschienen»',
@@ -163,6 +181,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '  $zweit = Get-ZweiterBlick $Lauf $bild\n',
     ersatz: '  $zweit = $null\n',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['beim zweiten Blick vierfach'],
   },
   {
     name: 'Zahlen im Suchtext werden unscharf verglichen',
@@ -177,6 +196,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '  - klicke: Tagesabschluss\n    kritisch: true\n',
     ersatz: '  - klicke: Tagesabschluss\n',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['nach dem Tagesabschluss die Bestätigung fehlt'],
   },
   {
     name: 'Trockenlauf klickt bekannte Dialoge weg',
@@ -184,6 +204,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '    if ($Lauf.Optionen.DryRun) { return $bild }\n',
     ersatz: '',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['klickt im Trockenlauf nichts, auch keinen bekannten Dialog'],
   },
   {
     name: 'Dialog wird ein zweites Mal geklickt, solange er nachleuchtet',
@@ -191,6 +212,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '    Wait-DialogWeg $Lauf $knopf.Dialog\n',
     ersatz: '',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['noch ein Bild lang dasteht'],
   },
   {
     name: 'Knopf eines Dialogs wird im ganzen Fenster gesucht',
@@ -198,6 +220,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '$knopf = Find-Ziel -Bild $Bild -Text $d.klicke -Bereich $bereich',
     ersatz: '$knopf = Find-Ziel -Bild $Bild -Text $d.klicke',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['Knopf eines bekannten Dialogs nur im Dialog'],
   },
   {
     name: 'Eingaben gehen auch an ein anderes Programm',
@@ -205,6 +228,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '  if ($Lauf.Treiber.Vordergrund($Fenster)) { return }\n  $null = Wait-Pause',
     ersatz: '  return\n  $null = Wait-Pause',
     tests: [`${T}/Lauf.Tests.ps1`],
+    nur: ['wenn das Kassenfenster nicht vorne ist'],
   },
   {
     name: 'Heilung klickt auf dem Bild von vor der Frage',
@@ -212,6 +236,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '  $bild = Get-Stand $Lauf\n  $pruefung = Test-Vorschlag',
     ersatz: '  $pruefung = Test-Vorschlag',
     tests: [`${T}/Heilung.Tests.ps1`],
+    nur: ['nach der Antwort des Modells auf einem frischen Bild'],
   },
   {
     name: 'Tageszähler ohne Sperre',
@@ -219,6 +244,7 @@ export const SABOTAGEN_ENGINE = [
     suche: '[IO.FileAccess]::ReadWrite, [IO.FileShare]::None)',
     ersatz: '[IO.FileAccess]::ReadWrite, [IO.FileShare]::ReadWrite)',
     tests: [`${T}/Heilung.Tests.ps1`],
+    nur: ['zählt unter Sperre'],
   },
   {
     name: 'Neue Kennungen nur mit sechs Zeichen',

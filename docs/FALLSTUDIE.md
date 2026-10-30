@@ -101,7 +101,9 @@ rot.
 mit Grund aus, ein Pester-Test prüft die Manifeste. Deutsch für die OCR nachzuinstallieren brach
 nach zwölf Minuten ab; Englisch liest Umlaute, ß und € auch. Die Sabotagen der Engine (damals 22)
 brauchten auf dem Läufer 19 Minuten, und mit Pester und Analyse davor sprengten sie die Zeitgrenze
-des Jobs von 20 Minuten. Sie laufen jetzt neben den Windows-Läufen statt davor.
+des Jobs von 20 Minuten. Sie laufen jetzt neben den Windows-Läufen statt davor. Mit 33 Einträgen
+rissen sie auch 40 Minuten, weil jeder Eintrag alle 29 Lauf-Tests startete. Seither nennt jeder
+Eintrag den Test, der ihn fängt, und nur dieser läuft.
 
 ## Was es zeigt
 

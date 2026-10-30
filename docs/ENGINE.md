@@ -228,4 +228,5 @@ Lauf, der schon gemeldet ist, gilt als erledigt.
   nie doppelt, Abschluss, Chaos im echten Fenster. Was gebucht wurde, prüfen die Tests am Journal,
   das die Attrappe schreibt, nicht an der OCR.
 - **Sabotagen** (`scripts/sabotagen-engine.mjs`): jede Schutzfunktion einmal kaputt; der passende
-  Test muss rot werden.
+  Test muss rot werden. Bei Lauf und Heilung nennt der Eintrag diesen Test (`nur`), und allein er
+  läuft.

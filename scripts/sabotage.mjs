@@ -27,9 +27,10 @@ function ausfuehren(befehl) {
 
 function pruefen(s) {
   if (s.pester) {
-    // Pfade sind feste Werte aus der Liste, ohne Anführungszeichen.
+    // Pfade und Namen sind feste Werte aus der Liste, ohne Anführungszeichen.
     const pfade = s.tests.map((t) => `'${t}'`).join(', ');
-    const befehl = `& ./engine/tests/pester.ps1 -Pfad ${pfade}`;
+    const namen = s.nur ? ` -Name ${s.nur.map((n) => `'*${n}*'`).join(', ')}` : '';
+    const befehl = `& ./engine/tests/pester.ps1 -Pfad ${pfade}${namen}`;
     return spawnSync('pwsh', ['-NoProfile', '-Command', befehl], { encoding: 'utf8' });
   }
   const konfig = s.konfig ? ['-c', s.konfig] : [];
@@ -62,7 +63,9 @@ for (const s of liste) {
     throw new Error(`Rückbau gescheitert: ${s.datei}`);
   }
   const rot = lauf.status !== 0;
-  console.log(`${rot ? 'GEFANGEN ' : 'ÜBERSEHEN'} ${s.name}`);
+  // Ein Name ohne passenden Test lässt Pester grün enden: kein Fang, sondern ein Tippfehler.
+  const leer = !rot && s.nur && /Tests Passed: 0, Failed: 0/.test(lauf.stdout);
+  console.log(`${rot ? 'GEFANGEN ' : leer ? 'KEIN TEST' : 'ÜBERSEHEN'} ${s.name}`);
   if (!rot) fehler++;
 }
 console.log(`\n${liste.length - fehler} von ${liste.length} Sabotagen gefangen.`);
