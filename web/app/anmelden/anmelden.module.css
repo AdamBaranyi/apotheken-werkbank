@@ -43,10 +43,13 @@
     grid-template-columns: minmax(0, 1.15fr) minmax(28rem, 1fr);
   }
 
+  /* Breite abzüglich Rand: Mit 100 % und seitlichem Rand klebte die Karte zwischen
+     64rem und rund 1170 px am Rand der Spalte. */
   .spalte {
     align-self: center;
     justify-self: center;
-    margin: 3rem 2rem;
+    width: calc(100% - 4rem);
+    margin: 3rem auto;
   }
 
   .marke,

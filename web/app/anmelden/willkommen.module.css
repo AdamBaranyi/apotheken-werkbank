@@ -134,11 +134,17 @@
   color: var(--kopf-leise);
 }
 
-/* Niedrige Bildschirme (Laptop mit 720 px): nur die Titel der Arbeitsfelder,
-   damit die Illustration nicht zur Briefmarke wird. */
-@media (max-height: 50rem) {
+/* Niedrige Bildschirme (bis 720 px Höhe): Die Beschreibungen der Arbeitsfelder
+   weichen der Illustration, aber nur fürs Auge; Screenreader lesen sie weiter. */
+@media (max-height: 45rem) {
   .felder span {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
