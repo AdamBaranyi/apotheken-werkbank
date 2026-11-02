@@ -446,3 +446,23 @@ wiederholt. E28 hatte das zurückgestellt, weil sonst jeder Browser-Test im Rund
 bliebe: Die Testkonten aus `scripts/lokal-einrichten.ts` tragen den Merker darum schon, nur
 `rundgang.nord@werkbank.test` nicht; sein Test setzt ihn vorher zurück. Preis: Die Kontodaten
 kann jede Person selbst ändern; für einen Merker der Oberfläche genügt das.
+
+## E44 — Rundgang-Karte rechts, der Arbeitsbereich macht Platz
+
+_02.11.2026._ Beim Live-Test verdeckte die Karte unten Teile der Seite, etwa die Knöpfe unter der
+Tabelle. Ab 64rem sitzt sie jetzt rechts in der Mitte, und solange der Rundgang läuft, rückt der
+Arbeitsbereich nach links (`html[data-rundgang='offen']` in `globals.css`); so liegt keine
+erklärte Stelle unter ihr, auch keine Tabelle über die ganze Breite. Schmal ist rechts kein
+Platz: Die Karte bleibt unten, die Stelle rückt nach oben, und unter dem Arbeitsbereich entsteht
+Platz zum Scrollen, damit auch die letzte Stelle darüber zu stehen kommt. Der Browser-Test prüft
+das bei jedem Schritt: breit rechts und ohne Überlappung, schmal der Anfang der Stelle über der
+Karte. Preis: Beim Öffnen springt der Inhalt einmal nach links.
+
+## E45 — Copyright in der Fusszeile
+
+_02.11.2026._ Wie in den anderen Apps steht auf jeder Seite «© 2026 Adam Baranyi. Übungsprojekt
+mit erfundenen Daten.», dazu das Impressum (adambaranyi.xyz) und der Quelltext auf GitHub, beide
+in neuem Tab. Der Name ohne Akzente wie in der Lizenz. In der Werkbank unter dem Arbeitsbereich,
+auf der Anmeldung unten in der rechten Spalte; dort ist dafür die Karte das `main`, und die
+Willkommensfläche steht als eigene Region daneben. Der Browser-Test prüft Text und Verweise auf
+der Anmeldung und in der Kasse.

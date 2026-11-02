@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { erfassen, FICTOLAT, PROBATIN, verkaufen } from './kasse-hilfen';
 import { SITZUNG } from './konten';
-import { bildschirmPruefen } from './pruefen';
+import { bildschirmPruefen, fusszeilePruefen } from './pruefen';
 
 test.use({ storageState: SITZUNG });
 
@@ -15,6 +15,7 @@ test.describe('Kasse', () => {
       'aria-current',
       'page',
     );
+    await fusszeilePruefen(page);
     await bildschirmPruefen(page);
   });
 

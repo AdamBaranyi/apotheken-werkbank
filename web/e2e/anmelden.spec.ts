@@ -1,12 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { inhaber } from './konten';
-import { bildschirmPruefen } from './pruefen';
+import { bildschirmPruefen, fusszeilePruefen } from './pruefen';
 
 test.describe('Anmeldung', () => {
   test('ohne Sitzung führt jede Seite zur Anmeldung', async ({ page }) => {
     await page.goto('/bestellen');
     await expect(page).toHaveURL(/\/anmelden$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Anmelden' })).toBeVisible();
+    await fusszeilePruefen(page);
     await bildschirmPruefen(page);
   });
 

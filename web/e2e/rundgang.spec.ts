@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { rundgangVergessen } from './datenbank';
 import { rundgangKonto, SITZUNG } from './konten';
 import { bildschirmPruefen } from './pruefen';
@@ -22,6 +22,37 @@ const WEG: [string, RegExp][] = [
   ['Geschafft', /\/monitor$/],
 ];
 
+/**
+ * Die Karte verdeckt die erklärte Stelle nie (E44): Breit sitzt sie rechts, und beide
+ * überlappen sich nicht. Schmal liegt sie unten, und der Anfang der Stelle ist darüber zu sehen.
+ */
+async function lagePruefen(page: Page) {
+  // Ohne Daten fehlt manche Tabelle; dann hebt der Rundgang nichts hervor, und nichts ist verdeckt.
+  const hervorgehoben = await page
+    .waitForFunction(() => document.querySelector('[data-rundgang-ziel]') !== null, null, {
+      timeout: 2000,
+    })
+    .then(
+      () => true,
+      () => false,
+    );
+  if (!hervorgehoben) return;
+  const breit = (page.viewportSize()?.width ?? 0) >= 1024;
+  const messen = () =>
+    page.evaluate(() => {
+      const d = document.querySelector('dialog[open]')?.getBoundingClientRect();
+      const z = document.querySelector('[data-rundgang-ziel]')?.getBoundingClientRect();
+      if (!d || !z) return null;
+      return {
+        rechts: d.left > window.innerWidth / 2,
+        frei: z.right <= d.left || z.left >= d.right || z.bottom <= d.top || z.top >= d.bottom,
+        sichtbar: z.top >= 0 && z.top < d.top,
+      };
+    });
+  if (breit) await expect.poll(messen).toMatchObject({ rechts: true, frei: true });
+  else await expect.poll(messen).toMatchObject({ sichtbar: true });
+}
+
 test.describe('Rundgang', () => {
   test('führt von jeder Seite aus durch alle Bereiche und hebt das Ziel hervor', async ({
     page,
@@ -37,6 +68,7 @@ test.describe('Rundgang', () => {
       await page.getByRole('button', { name: 'Weiter' }).click();
       await expect(page.getByRole('dialog', { name: titel, exact: true })).toBeVisible();
       await expect(page).toHaveURL(seite);
+      await lagePruefen(page);
     }
     await expect(page.locator('[data-rundgang-ziel]')).toHaveCount(1);
     await page.getByRole('button', { name: 'Fertig' }).click();

@@ -14,7 +14,8 @@
   background: rgb(255 255 255 / 0.1);
 }
 
-/* Die Karte sitzt unten, damit das erklärte Element sichtbar bleibt. */
+/* Schmal sitzt die Karte unten, und die erklärte Stelle rückt nach oben. Breit sitzt sie
+   rechts in der Mitte, und der Arbeitsbereich macht ihr Platz (globals.css, E44). */
 .dialog {
   inset-block: auto 1.5rem;
   margin-block: 0;
@@ -25,6 +26,16 @@
   background: var(--papier);
   color: var(--tinte);
   box-shadow: 0 12px 32px rgb(20 33 43 / 0.18);
+}
+
+@media (min-width: 64rem) {
+  .dialog {
+    inset-block: 0;
+    margin: auto 1.5rem auto auto;
+    width: 24rem;
+    max-height: calc(100dvh - 3rem);
+    overflow-y: auto;
+  }
 }
 
 .dialog::backdrop {
