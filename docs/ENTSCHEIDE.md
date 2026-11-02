@@ -435,3 +435,14 @@ entsteht. Das Bild kommt als WebP in zwei Grössen über `<picture>`: Die Bildop
 bleibt aus (next.config.ts), und schmal lädt die Seite gar kein Bild. Verworfen: ein Foto (zeigt
 Ware, nicht die App) und eine eigene Zeichnung der Lieferwannen (dasselbe Problem). Preis: rund
 110 KB Bild im Repo, und die Illustration wächst nicht mit, wenn sich die App ändert.
+
+## E43 — Rundgang beim ersten Anmelden
+
+_02.11.2026._ Der Rundgang startet beim ersten Anmelden eines Kontos einmal von selbst, danach
+nur noch über den Knopf. Gemerkt wird das im Konto (`user_metadata.rundgang_gesehen`, gesetzt
+von einer Server-Aktion), nicht im Browser: Wer sich an einem zweiten Gerät anmeldet, bekommt ihn
+nicht noch einmal. Der Merker steht schon beim Start, damit ein Neuladen den Rundgang nicht
+wiederholt. E28 hatte das zurückgestellt, weil sonst jeder Browser-Test im Rundgang hängen
+bliebe: Die Testkonten aus `scripts/lokal-einrichten.ts` tragen den Merker darum schon, nur
+`rundgang.nord@werkbank.test` nicht; sein Test setzt ihn vorher zurück. Preis: Die Kontodaten
+kann jede Person selbst ändern; für einen Merker der Oberfläche genügt das.

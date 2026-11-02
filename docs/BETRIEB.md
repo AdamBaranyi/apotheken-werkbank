@@ -48,9 +48,14 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
    das Abbild mit frischen Basis-Abbildern und wartet, bis der Dienst gesund ist. Es hat keinen
    veröffentlichten Port; erreichbar ist es nur über das Netz von Caddy.
 7. **Supabase:** Unter Authentication die Registrierung abschalten («Allow new users to sign
-   up» aus) und die beiden Konten anlegen (`inhaber.nord@werkbank.test`,
-   `mitarbeit.sued@werkbank.test`, «Auto Confirm User»). Danach `zugaenge.sql` im SQL-Editor
-   ausführen; ohne die Konten bricht sie mit einer Meldung ab.
+   up» aus) und die Konten anlegen («Add user», «Create new user», «Auto Confirm User»):
+   `inhaber.nord@werkbank.test`, `mitarbeit.sued@werkbank.test` und für den Flow-Monitor
+   `engine.nord@werkbank.test`. Danach `zugaenge.sql` im SQL-Editor ausführen; ohne die Konten
+   bricht sie mit einer Meldung ab. Sie legt beide Apotheken neu an und löscht dabei deren
+   Verkäufe, Bestellungen und Läufe. Das Engine-Konto mit seiner Apotheke verknüpfen (Zeile in
+   `engine_konten`, wie in `scripts/lokal-einrichten.ts`); weitere Konten als Mitglied eintragen
+   (Tabelle `mitglieder`, Rolle `inhaber` oder `mitarbeiter`). Wer sich zum ersten Mal
+   anmeldet, bekommt den Rundgang (E43).
 8. **Bremse (E23):** `node scripts/produktion-bremse.ts` schreibt
    `.lokal/produktion/bremse.sql` (nur der Verifier) und `.lokal/produktion/bremse-url.txt`.
    Die SQL in Supabase ausführen, dann
@@ -67,7 +72,11 @@ Einmalig, in dieser Reihenfolge. Befehle mit `sudo` führt Adam aus.
   Bestellungen zurück (E14).
 - **Neue Passwörter für die Zugänge:** Schritt 4, dann 5, 6 und die SQL aus Schritt 7. Nur
   beides zusammen: Hash und Geheimtext müssen zum selben Passwort gehören
-  (`tests/produktion-zugaenge.test.ts`).
+  (`tests/produktion-zugaenge.test.ts`). Die SQL legt die Apotheken neu an: Verkäufe,
+  Bestellungen und Läufe sind danach weg.
+- **Läufe der Engine nachmelden:** Die Berichte eines Laufs auf Windows (Artefakt
+  `engine-windows` der CI) meldet `Send-Laufbericht` mit dem Engine-Konto nach. Ein zweiter
+  Bericht desselben Laufs gibt «schon gemeldet» (409) und ändert nichts.
 - **Passwort der Bremse wechseln:** Schritt 8 noch einmal; die alte Adresse gilt danach nicht
   mehr.
 - **Anmeldung meldet «gerade gestört»:** Die Bremse erreicht die Datenbank nicht (Protokoll in

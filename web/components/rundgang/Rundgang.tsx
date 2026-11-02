@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { rundgangGesehen } from './aktion';
 import { SCHRITTE, type Ziel } from './schritte';
 import styles from './rundgang.module.css';
 
@@ -16,9 +17,10 @@ function zielFinden(ziel: Ziel | undefined): HTMLElement | null {
  * Rundgang durch die ganze Werkbank: ein echter modaler Dialog (Fokusfalle,
  * Escape vom Browser), der von Seite zu Seite führt und das erklärte Element
  * hervorhebt. Die Leiste bleibt beim Seitenwechsel stehen, darum bleibt auch
- * der Dialog offen. Startet nur auf Knopfdruck.
+ * der Dialog offen. Startet auf Knopfdruck und beim ersten Anmelden eines
+ * Kontos einmal von selbst (E43).
  */
-export function Rundgang() {
+export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
   const pfad = usePathname();
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -52,6 +54,17 @@ export function Rundgang() {
   };
   const beenden = () => dialog.current?.close();
   const letzter = nummer !== null && nummer + 1 >= SCHRITTE.length;
+
+  // Erstes Anmelden: einmal von selbst starten und es am Konto merken. Der
+  // Merker steht schon beim Start, damit ein Neuladen ihn nicht wiederholt.
+  const vonSelbstGestartet = useRef(false);
+  useEffect(() => {
+    if (!vonSelbst || vonSelbstGestartet.current) return;
+    vonSelbstGestartet.current = true;
+    setNummer(0);
+    if (!dialog.current?.open) dialog.current?.showModal();
+    rundgangGesehen().catch(() => undefined);
+  }, [vonSelbst]);
 
   return (
     <>

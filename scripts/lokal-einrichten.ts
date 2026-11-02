@@ -1,6 +1,7 @@
 /**
  * Richtet die lokale Umgebung ein (auch in der CI): Mandanten der
- * Grosshandel-Attrappe, zwei Testkonten, zwei erfundene Apotheken, je einen
+ * Grosshandel-Attrappe, zwei Testkonten (dazu eines, das den Rundgang noch
+ * nicht kennt, E43), zwei erfundene Apotheken, je einen
  * verschlüsselten Grosshändler-Zugang, je ein Engine-Konto für den
  * Flow-Monitor und das Passwort der Rolle für die Bremse. Passwörter entstehen bei jedem Lauf neu
  * und landen nur in .lokal/ (nie im Repo); der Schlüssel für die Zugänge
@@ -45,7 +46,15 @@ function schluessel(): string {
   return neu;
 }
 
-async function kontoAnlegen(s: Status, email: string, passwort: string): Promise<string> {
+// Testkonten kennen den Rundgang schon; sonst startete er in jedem Browser-Test von selbst.
+const KENNT_RUNDGANG = { rundgang_gesehen: 'einrichtung' };
+
+async function kontoAnlegen(
+  s: Status,
+  email: string,
+  passwort: string,
+  metadaten: Record<string, string> = KENNT_RUNDGANG,
+): Promise<string> {
   const antwort = await fetch(`${s.API_URL}/auth/v1/admin/users`, {
     method: 'POST',
     headers: {
@@ -53,7 +62,12 @@ async function kontoAnlegen(s: Status, email: string, passwort: string): Promise
       Authorization: `Bearer ${s.SECRET_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, password: passwort, email_confirm: true }),
+    body: JSON.stringify({
+      email,
+      password: passwort,
+      email_confirm: true,
+      user_metadata: metadaten,
+    }),
   });
   if (!antwort.ok) throw new Error(`Konto ${email}: ${antwort.status} ${await antwort.text()}`);
   return ((await antwort.json()) as { id: string }).id;
@@ -104,6 +118,23 @@ async function main() {
       'insert into public.mitglieder (apotheke_id, user_id, rolle) values ($1, $2, $3)',
       [apothekeId, userId, a.rolle],
     );
+    // Ein Konto ohne Merker, nur für den Test des ersten Anmeldens (E43).
+    if (a.kasse === 'nord') {
+      const rundgangPasswort = passwortErzeugen();
+      const rundgangEmail = 'rundgang.nord@werkbank.test';
+      const rundgangId = await kontoAnlegen(s, rundgangEmail, rundgangPasswort, {});
+      await db.query(
+        'insert into public.mitglieder (apotheke_id, user_id, rolle) values ($1, $2, $3)',
+        [apothekeId, rundgangId, 'mitarbeiter'],
+      );
+      konten.push({
+        email: rundgangEmail,
+        passwort: rundgangPasswort,
+        apotheke: a.name,
+        rolle: 'mitarbeiter',
+        zweck: 'rundgang',
+      });
+    }
     await db.query(
       'insert into public.grosshaendler_zugaenge (apotheke_id, bezeichnung, basis_url, kundenkennung, passwort_verschluesselt) values ($1, $2, $3, $4, $5)',
       [
