@@ -458,6 +458,9 @@ Platz zum Scrollen, damit auch die letzte Stelle darüber zu stehen kommt. Der B
 das bei jedem Schritt: breit rechts und ohne Überlappung, schmal der Anfang der Stelle über der
 Karte. Preis: Beim Öffnen springt der Inhalt einmal nach links.
 
+_Abgelöst durch E46:_ Der Sprung beim Öffnen störte, und auf grossen Bildschirmen stand die Karte
+weit weg vom Inhalt am Rand.
+
 ## E45 — Copyright in der Fusszeile
 
 _02.11.2026._ Wie in den anderen Apps steht auf jeder Seite «© 2026 Adam Baranyi. Übungsprojekt
@@ -466,3 +469,23 @@ in neuem Tab. Der Name ohne Akzente wie in der Lizenz. In der Werkbank unter dem
 auf der Anmeldung unten in der rechten Spalte; dort ist dafür die Karte das `main`, und die
 Willkommensfläche steht als eigene Region daneben. Der Browser-Test prüft Text und Verweise auf
 der Anmeldung und in der Kasse.
+
+## E46 — Rundgang-Karte beim erklärten Element, die Seite bleibt stehen
+
+_02.11.2026._ Beim Live-Test sprang der Arbeitsbereich beim Öffnen nach links (E44), und auf
+grossen Bildschirmen klebte die Karte am rechten Rand, weit weg von dem, was sie erklärt. Jetzt
+verschiebt der Rundgang nichts mehr: Die Karte liegt über der Seite, direkt unter dem erklärten
+Element oder darüber, mittig dazu, mit einem Zeiger darauf. Die Seite rollt so, dass Element und
+Karte zusammen ins Fenster passen. Geht das nicht, weil eine Tabelle höher als das Fenster ist
+oder die Seite nicht weiter rollt, liegt die Karte unten rechtsbündig über dem Element; dessen
+Anfang bleibt frei. Steht ein Element am Ende einer kurzen Seite, entsteht während des Rundgangs
+unter der Seite so viel Platz, wie zum Rollen fehlt; sichtbar bewegt sich dabei nichts (gefunden
+in der CI bei 320 px: «Verfügbarkeit prüfen» lag unter der Karte). Seitenwechsel im Rundgang
+rollen nicht nach oben (`scroll: false`), sonst überschriebe Next das Rollen zum Element. Ohne
+Element steht die Karte in der Mitte. Die Rechnung steht als reine Funktion in
+`components/rundgang/lage.ts` (Unit-Tests), die Lage geht als CSS-Variablen über das CSSOM an
+den Dialog, also ohne `style`-Attribut und CSP-fest. In der dunklen Leiste ist die Hervorhebung
+hell, sonst sähe man sie im letzten Schritt nicht. Die Browser-Tests messen Kopf, Bereiche und
+Arbeitsbereich vor und nach dem Öffnen (gleich auf den Pixel), prüfen bei jedem Schritt die Lage
+der Karte, auch schmal und niedrig (320 × 560), und die Farbe der Hervorhebung in der Leiste. Preis: Bei hohen Tabellen deckt die Karte
+den unteren Teil ab; dort ist die Seite während des Rundgangs ohnehin gesperrt.
