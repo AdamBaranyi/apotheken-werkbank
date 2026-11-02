@@ -1,13 +1,67 @@
 import { expect, test } from '@playwright/test';
 import { inhaber } from './konten';
-import { bildschirmPruefen } from './pruefen';
+import { bildschirmPruefen, fusszeilePruefen } from './pruefen';
 
 test.describe('Anmeldung', () => {
   test('ohne Sitzung führt jede Seite zur Anmeldung', async ({ page }) => {
     await page.goto('/bestellen');
     await expect(page).toHaveURL(/\/anmelden$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Anmelden' })).toBeVisible();
+    await fusszeilePruefen(page);
     await bildschirmPruefen(page);
+  });
+
+  // Breit steht links die Willkommensfläche mit der Illustration. Schmal bleibt die
+  // Anmeldung oben, und die Seite lädt das Bild gar nicht erst.
+  test('Willkommensfläche: breit mit Bild und drei Arbeitsfeldern, schmal ohne Bild', async ({
+    page,
+  }) => {
+    const bilder: string[] = [];
+    page.on('request', (r) => {
+      if (r.url().includes('willkommen-')) bilder.push(r.url());
+    });
+    await page.goto('/anmelden');
+    const flaeche = page.getByRole('region', { name: 'Apotheken-Werkbank' });
+    if ((page.viewportSize()?.width ?? 0) >= 1024) {
+      const bild = flaeche.getByRole('img', { name: /Apotheker arbeitet an der Theke/ });
+      await expect(bild).toBeVisible();
+      // Mehr als 1 Pixel: Die Quelle für breite Bildschirme gilt, nicht der leere Platzhalter.
+      await expect
+        .poll(() => bild.evaluate((b: HTMLImageElement) => b.naturalWidth))
+        .toBeGreaterThan(1);
+      await expect(flaeche.getByRole('listitem')).toHaveCount(3);
+      expect(bilder).toHaveLength(1);
+    } else {
+      await expect(flaeche).toBeHidden();
+      await expect(page.getByRole('heading', { level: 1, name: 'Anmelden' })).toBeInViewport();
+      expect(bilder).toEqual([]);
+    }
+    await bildschirmPruefen(page);
+  });
+
+  // Laptop-Grössen, die die Projekte nicht abdecken: Bei 1024 px hat die Karte Abstand zur
+  // Fläche und zum Rand, der Knopf ist ganz zu sehen. Bis 720 px Höhe weichen die
+  // Beschreibungen nur fürs Auge; im Baum für Screenreader bleiben sie.
+  test('Willkommensfläche auf Laptops: Karte mit Rand, Beschreibungen für Screenreader', async ({
+    page,
+  }, info) => {
+    test.skip(info.project.name !== 'breit-1440', 'Die Grössen setzt der Test selbst');
+    await page.setViewportSize({ width: 1024, height: 600 });
+    await page.goto('/anmelden');
+    const flaeche = page.getByRole('region', { name: 'Apotheken-Werkbank' });
+    const karte = page.getByRole('heading', { level: 1, name: 'Anmelden' }).locator('..');
+    const f = await flaeche.boundingBox();
+    const k = await karte.boundingBox();
+    if (!f || !k) throw new Error('Fläche oder Karte fehlt');
+    expect(k.x - (f.x + f.width)).toBeGreaterThanOrEqual(16);
+    expect(1024 - (k.x + k.width)).toBeGreaterThanOrEqual(16);
+    await expect(page.getByRole('button', { name: 'Anmelden' })).toBeInViewport({ ratio: 1 });
+    await bildschirmPruefen(page);
+
+    await page.setViewportSize({ width: 1280, height: 700 });
+    const liste = await flaeche.getByRole('list').ariaSnapshot();
+    expect(liste).toContain('Verfügbarkeit und Tour prüfen, dann bestellen.');
+    expect(liste).toContain('Bedient die Kasse; der Flow-Monitor zeigt jeden Lauf.');
   });
 
   // Fehlversuche nie mit dem echten Konto: Die Bremse sperrte es sonst für die anderen Tests.

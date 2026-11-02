@@ -122,7 +122,8 @@ _26.10.2026._ Nur E-Mail und Passwort; Konten legt die Einrichtung an, niemand r
 selbst. Gemessen: `[auth.email] enable_signup = false` schaltet bei Supabase den ganzen
 E-Mail-Anbieter ab, auch die Anmeldung. Neue Konten verhindert `[auth] enable_signup = false`.
 Dieselbe Meldung für unbekannte Adresse und falsches Passwort, damit die Anmeldung keine Konten
-verrät.
+verrät. Die Zwei-Faktor-Anmeldung fehlt in der Demo bewusst, und die Anmeldung sagt das; im
+Betrieb käme sie über Supabase dazu (TOTP mit einer Authenticator-App, `[auth.mfa.totp]`).
 
 ## E17 — Der Browser spricht nur mit der App
 
@@ -417,3 +418,74 @@ liegt bei rund einer halben Million); ältere mit sechs gelten weiter. Verworfen
 Beleg
 Summe und Positionen vergleichen; das bräuchte eine Lesestelle, die keine Kasse gleich zeigt. Preis:
 zwei Zeichen mehr, die die OCR genau lesen muss.
+
+## E42 — Anmeldung mit Willkommensfläche
+
+_02.11.2026._ Bisher stand auf der Anmeldung nur die Karte, und nichts sagte, worum es geht. Ab
+64rem teilt sich die Seite: links eine dunkle Fläche mit Zeichen, Name, dem Titel «Bestellen,
+verkaufen, automatisieren.», einer Illustration und den drei Arbeitsfeldern; rechts die Anmeldung
+als Karte. Schmal bleibt die Anmeldung oben, mit Name und Zweck darüber. Der Text steht im Code,
+nicht im Bild: scharf, richtig geschrieben und für Screenreader lesbar. Die Illustration ist mit
+Google Gemini erzeugt, nach einem Prompt mit den Farben der App und ohne Text, Logo, Rx-Zeichen
+und Apotheken-A; sie zeigt den Ablauf von der Lieferwanne über Verfügbarkeit und Tourenband zur
+Kasse mit Beleg und zum Roboterarm der Engine. Ein Hinweis auf der Seite fehlt bewusst: Die
+Zeichnung täuscht nichts Echtes vor, und Gemini kennzeichnet sie maschinenlesbar (SynthID). Die
+Fläche trägt genau die Randfarbe des Bildes (`#192c3e`), hell wie dunkel, damit keine Kante
+entsteht. Das Bild kommt als WebP in zwei Grössen über `<picture>`: Die Bildoptimierung von Next
+bleibt aus (next.config.ts), und schmal lädt die Seite gar kein Bild. Verworfen: ein Foto (zeigt
+Ware, nicht die App) und eine eigene Zeichnung der Lieferwannen (dasselbe Problem). Preis: rund
+110 KB Bild im Repo, und die Illustration wächst nicht mit, wenn sich die App ändert.
+
+## E43 — Rundgang beim ersten Anmelden
+
+_02.11.2026._ Der Rundgang startet beim ersten Anmelden eines Kontos einmal von selbst, danach
+nur noch über den Knopf. Gemerkt wird das im Konto (`user_metadata.rundgang_gesehen`, gesetzt
+von einer Server-Aktion), nicht im Browser: Wer sich an einem zweiten Gerät anmeldet, bekommt ihn
+nicht noch einmal. Der Merker steht schon beim Start, damit ein Neuladen den Rundgang nicht
+wiederholt. E28 hatte das zurückgestellt, weil sonst jeder Browser-Test im Rundgang hängen
+bliebe: Die Testkonten aus `scripts/lokal-einrichten.ts` tragen den Merker darum schon, nur
+`rundgang.nord@werkbank.test` nicht; sein Test setzt ihn vorher zurück. Preis: Die Kontodaten
+kann jede Person selbst ändern; für einen Merker der Oberfläche genügt das.
+
+## E44 — Rundgang-Karte rechts, der Arbeitsbereich macht Platz
+
+_02.11.2026._ Beim Live-Test verdeckte die Karte unten Teile der Seite, etwa die Knöpfe unter der
+Tabelle. Ab 64rem sitzt sie jetzt rechts in der Mitte, und solange der Rundgang läuft, rückt der
+Arbeitsbereich nach links (`html[data-rundgang='offen']` in `globals.css`); so liegt keine
+erklärte Stelle unter ihr, auch keine Tabelle über die ganze Breite. Schmal ist rechts kein
+Platz: Die Karte bleibt unten, die Stelle rückt nach oben, und unter dem Arbeitsbereich entsteht
+Platz zum Scrollen, damit auch die letzte Stelle darüber zu stehen kommt. Der Browser-Test prüft
+das bei jedem Schritt: breit rechts und ohne Überlappung, schmal der Anfang der Stelle über der
+Karte. Preis: Beim Öffnen springt der Inhalt einmal nach links.
+
+_Abgelöst durch E46:_ Der Sprung beim Öffnen störte, und auf grossen Bildschirmen stand die Karte
+weit weg vom Inhalt am Rand.
+
+## E45 — Copyright in der Fusszeile
+
+_02.11.2026._ Wie in den anderen Apps steht auf jeder Seite «© 2026 Adam Baranyi. Übungsprojekt
+mit erfundenen Daten.», dazu das Impressum (adambaranyi.xyz) und der Quelltext auf GitHub, beide
+in neuem Tab. Der Name ohne Akzente wie in der Lizenz. In der Werkbank unter dem Arbeitsbereich,
+auf der Anmeldung unten in der rechten Spalte; dort ist dafür die Karte das `main`, und die
+Willkommensfläche steht als eigene Region daneben. Der Browser-Test prüft Text und Verweise auf
+der Anmeldung und in der Kasse.
+
+## E46 — Rundgang-Karte beim erklärten Element, die Seite bleibt stehen
+
+_02.11.2026._ Beim Live-Test sprang der Arbeitsbereich beim Öffnen nach links (E44), und auf
+grossen Bildschirmen klebte die Karte am rechten Rand, weit weg von dem, was sie erklärt. Jetzt
+verschiebt der Rundgang nichts mehr: Die Karte liegt über der Seite, direkt unter dem erklärten
+Element oder darüber, mittig dazu, mit einem Zeiger darauf. Die Seite rollt so, dass Element und
+Karte zusammen ins Fenster passen. Geht das nicht, weil eine Tabelle höher als das Fenster ist
+oder die Seite nicht weiter rollt, liegt die Karte unten rechtsbündig über dem Element; dessen
+Anfang bleibt frei. Steht ein Element am Ende einer kurzen Seite, entsteht während des Rundgangs
+unter der Seite so viel Platz, wie zum Rollen fehlt; sichtbar bewegt sich dabei nichts (gefunden
+in der CI bei 320 px: «Verfügbarkeit prüfen» lag unter der Karte). Seitenwechsel im Rundgang
+rollen nicht nach oben (`scroll: false`), sonst überschriebe Next das Rollen zum Element. Ohne
+Element steht die Karte in der Mitte. Die Rechnung steht als reine Funktion in
+`components/rundgang/lage.ts` (Unit-Tests), die Lage geht als CSS-Variablen über das CSSOM an
+den Dialog, also ohne `style`-Attribut und CSP-fest. In der dunklen Leiste ist die Hervorhebung
+hell, sonst sähe man sie im letzten Schritt nicht. Die Browser-Tests messen Kopf, Bereiche und
+Arbeitsbereich vor und nach dem Öffnen (gleich auf den Pixel), prüfen bei jedem Schritt die Lage
+der Karte, auch schmal und niedrig (320 × 560), und die Farbe der Hervorhebung in der Leiste. Preis: Bei hohen Tabellen deckt die Karte
+den unteren Teil ab; dort ist die Seite während des Rundgangs ohnehin gesperrt.

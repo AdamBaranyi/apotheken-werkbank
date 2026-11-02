@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { erfassen, FICTOLAT, PROBATIN, verkaufen } from './kasse-hilfen';
 import { SITZUNG } from './konten';
-import { bildschirmPruefen } from './pruefen';
+import { bildschirmPruefen, fusszeilePruefen } from './pruefen';
 
 test.use({ storageState: SITZUNG });
 
@@ -15,6 +15,7 @@ test.describe('Kasse', () => {
       'aria-current',
       'page',
     );
+    await fusszeilePruefen(page);
     await bildschirmPruefen(page);
   });
 
@@ -66,6 +67,17 @@ test.describe('Kasse', () => {
     await expect(beleg.getByRole('definition').filter({ hasText: '16,85 €' })).toBeVisible();
     await expect(beleg.getByRole('definition').filter({ hasText: '3,15 €' })).toBeVisible();
     await bildschirmPruefen(page);
+
+    // Das PDF öffnet sich in einem neuen Tab; die Kasse bleibt offen. Der Test-Chromium
+    // hat keinen PDF-Betrachter und lädt es herunter, darum zählt die Anfrage des Tabs.
+    const [tab, anfrage] = await Promise.all([
+      page.context().waitForEvent('page'),
+      page.context().waitForEvent('request', (r) => r.url().endsWith('/pdf')),
+      page.getByRole('link', { name: 'Beleg als PDF (öffnet in neuem Tab)' }).click(),
+    ]);
+    expect(anfrage.frame().page()).toBe(tab);
+    await expect(page).toHaveURL(/\/kasse\/belege\/[0-9a-f-]{36}$/);
+    await tab.close();
 
     const pdf = await page.request.get(`${page.url()}/pdf`);
     expect(pdf.headers()['content-type']).toBe('application/pdf');

@@ -1,4 +1,17 @@
 .seite {
+  display: grid;
+  min-height: 100dvh;
+}
+
+/* Die Karte und darunter die Fusszeile mit dem Copyright (E45). */
+.rechts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.spalte {
+  width: 100%;
   max-width: 30rem;
   margin: 4rem auto 3rem;
   padding: 2.5rem 2rem 2rem;
@@ -8,7 +21,7 @@
 }
 
 @media (max-width: 34rem) {
-  .seite {
+  .spalte {
     margin: 0;
     padding: 3rem 1rem 2rem;
     border-width: 0 0 1px;
@@ -22,8 +35,33 @@
   margin-bottom: 2.5rem;
 }
 
+.zweck {
+  font-size: 1.125rem;
+}
+
 .hinweis {
   color: var(--tinte-leise);
+}
+
+/* Breit: links die Willkommensfläche, rechts die Anmeldung als Karte. Name und
+   Zweck stehen dann links in gross, darum fallen sie in der Karte weg. */
+@media (min-width: 64rem) {
+  .seite {
+    grid-template-columns: minmax(0, 1.15fr) minmax(28rem, 1fr);
+  }
+
+  /* Breite abzüglich Rand: Mit 100 % und seitlichem Rand klebte die Karte zwischen
+     64rem und rund 1170 px am Rand der Spalte. Rundum «auto»: mittig in der Spalte, die
+     Fusszeile bleibt unten. */
+  .spalte {
+    width: calc(100% - 4rem);
+    margin: auto;
+  }
+
+  .marke,
+  .zweck {
+    display: none;
+  }
 }
 
 .formular {

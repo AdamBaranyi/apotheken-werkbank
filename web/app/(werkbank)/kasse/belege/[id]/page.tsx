@@ -27,8 +27,14 @@ export default async function BelegSeite({ params }: Props) {
       <h1>Beleg {beleg.belegnummer}</h1>
       <BelegAnsicht beleg={beleg} />
       <div className={styles.aktionen}>
-        <a href={`/kasse/belege/${beleg.id}/pdf`} className={styles.zweitknopf}>
-          Beleg als PDF
+        {/* Neuer Tab: Die Kasse bleibt offen, kein Zurück nötig. */}
+        <a
+          href={`/kasse/belege/${beleg.id}/pdf`}
+          target="_blank"
+          rel="noopener"
+          className={styles.zweitknopf}
+        >
+          Beleg als PDF<span className="unsichtbar"> (öffnet in neuem Tab)</span>
         </a>
         <Link href="/kasse" className={styles.knopf}>
           Neuer Verkauf

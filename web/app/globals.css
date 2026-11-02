@@ -128,11 +128,15 @@ select {
   display: none !important;
 }
 
-/* Das Element, das der Rundgang gerade erklärt. */
+/* Das Element, das der Rundgang gerade erklärt; in der dunklen Leiste hell. */
 [data-rundgang-ziel] {
   outline: 3px solid var(--tinte);
   outline-offset: 6px;
   border-radius: var(--radius);
+}
+
+header [data-rundgang-ziel] {
+  outline-color: var(--kopf-tinte);
 }
 
 .unsichtbar {

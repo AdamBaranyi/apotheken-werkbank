@@ -8,6 +8,7 @@ export interface Arbeitsplatz {
   email: string;
   apotheke: { id: string; name: string; land: string };
   rolle: 'inhaber' | 'mitarbeiter';
+  rundgangGesehen: boolean;
 }
 
 /**
@@ -34,5 +35,6 @@ export const arbeitsplatzLaden = cache(async (): Promise<Arbeitsplatz | null> =>
     email: sitzung.email,
     apotheke,
     rolle: data.rolle as Arbeitsplatz['rolle'],
+    rundgangGesehen: sitzung.rundgangGesehen,
   };
 });

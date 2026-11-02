@@ -1,0 +1,33 @@
+/* Leise unter dem Inhalt: Copyright links, die zwei Verweise daneben; schmal untereinander. */
+.fuss {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.5rem;
+  padding: 1.25rem 1rem 1.75rem;
+  color: var(--tinte-leise);
+  text-align: center;
+}
+
+.fuss p {
+  margin: 0;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.links a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+
+.links a:hover {
+  color: var(--tinte);
+}

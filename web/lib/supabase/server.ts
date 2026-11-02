@@ -31,6 +31,8 @@ export async function supabaseServer() {
 export interface Sitzung {
   userId: string;
   email: string;
+  /** Hat das Konto den Rundgang schon einmal von selbst bekommen (E43)? */
+  rundgangGesehen: boolean;
 }
 
 /** Die angemeldete Person, je Anfrage einmal geprüft (Layout und Seite teilen das Ergebnis). */
@@ -38,5 +40,9 @@ export const sitzungLesen = cache(async (): Promise<Sitzung | null> => {
   const supabase = await supabaseServer();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
-  return { userId: data.user.id, email: data.user.email ?? '' };
+  return {
+    userId: data.user.id,
+    email: data.user.email ?? '',
+    rundgangGesehen: Boolean(data.user.user_metadata?.rundgang_gesehen),
+  };
 });
