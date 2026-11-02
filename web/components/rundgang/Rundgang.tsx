@@ -38,8 +38,13 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
     const bild = requestAnimationFrame(() => {
       ziel = zielFinden(schritt.ziel);
       const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // Breit steht die Karte rechts: Stelle in die Mitte. Schmal liegt sie unten: Stelle nach oben.
+      const breit = window.matchMedia('(min-width: 64rem)').matches;
       ziel?.setAttribute('data-rundgang-ziel', '');
-      ziel?.scrollIntoView({ block: 'center', behavior: ruhig ? 'auto' : 'smooth' });
+      ziel?.scrollIntoView({
+        block: breit ? 'center' : 'start',
+        behavior: ruhig ? 'auto' : 'smooth',
+      });
     });
     weiter.current?.focus();
     return () => {
@@ -54,6 +59,16 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
   };
   const beenden = () => dialog.current?.close();
   const letzter = nummer !== null && nummer + 1 >= SCHRITTE.length;
+
+  // Solange der Rundgang läuft, macht der Arbeitsbereich der Karte Platz (globals.css, E44).
+  const offen = nummer !== null;
+  useEffect(() => {
+    if (!offen) return;
+    document.documentElement.dataset.rundgang = 'offen';
+    return () => {
+      delete document.documentElement.dataset.rundgang;
+    };
+  }, [offen]);
 
   // Erstes Anmelden: einmal von selbst starten und es am Konto merken. Der
   // Merker steht schon beim Start, damit ein Neuladen ihn nicht wiederholt.

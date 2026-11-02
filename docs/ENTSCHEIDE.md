@@ -446,3 +446,14 @@ wiederholt. E28 hatte das zurückgestellt, weil sonst jeder Browser-Test im Rund
 bliebe: Die Testkonten aus `scripts/lokal-einrichten.ts` tragen den Merker darum schon, nur
 `rundgang.nord@werkbank.test` nicht; sein Test setzt ihn vorher zurück. Preis: Die Kontodaten
 kann jede Person selbst ändern; für einen Merker der Oberfläche genügt das.
+
+## E44 — Rundgang-Karte rechts, der Arbeitsbereich macht Platz
+
+_02.11.2026._ Beim Live-Test verdeckte die Karte unten Teile der Seite, etwa die Knöpfe unter der
+Tabelle. Ab 64rem sitzt sie jetzt rechts in der Mitte, und solange der Rundgang läuft, rückt der
+Arbeitsbereich nach links (`html[data-rundgang='offen']` in `globals.css`); so liegt keine
+erklärte Stelle unter ihr, auch keine Tabelle über die ganze Breite. Schmal ist rechts kein
+Platz: Die Karte bleibt unten, die Stelle rückt nach oben, und unter dem Arbeitsbereich entsteht
+Platz zum Scrollen, damit auch die letzte Stelle darüber zu stehen kommt. Der Browser-Test prüft
+das bei jedem Schritt: breit rechts und ohne Überlappung, schmal der Anfang der Stelle über der
+Karte. Preis: Beim Öffnen springt der Inhalt einmal nach links.

@@ -133,6 +133,21 @@ select {
   outline: 3px solid var(--tinte);
   outline-offset: 6px;
   border-radius: var(--radius);
+  scroll-margin-top: 1rem;
+}
+
+/* Solange der Rundgang läuft, verdeckt seine Karte nichts (E44). Schmal liegt sie unten:
+   Platz unter dem Arbeitsbereich, damit auch die letzte Stelle darüber zu stehen kommt.
+   Breit sitzt sie rechts: Der Arbeitsbereich rückt nach links. */
+html[data-rundgang='offen'] #inhalt {
+  margin-bottom: 60vh;
+}
+
+@media (min-width: 64rem) {
+  html[data-rundgang='offen'] #inhalt {
+    margin-bottom: 3rem;
+    margin-inline: max(1rem, calc((100% - var(--breite) - 27rem) / 2)) 27rem;
+  }
 }
 
 .unsichtbar {
