@@ -5,7 +5,14 @@ import styles from './kopf.module.css';
 
 /** Kopf der Werkbank: Marke, Bereiche, Apotheke, Abmelden. */
 
-export function Kopf({ apotheke, email }: { apotheke: string; email: string }) {
+interface Props {
+  apotheke: string;
+  email: string;
+  /** Erstes Anmelden: Der Rundgang startet von selbst (E43). */
+  rundgangVonSelbst: boolean;
+}
+
+export function Kopf({ apotheke, email, rundgangVonSelbst }: Props) {
   return (
     <header className={styles.kopf}>
       <a href="#inhalt" className={styles.sprung}>
@@ -19,7 +26,7 @@ export function Kopf({ apotheke, email }: { apotheke: string; email: string }) {
         <div className={styles.konto}>
           <span className={styles.apotheke}>{apotheke}</span>
           <span className={styles.email}>{email}</span>
-          <Rundgang />
+          <Rundgang vonSelbst={rundgangVonSelbst} />
           <form action="/abmelden" method="post">
             <button type="submit" className={styles.abmelden}>
               Abmelden

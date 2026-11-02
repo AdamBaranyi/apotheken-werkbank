@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { SITZUNG } from './konten';
+import { rundgangVergessen } from './datenbank';
+import { rundgangKonto, SITZUNG } from './konten';
 import { bildschirmPruefen } from './pruefen';
 
 test.use({ storageState: SITZUNG });
@@ -52,6 +53,35 @@ test.describe('Rundgang', () => {
     await page.getByRole('button', { name: 'Zurück' }).click();
     await expect(page.getByRole('dialog', { name: 'Willkommen in der Werkbank' })).toBeVisible();
     await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+});
+
+// Ein eigenes Konto, das den Rundgang noch nicht kennt: Alle anderen Testkonten haben ihn
+// schon gesehen, sonst stünde er in jedem Test im Weg (E28, E43).
+test.describe('Rundgang beim ersten Anmelden', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('startet beim ersten Anmelden von selbst, danach nicht mehr', async ({ page }, info) => {
+    test.skip(info.project.name !== 'breit-1440', 'Ein Konto, ein erstes Mal: eine Breite genügt');
+    const konto = rundgangKonto();
+    await rundgangVergessen(konto.email);
+    await page.goto('/anmelden');
+    await page.getByLabel('E-Mail').fill(konto.email);
+    await page.getByLabel('Passwort').fill(konto.passwort);
+    const gemerkt = page.waitForResponse(
+      (r) => r.request().method() === 'POST' && r.url().endsWith('/bestellen'),
+    );
+    await page.getByRole('button', { name: 'Anmelden' }).click();
+    const willkommen = page.getByRole('dialog', { name: 'Willkommen in der Werkbank' });
+    await expect(willkommen).toBeVisible();
+    await expect(willkommen.getByRole('button', { name: 'Weiter' })).toBeFocused();
+    await gemerkt;
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1, name: 'Bestellen' })).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 });

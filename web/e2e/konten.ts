@@ -7,6 +7,8 @@ export interface Konto {
   passwort: string;
   apotheke: string;
   rolle: string;
+  /** Nur das Konto für den ersten Rundgang; alle anderen kennen ihn schon (E43). */
+  zweck?: 'rundgang';
 }
 
 const DATEI = fileURLToPath(new URL('../../.lokal/konten.json', import.meta.url));
@@ -20,6 +22,15 @@ export function inhaber(): Konto {
   if (!konto)
     throw new Error(
       'Kein Inhaber-Konto in .lokal/konten.json – zuerst scripts/lokal-einrichten.ts',
+    );
+  return konto;
+}
+
+export function rundgangKonto(): Konto {
+  const konto = konten().find((k) => k.zweck === 'rundgang');
+  if (!konto)
+    throw new Error(
+      'Kein Konto für den ersten Rundgang in .lokal/konten.json – zuerst scripts/lokal-einrichten.ts',
     );
   return konto;
 }

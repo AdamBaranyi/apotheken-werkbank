@@ -7,7 +7,11 @@ export default async function WerkbankRahmen({ children }: { children: ReactNode
   const platz = await arbeitsplatzLaden();
   return (
     <>
-      <Kopf apotheke={platz?.apotheke.name ?? 'ohne Apotheke'} email={platz?.email ?? ''} />
+      <Kopf
+        apotheke={platz?.apotheke.name ?? 'ohne Apotheke'}
+        email={platz?.email ?? ''}
+        rundgangVonSelbst={platz !== null && !platz.rundgangGesehen}
+      />
       <main id="inhalt" className={styles.inhalt}>
         {platz ? (
           children
