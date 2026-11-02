@@ -21,6 +21,8 @@ Die Kassen-Attrappe (`attrappe/`) hat eine Logik (`Kasse.ps1`), zwei Layouts
 (`Fenster.ps1`) und die Simulation für den Fake-Treiber. Beide bauen auf demselben Layout und
 derselben Logik auf; jeder Text, den die Engine liest, entsteht an einem Ort.
 
+![Die Kassen-Attrappe der Apotheke Nord, wie die Engine sie auf dem Windows-Läufer sieht](bilder/kassen-attrappe-nord.png)
+
 ## Aufrufen
 
 ```bash

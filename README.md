@@ -4,7 +4,10 @@
 Produkt, kein Kunde, keine echten Daten: Kasse und Grosshandel sind Attrappen, alle Artikel,
 Rezepte und Apotheken sind erfunden.
 
-![Die Kassen-Attrappe der Apotheke Nord, wie die Engine sie auf dem Windows-Läufer sieht](docs/bilder/kassen-attrappe-nord.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/bilder/anmelden-dunkel.webp">
+  <img src="docs/bilder/anmelden-hell.webp" alt="Anmeldung der Werkbank: links der Name, eine Illustration des Ablaufs und die drei Arbeitsfelder, rechts die Anmeldung">
+</picture>
 
 ## Was drin ist
 
@@ -19,6 +22,13 @@ Rezepte und Apotheken sind erfunden.
 
 Technik: Next.js 16, React 19, TypeScript, Supabase (Postgres mit RLS), Vercel; PowerShell 7 mit
 Pester, `Windows.Media.Ocr` und `SendInput`; GitHub Actions auf Linux und Windows.
+
+## So sieht es aus
+
+| Bestellen über MSV3                                                                                                                                                                                                                                                 | Kasse                                                                                                                                                                                                                        | Flow-Monitor                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/bestellen-dunkel.webp"><img src="docs/bilder/bestellen-hell.webp" alt="Bestellen: Bestellfenster des Tages und Verfügbarkeit je Artikel mit Tour, Verbund und nicht lieferbar"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/kasse-dunkel.webp"><img src="docs/bilder/kasse-hell.webp" alt="Kasse: Bon mit drei Artikeln, Rezept liegt vor, Barzahlung mit Rückgeld"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/bilder/monitor-dunkel.webp"><img src="docs/bilder/monitor-hell.webp" alt="Flow-Monitor: sechs echte Läufe der Engine mit Erledigt, Schon gebucht und Abgebrochen"></picture> |
+| Verfügbarkeit beim Grosshandel, jede Lieferart mit Tour, Wort und Muster                                                                                                                                                                                            | Bon mit Rezeptpflicht, Rückgeld, danach Beleg als PDF                                                                                                                                                                        | Die echten Läufe vom Windows-Läufer, auch «Schon gebucht» und ein Abbruch                                                                                                                                                                       |
 
 ## Starten
 
