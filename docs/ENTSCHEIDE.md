@@ -122,7 +122,8 @@ _26.10.2026._ Nur E-Mail und Passwort; Konten legt die Einrichtung an, niemand r
 selbst. Gemessen: `[auth.email] enable_signup = false` schaltet bei Supabase den ganzen
 E-Mail-Anbieter ab, auch die Anmeldung. Neue Konten verhindert `[auth] enable_signup = false`.
 Dieselbe Meldung für unbekannte Adresse und falsches Passwort, damit die Anmeldung keine Konten
-verrät.
+verrät. Die Zwei-Faktor-Anmeldung fehlt in der Demo bewusst, und die Anmeldung sagt das; im
+Betrieb käme sie über Supabase dazu (TOTP mit einer Authenticator-App, `[auth.mfa.totp]`).
 
 ## E17 — Der Browser spricht nur mit der App
 

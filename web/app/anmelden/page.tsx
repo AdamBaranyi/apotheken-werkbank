@@ -27,7 +27,8 @@ export default async function Anmelden({ searchParams }: Props) {
         </p>
         <p className={styles.hinweis}>
           Übungsprojekt mit erfundenen Apotheken, Artikeln und Grosshändlern. Konten legt die
-          Apotheke an; eine Registrierung gibt es nicht.
+          Apotheke an; eine Registrierung gibt es nicht. Als Demo ohne Zwei-Faktor-Anmeldung; im
+          echten Betrieb gehört sie dazu.
         </p>
         <Formular />
       </div>
