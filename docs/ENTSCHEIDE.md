@@ -122,7 +122,8 @@ _26.10.2026._ Nur E-Mail und Passwort; Konten legt die Einrichtung an, niemand r
 selbst. Gemessen: `[auth.email] enable_signup = false` schaltet bei Supabase den ganzen
 E-Mail-Anbieter ab, auch die Anmeldung. Neue Konten verhindert `[auth] enable_signup = false`.
 Dieselbe Meldung für unbekannte Adresse und falsches Passwort, damit die Anmeldung keine Konten
-verrät.
+verrät. Die Zwei-Faktor-Anmeldung fehlt in der Demo bewusst, und die Anmeldung sagt das; im
+Betrieb käme sie über Supabase dazu (TOTP mit einer Authenticator-App, `[auth.mfa.totp]`).
 
 ## E17 — Der Browser spricht nur mit der App
 
@@ -417,3 +418,20 @@ liegt bei rund einer halben Million); ältere mit sechs gelten weiter. Verworfen
 Beleg
 Summe und Positionen vergleichen; das bräuchte eine Lesestelle, die keine Kasse gleich zeigt. Preis:
 zwei Zeichen mehr, die die OCR genau lesen muss.
+
+## E42 — Anmeldung mit Willkommensfläche
+
+_02.11.2026._ Bisher stand auf der Anmeldung nur die Karte, und nichts sagte, worum es geht. Ab
+64rem teilt sich die Seite: links eine dunkle Fläche mit Zeichen, Name, dem Titel «Bestellen,
+verkaufen, automatisieren.», einer Illustration und den drei Arbeitsfeldern; rechts die Anmeldung
+als Karte. Schmal bleibt die Anmeldung oben, mit Name und Zweck darüber. Der Text steht im Code,
+nicht im Bild: scharf, richtig geschrieben und für Screenreader lesbar. Die Illustration ist mit
+Google Gemini erzeugt, nach einem Prompt mit den Farben der App und ohne Text, Logo, Rx-Zeichen
+und Apotheken-A; sie zeigt den Ablauf von der Lieferwanne über Verfügbarkeit und Tourenband zur
+Kasse mit Beleg und zum Roboterarm der Engine. Ein Hinweis auf der Seite fehlt bewusst: Die
+Zeichnung täuscht nichts Echtes vor, und Gemini kennzeichnet sie maschinenlesbar (SynthID). Die
+Fläche trägt genau die Randfarbe des Bildes (`#192c3e`), hell wie dunkel, damit keine Kante
+entsteht. Das Bild kommt als WebP in zwei Grössen über `<picture>`: Die Bildoptimierung von Next
+bleibt aus (next.config.ts), und schmal lädt die Seite gar kein Bild. Verworfen: ein Foto (zeigt
+Ware, nicht die App) und eine eigene Zeichnung der Lieferwannen (dasselbe Problem). Preis: rund
+110 KB Bild im Repo, und die Illustration wächst nicht mit, wenn sich die App ändert.

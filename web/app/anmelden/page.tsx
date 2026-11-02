@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Formular } from './Formular';
+import { Willkommen } from './Willkommen';
 import styles from './anmelden.module.css';
 
 export const metadata: Metadata = { title: 'Anmelden' };
@@ -10,19 +11,27 @@ export default async function Anmelden({ searchParams }: Props) {
   const { sitzung } = await searchParams;
   return (
     <main className={styles.seite}>
-      <p className={styles.marke}>Apotheken-Werkbank</p>
-      <h1>Anmelden</h1>
-      {/* Von einer Server-Aktion, deren Sitzung abgelaufen war (#1). */}
-      {sitzung === 'abgelaufen' ? (
-        <p role="status" className={styles.abgelaufen}>
-          Die Sitzung ist abgelaufen. Bitte neu anmelden.
+      <Willkommen />
+      <div className={styles.spalte}>
+        <p className={styles.marke}>Apotheken-Werkbank</p>
+        <h1>Anmelden</h1>
+        {/* Von einer Server-Aktion, deren Sitzung abgelaufen war (#1). */}
+        {sitzung === 'abgelaufen' ? (
+          <p role="status" className={styles.abgelaufen}>
+            Die Sitzung ist abgelaufen. Bitte neu anmelden.
+          </p>
+        ) : null}
+        <p className={styles.zweck}>
+          Die Werkbank für Vor-Ort-Apotheken: beim Grosshandel über MSV3 bestellen, an der Kasse
+          verkaufen und sehen, was die Kassen-Engine tut.
         </p>
-      ) : null}
-      <p className={styles.hinweis}>
-        Übungsprojekt mit erfundenen Apotheken, Artikeln und Grosshändlern. Konten legt die Apotheke
-        an; eine Registrierung gibt es nicht.
-      </p>
-      <Formular />
+        <p className={styles.hinweis}>
+          Übungsprojekt mit erfundenen Apotheken, Artikeln und Grosshändlern. Konten legt die
+          Apotheke an; eine Registrierung gibt es nicht. Als Demo ohne Zwei-Faktor-Anmeldung; im
+          echten Betrieb gehört sie dazu.
+        </p>
+        <Formular />
+      </div>
     </main>
   );
 }
