@@ -65,3 +65,21 @@ async function inDerBeschriftung(seite: Page): Promise<string[]> {
       }),
   );
 }
+
+/**
+ * Copyright wie in den anderen Apps (E45): Jahr, Name und Hinweis auf erfundene Daten,
+ * dazu Impressum und Quelltext, beide in neuem Tab.
+ */
+export async function fusszeilePruefen(seite: Page): Promise<void> {
+  const fuss = seite.getByRole('contentinfo');
+  await expect(fuss).toContainText('© 2026 Adam Baranyi. Übungsprojekt mit erfundenen Daten.');
+  const impressum = fuss.getByRole('link', { name: 'Impressum (öffnet in neuem Tab)' });
+  await expect(impressum).toHaveAttribute('href', 'https://adambaranyi.xyz/de/impressum/');
+  await expect(impressum).toHaveAttribute('target', '_blank');
+  const quelltext = fuss.getByRole('link', { name: 'Quelltext auf GitHub (öffnet in neuem Tab)' });
+  await expect(quelltext).toHaveAttribute(
+    'href',
+    'https://github.com/AdamBaranyi/apotheken-werkbank',
+  );
+  await expect(quelltext).toHaveAttribute('target', '_blank');
+}

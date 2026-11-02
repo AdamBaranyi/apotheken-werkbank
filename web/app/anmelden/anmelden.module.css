@@ -3,6 +3,13 @@
   min-height: 100dvh;
 }
 
+/* Die Karte und darunter die Fusszeile mit dem Copyright (E45). */
+.rechts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .spalte {
   width: 100%;
   max-width: 30rem;
@@ -44,12 +51,11 @@
   }
 
   /* Breite abzüglich Rand: Mit 100 % und seitlichem Rand klebte die Karte zwischen
-     64rem und rund 1170 px am Rand der Spalte. */
+     64rem und rund 1170 px am Rand der Spalte. Rundum «auto»: mittig in der Spalte, die
+     Fusszeile bleibt unten. */
   .spalte {
-    align-self: center;
-    justify-self: center;
     width: calc(100% - 4rem);
-    margin: 3rem auto;
+    margin: auto;
   }
 
   .marke,

@@ -457,3 +457,12 @@ Platz: Die Karte bleibt unten, die Stelle rückt nach oben, und unter dem Arbeit
 Platz zum Scrollen, damit auch die letzte Stelle darüber zu stehen kommt. Der Browser-Test prüft
 das bei jedem Schritt: breit rechts und ohne Überlappung, schmal der Anfang der Stelle über der
 Karte. Preis: Beim Öffnen springt der Inhalt einmal nach links.
+
+## E45 — Copyright in der Fusszeile
+
+_02.11.2026._ Wie in den anderen Apps steht auf jeder Seite «© 2026 Adam Baranyi. Übungsprojekt
+mit erfundenen Daten.», dazu das Impressum (adambaranyi.xyz) und der Quelltext auf GitHub, beide
+in neuem Tab. Der Name ohne Akzente wie in der Lizenz. In der Werkbank unter dem Arbeitsbereich,
+auf der Anmeldung unten in der rechten Spalte; dort ist dafür die Karte das `main`, und die
+Willkommensfläche steht als eigene Region daneben. Der Browser-Test prüft Text und Verweise auf
+der Anmeldung und in der Kasse.
