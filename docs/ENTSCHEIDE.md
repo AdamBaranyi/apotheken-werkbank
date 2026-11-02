@@ -478,10 +478,14 @@ verschiebt der Rundgang nichts mehr: Die Karte liegt über der Seite, direkt unt
 Element oder darüber, mittig dazu, mit einem Zeiger darauf. Die Seite rollt so, dass Element und
 Karte zusammen ins Fenster passen. Geht das nicht, weil eine Tabelle höher als das Fenster ist
 oder die Seite nicht weiter rollt, liegt die Karte unten rechtsbündig über dem Element; dessen
-Anfang bleibt frei. Ohne Element steht sie in der Mitte. Die Rechnung steht als reine Funktion in
+Anfang bleibt frei. Steht ein Element am Ende einer kurzen Seite, entsteht während des Rundgangs
+unter der Seite so viel Platz, wie zum Rollen fehlt; sichtbar bewegt sich dabei nichts (gefunden
+in der CI bei 320 px: «Verfügbarkeit prüfen» lag unter der Karte). Seitenwechsel im Rundgang
+rollen nicht nach oben (`scroll: false`), sonst überschriebe Next das Rollen zum Element. Ohne
+Element steht die Karte in der Mitte. Die Rechnung steht als reine Funktion in
 `components/rundgang/lage.ts` (Unit-Tests), die Lage geht als CSS-Variablen über das CSSOM an
 den Dialog, also ohne `style`-Attribut und CSP-fest. In der dunklen Leiste ist die Hervorhebung
 hell, sonst sähe man sie im letzten Schritt nicht. Die Browser-Tests messen Kopf, Bereiche und
 Arbeitsbereich vor und nach dem Öffnen (gleich auf den Pixel), prüfen bei jedem Schritt die Lage
-der Karte und die Farbe der Hervorhebung in der Leiste. Preis: Bei hohen Tabellen deckt die Karte
+der Karte, auch schmal und niedrig (320 × 560), und die Farbe der Hervorhebung in der Leiste. Preis: Bei hohen Tabellen deckt die Karte
 den unteren Teil ab; dort ist die Seite während des Rundgangs ohnehin gesperrt.

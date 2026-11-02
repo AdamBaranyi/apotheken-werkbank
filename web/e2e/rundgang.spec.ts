@@ -27,7 +27,7 @@ const WEG: [string, RegExp][] = [
  * Ist dafür kein Platz (hohe Tabelle, Seite rollt nicht weiter), liegt sie unten am Fensterrand
  * über dem Element, und dessen Anfang bleibt darüber frei. Nie abseits am Bildschirmrand.
  */
-async function lagePruefen(page: Page, { nurNebenan = false } = {}) {
+async function lagePruefen(page: Page, { nurNebenan = false, titel = '' } = {}) {
   // Ohne Daten fehlt manche Tabelle; dann hebt der Rundgang nichts hervor, und nichts ist verdeckt.
   const hervorgehoben = await page
     .waitForFunction(() => document.querySelector('[data-rundgang-ziel]') !== null, null, {
@@ -51,10 +51,13 @@ async function lagePruefen(page: Page, { nurNebenan = false } = {}) {
         z.bottom <= d.top ? d.top - z.bottom : z.top >= d.bottom ? z.top - d.bottom : -1;
       const nebenan = luecke >= 0 && luecke <= 48 && ueberDemElement;
       const angedockt = d.bottom >= hoehe - 17 && ueberDemElement && z.top >= 0 && z.top < d.top;
-      return { imFenster, nebenan, beimElement: nebenan || angedockt };
+      const masse = [z.top, z.height, d.top, d.height, hoehe].map(Math.round).join(' ');
+      return { imFenster, nebenan, beimElement: nebenan || angedockt, masse };
     });
   await expect
-    .poll(messen)
+    .poll(messen, {
+      message: `Lage der Karte bei «${titel}» (Ziel oben, Höhe; Karte oben, Höhe; Fenster)`,
+    })
     .toMatchObject(
       nurNebenan ? { imFenster: true, nebenan: true } : { imFenster: true, beimElement: true },
     );
@@ -77,6 +80,16 @@ function seiteVermessen(page: Page) {
   });
 }
 
+/** Alle Schritte nach «Willkommen»: richtige Seite, und die Karte steht beim Element. */
+async function durchlaufen(page: Page) {
+  for (const [titel, seite] of WEG) {
+    await page.getByRole('button', { name: 'Weiter' }).click();
+    await expect(page.getByRole('dialog', { name: titel, exact: true })).toBeVisible();
+    await expect(page).toHaveURL(seite);
+    await lagePruefen(page, { titel });
+  }
+}
+
 test.describe('Rundgang', () => {
   test('führt von jeder Seite aus durch alle Bereiche und hebt das Ziel hervor', async ({
     page,
@@ -88,12 +101,7 @@ test.describe('Rundgang', () => {
     await expect(willkommen.getByRole('button', { name: 'Weiter' })).toBeFocused();
     await bildschirmPruefen(page);
 
-    for (const [titel, seite] of WEG) {
-      await page.getByRole('button', { name: 'Weiter' }).click();
-      await expect(page.getByRole('dialog', { name: titel, exact: true })).toBeVisible();
-      await expect(page).toHaveURL(seite);
-      await lagePruefen(page);
-    }
+    await durchlaufen(page);
     await expect(page.locator('[data-rundgang-ziel]')).toHaveCount(1);
     // Letzter Schritt: die Bereiche in der dunklen Leiste. Die Hervorhebung muss sich abheben.
     const farben = await page.locator('[data-rundgang-ziel]').evaluate((el) => ({
@@ -104,6 +112,17 @@ test.describe('Rundgang', () => {
     await page.getByRole('button', { name: 'Fertig' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-rundgang-ziel]')).toHaveCount(0);
+  });
+
+  test('auch schmal und niedrig (320 × 560) steht die Karte beim Element', async ({
+    page,
+  }, info) => {
+    test.skip(info.project.name !== 'schmal-320', 'Eine Grösse genügt');
+    await page.setViewportSize({ width: 320, height: 560 });
+    await page.goto('/kasse/belege');
+    await page.getByRole('button', { name: 'Rundgang' }).click();
+    await expect(page.getByRole('dialog', { name: 'Willkommen in der Werkbank' })).toBeVisible();
+    await durchlaufen(page);
   });
 
   test('Öffnen und Weiterblättern verschiebt auf der Seite nichts', async ({ page }) => {

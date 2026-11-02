@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { rundgangGesehen } from './aktion';
-import { kartePlatzieren, zielZeigen } from './platzieren';
+import { kartePlatzieren, platzFreigeben, zielZeigen } from './platzieren';
 import { SCHRITTE, type Ziel } from './schritte';
 import styles from './rundgang.module.css';
 
@@ -32,7 +32,9 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
   useEffect(() => {
     if (!schritt) return;
     if (schritt.pfad && schritt.pfad !== pfad) {
-      router.push(schritt.pfad);
+      // Ohne scroll: false rollt Next nach dem Wechsel nach oben, manchmal erst nach dem
+      // Rundgang, und das Element stünde nicht mehr dort, wo die Karte es erwartet.
+      router.push(schritt.pfad, { scroll: false });
       return;
     }
     const karte = dialog.current;
@@ -69,6 +71,7 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
   const beenden = () => dialog.current?.close();
   const geschlossen = () => {
     setNummer(null);
+    platzFreigeben();
     // Beim nächsten Öffnen steht die Karte zuerst in der Mitte, nicht am alten Ort.
     if (dialog.current) delete dialog.current.dataset.lage;
   };

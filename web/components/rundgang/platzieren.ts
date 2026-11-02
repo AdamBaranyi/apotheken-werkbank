@@ -12,13 +12,30 @@ function fenster(): Masse {
   return { breite: wurzel.clientWidth, hoehe: wurzel.clientHeight };
 }
 
+/**
+ * Steht das Element am Ende einer kurzen Seite, rollt sie nicht weit genug, und die Karte
+ * deckte es zu. Dann entsteht unter der Seite so viel Platz, wie fehlt: nach dem letzten
+ * Element, darum bewegt sich nichts Sichtbares. Er wächst nur und verschwindet mit dem Rundgang.
+ */
+function platzSchaffen(weg: number): void {
+  const wurzel = document.documentElement;
+  const fehlt = window.scrollY + weg - (wurzel.scrollHeight - wurzel.clientHeight);
+  if (fehlt <= 0) return;
+  const bisher = parseFloat(document.body.style.paddingBottom) || 0;
+  document.body.style.paddingBottom = `${Math.ceil(bisher + fehlt)}px`;
+}
+
+/** Nach dem Rundgang: den Platz unter der Seite wieder entfernen. */
+export function platzFreigeben(): void {
+  document.body.style.removeProperty('padding-bottom');
+}
+
 /** Rollt das erklärte Element so ins Fenster, dass die Karte daneben Platz hat. */
 export function zielZeigen(karte: HTMLDialogElement, ziel: HTMLElement): void {
   const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  window.scrollBy({
-    top: rollweg(kasten(ziel), kasten(karte), fenster()),
-    behavior: ruhig ? 'auto' : 'smooth',
-  });
+  const weg = rollweg(kasten(ziel), kasten(karte), fenster());
+  if (weg > 0) platzSchaffen(weg);
+  window.scrollBy({ top: weg, behavior: ruhig ? 'auto' : 'smooth' });
 }
 
 /**
