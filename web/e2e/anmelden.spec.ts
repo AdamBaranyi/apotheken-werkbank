@@ -10,6 +10,34 @@ test.describe('Anmeldung', () => {
     await bildschirmPruefen(page);
   });
 
+  // Breit steht links die Willkommensfläche mit der Illustration. Schmal bleibt die
+  // Anmeldung oben, und die Seite lädt das Bild gar nicht erst.
+  test('Willkommensfläche: breit mit Bild und drei Arbeitsfeldern, schmal ohne Bild', async ({
+    page,
+  }) => {
+    const bilder: string[] = [];
+    page.on('request', (r) => {
+      if (r.url().includes('willkommen-')) bilder.push(r.url());
+    });
+    await page.goto('/anmelden');
+    const flaeche = page.getByRole('region', { name: 'Apotheken-Werkbank' });
+    if ((page.viewportSize()?.width ?? 0) >= 1024) {
+      const bild = flaeche.getByRole('img', { name: /Apotheker arbeitet an der Theke/ });
+      await expect(bild).toBeVisible();
+      // Mehr als 1 Pixel: Die Quelle für breite Bildschirme gilt, nicht der leere Platzhalter.
+      await expect
+        .poll(() => bild.evaluate((b: HTMLImageElement) => b.naturalWidth))
+        .toBeGreaterThan(1);
+      await expect(flaeche.getByRole('listitem')).toHaveCount(3);
+      expect(bilder).toHaveLength(1);
+    } else {
+      await expect(flaeche).toBeHidden();
+      await expect(page.getByRole('heading', { level: 1, name: 'Anmelden' })).toBeInViewport();
+      expect(bilder).toEqual([]);
+    }
+    await bildschirmPruefen(page);
+  });
+
   // Fehlversuche nie mit dem echten Konto: Die Bremse sperrte es sonst für die anderen Tests.
   test('falsche Anmeldedaten: Meldung, Fokus bleibt auf dem Knopf', async ({ page }, info) => {
     const email = `niemand.${info.project.name}.${Date.now()}@werkbank.test`;

@@ -1,4 +1,10 @@
 .seite {
+  display: grid;
+  min-height: 100dvh;
+}
+
+.spalte {
+  width: 100%;
   max-width: 30rem;
   margin: 4rem auto 3rem;
   padding: 2.5rem 2rem 2rem;
@@ -8,7 +14,7 @@
 }
 
 @media (max-width: 34rem) {
-  .seite {
+  .spalte {
     margin: 0;
     padding: 3rem 1rem 2rem;
     border-width: 0 0 1px;
@@ -22,8 +28,31 @@
   margin-bottom: 2.5rem;
 }
 
+.zweck {
+  font-size: 1.125rem;
+}
+
 .hinweis {
   color: var(--tinte-leise);
+}
+
+/* Breit: links die Willkommensfläche, rechts die Anmeldung als Karte. Name und
+   Zweck stehen dann links in gross, darum fallen sie in der Karte weg. */
+@media (min-width: 64rem) {
+  .seite {
+    grid-template-columns: minmax(0, 1.15fr) minmax(28rem, 1fr);
+  }
+
+  .spalte {
+    align-self: center;
+    justify-self: center;
+    margin: 3rem 2rem;
+  }
+
+  .marke,
+  .zweck {
+    display: none;
+  }
 }
 
 .formular {
