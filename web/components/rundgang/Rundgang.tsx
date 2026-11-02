@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { rundgangGesehen } from './aktion';
+import { kartePlatzieren, zielZeigen } from './platzieren';
 import { SCHRITTE, type Ziel } from './schritte';
 import styles from './rundgang.module.css';
 
@@ -15,10 +16,10 @@ function zielFinden(ziel: Ziel | undefined): HTMLElement | null {
 
 /**
  * Rundgang durch die ganze Werkbank: ein echter modaler Dialog (Fokusfalle,
- * Escape vom Browser), der von Seite zu Seite führt und das erklärte Element
- * hervorhebt. Die Leiste bleibt beim Seitenwechsel stehen, darum bleibt auch
- * der Dialog offen. Startet auf Knopfdruck und beim ersten Anmelden eines
- * Kontos einmal von selbst (E43).
+ * Escape vom Browser), der von Seite zu Seite führt, das erklärte Element
+ * hervorhebt und als Karte gleich daneben steht (E46). Die Leiste bleibt beim
+ * Seitenwechsel stehen, darum bleibt auch der Dialog offen. Startet auf
+ * Knopfdruck und beim ersten Anmelden eines Kontos einmal von selbst (E43).
  */
 export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
   const pfad = usePathname();
@@ -34,21 +35,29 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
       router.push(schritt.pfad);
       return;
     }
+    const karte = dialog.current;
+    if (!karte) return;
     let ziel: HTMLElement | null = null;
+    // Rollt die Seite oder ändert sich das Fenster, wandert die Karte mit dem Element mit.
+    let nachfuehren = 0;
+    const folgen = () => {
+      cancelAnimationFrame(nachfuehren);
+      nachfuehren = requestAnimationFrame(() => kartePlatzieren(karte, ziel));
+    };
     const bild = requestAnimationFrame(() => {
       ziel = zielFinden(schritt.ziel);
-      const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      // Breit steht die Karte rechts: Stelle in die Mitte. Schmal liegt sie unten: Stelle nach oben.
-      const breit = window.matchMedia('(min-width: 64rem)').matches;
       ziel?.setAttribute('data-rundgang-ziel', '');
-      ziel?.scrollIntoView({
-        block: breit ? 'center' : 'start',
-        behavior: ruhig ? 'auto' : 'smooth',
-      });
+      if (ziel) zielZeigen(karte, ziel);
+      kartePlatzieren(karte, ziel);
     });
+    window.addEventListener('scroll', folgen, { passive: true });
+    window.addEventListener('resize', folgen);
     weiter.current?.focus();
     return () => {
       cancelAnimationFrame(bild);
+      cancelAnimationFrame(nachfuehren);
+      window.removeEventListener('scroll', folgen);
+      window.removeEventListener('resize', folgen);
       ziel?.removeAttribute('data-rundgang-ziel');
     };
   }, [schritt, pfad, router]);
@@ -58,17 +67,12 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
     dialog.current?.showModal();
   };
   const beenden = () => dialog.current?.close();
+  const geschlossen = () => {
+    setNummer(null);
+    // Beim nächsten Öffnen steht die Karte zuerst in der Mitte, nicht am alten Ort.
+    if (dialog.current) delete dialog.current.dataset.lage;
+  };
   const letzter = nummer !== null && nummer + 1 >= SCHRITTE.length;
-
-  // Solange der Rundgang läuft, macht der Arbeitsbereich der Karte Platz (globals.css, E44).
-  const offen = nummer !== null;
-  useEffect(() => {
-    if (!offen) return;
-    document.documentElement.dataset.rundgang = 'offen';
-    return () => {
-      delete document.documentElement.dataset.rundgang;
-    };
-  }, [offen]);
 
   // Erstes Anmelden: einmal von selbst starten und es am Konto merken. Der
   // Merker steht schon beim Start, damit ein Neuladen ihn nicht wiederholt.
@@ -90,10 +94,10 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
         ref={dialog}
         className={styles.dialog}
         aria-labelledby="rundgang-titel"
-        onClose={() => setNummer(null)}
+        onClose={geschlossen}
       >
         {schritt && nummer !== null ? (
-          <>
+          <div className={styles.karte}>
             <p className={styles.zaehler}>
               Schritt {nummer + 1} von {SCHRITTE.length}
             </p>
@@ -123,7 +127,7 @@ export function Rundgang({ vonSelbst = false }: { vonSelbst?: boolean }) {
                 {letzter ? 'Fertig' : 'Weiter'}
               </button>
             </div>
-          </>
+          </div>
         ) : null}
       </dialog>
     </>

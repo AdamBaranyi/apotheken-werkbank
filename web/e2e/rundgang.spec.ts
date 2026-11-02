@@ -23,10 +23,11 @@ const WEG: [string, RegExp][] = [
 ];
 
 /**
- * Die Karte verdeckt die erklärte Stelle nie (E44): Breit sitzt sie rechts, und beide
- * überlappen sich nicht. Schmal liegt sie unten, und der Anfang der Stelle ist darüber zu sehen.
+ * Die Karte steht beim erklärten Element (E46): ganz im Fenster, direkt darunter oder darüber.
+ * Ist dafür kein Platz (hohe Tabelle, Seite rollt nicht weiter), liegt sie unten am Fensterrand
+ * über dem Element, und dessen Anfang bleibt darüber frei. Nie abseits am Bildschirmrand.
  */
-async function lagePruefen(page: Page) {
+async function lagePruefen(page: Page, { nurNebenan = false } = {}) {
   // Ohne Daten fehlt manche Tabelle; dann hebt der Rundgang nichts hervor, und nichts ist verdeckt.
   const hervorgehoben = await page
     .waitForFunction(() => document.querySelector('[data-rundgang-ziel]') !== null, null, {
@@ -37,20 +38,43 @@ async function lagePruefen(page: Page) {
       () => false,
     );
   if (!hervorgehoben) return;
-  const breit = (page.viewportSize()?.width ?? 0) >= 1024;
   const messen = () =>
     page.evaluate(() => {
       const d = document.querySelector('dialog[open]')?.getBoundingClientRect();
       const z = document.querySelector('[data-rundgang-ziel]')?.getBoundingClientRect();
       if (!d || !z) return null;
-      return {
-        rechts: d.left > window.innerWidth / 2,
-        frei: z.right <= d.left || z.left >= d.right || z.bottom <= d.top || z.top >= d.bottom,
-        sichtbar: z.top >= 0 && z.top < d.top,
-      };
+      const breite = document.documentElement.clientWidth;
+      const hoehe = document.documentElement.clientHeight;
+      const imFenster = d.top >= 0 && d.left >= 0 && d.bottom <= hoehe && d.right <= breite;
+      const ueberDemElement = d.left < z.right && d.right > z.left;
+      const luecke =
+        z.bottom <= d.top ? d.top - z.bottom : z.top >= d.bottom ? z.top - d.bottom : -1;
+      const nebenan = luecke >= 0 && luecke <= 48 && ueberDemElement;
+      const angedockt = d.bottom >= hoehe - 17 && ueberDemElement && z.top >= 0 && z.top < d.top;
+      return { imFenster, nebenan, beimElement: nebenan || angedockt };
     });
-  if (breit) await expect.poll(messen).toMatchObject({ rechts: true, frei: true });
-  else await expect.poll(messen).toMatchObject({ sichtbar: true });
+  await expect
+    .poll(messen)
+    .toMatchObject(
+      nurNebenan ? { imFenster: true, nebenan: true } : { imFenster: true, beimElement: true },
+    );
+}
+
+/** Lage von Kopf, Bereichen und Arbeitsbereich auf der Seite, dazu ihre Grösse. */
+function seiteVermessen(page: Page) {
+  return page.evaluate(() => {
+    const lage = (selektor: string) => {
+      const r = document.querySelector(selektor)?.getBoundingClientRect();
+      return r ? [r.left + scrollX, r.top + scrollY, r.width, r.height].map(Math.round) : null;
+    };
+    const wurzel = document.documentElement;
+    return {
+      bereiche: lage('nav[aria-label="Bereiche"]'),
+      inhalt: lage('#inhalt'),
+      titel: lage('#inhalt h1'),
+      seite: [wurzel.scrollWidth, wurzel.scrollHeight],
+    };
+  });
 }
 
 test.describe('Rundgang', () => {
@@ -71,9 +95,32 @@ test.describe('Rundgang', () => {
       await lagePruefen(page);
     }
     await expect(page.locator('[data-rundgang-ziel]')).toHaveCount(1);
+    // Letzter Schritt: die Bereiche in der dunklen Leiste. Die Hervorhebung muss sich abheben.
+    const farben = await page.locator('[data-rundgang-ziel]').evaluate((el) => ({
+      umriss: getComputedStyle(el).outlineColor,
+      leiste: getComputedStyle(el.closest('header') ?? document.body).backgroundColor,
+    }));
+    expect(farben.umriss).not.toBe(farben.leiste);
     await page.getByRole('button', { name: 'Fertig' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-rundgang-ziel]')).toHaveCount(0);
+  });
+
+  test('Öffnen und Weiterblättern verschiebt auf der Seite nichts', async ({ page }) => {
+    await page.goto('/bestellen');
+    await page.evaluate(() => document.fonts.ready);
+    const vorher = await seiteVermessen(page);
+    expect(vorher.inhalt).not.toBeNull();
+
+    await page.getByRole('button', { name: 'Rundgang' }).click();
+    await expect(page.getByRole('dialog', { name: 'Willkommen in der Werkbank' })).toBeVisible();
+    expect(await seiteVermessen(page)).toEqual(vorher);
+
+    await page.getByRole('button', { name: 'Weiter' }).click();
+    await expect(page.getByRole('dialog', { name: 'Bestellfenster heute' })).toBeVisible();
+    // Das Tourenband ist niedrig: Die Karte hat in jeder Breite direkt darunter Platz.
+    await lagePruefen(page, { nurNebenan: true });
+    expect(await seiteVermessen(page)).toEqual(vorher);
   });
 
   test('Zurück führt zum vorigen Schritt, Escape schliesst', async ({ page }) => {
